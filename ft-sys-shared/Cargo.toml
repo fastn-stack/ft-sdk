@@ -10,7 +10,7 @@ homepage.workspace = true
 
 
 [dependencies]
-http = "1"
-bytes = "1"
-serde = "1"
-thiserror = "1"
+http.workspace = true
+bytes.workspace = true
+serde.workspace = true
+thiserror.workspace = true
