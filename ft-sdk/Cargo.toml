@@ -1,0 +1,21 @@
+[package]
+name = "ft-sdk"
+version = "0.1.0"
+description = "ft-sdk: SDK for building FifthTry Applications"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+
+[dependencies]
+ft-sys = { path = "../ft-sys" }
+serde = "1"
+serde_json = "1"
+chrono = { version = "0.4", default-features = false, features = [] }
+thiserror = "1"
+http = "1"
+bytes = "1"
+serde_urlencoded = "0.6"
+diesel = "2"

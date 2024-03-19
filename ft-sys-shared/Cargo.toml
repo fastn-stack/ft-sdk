@@ -1,0 +1,16 @@
+[package]
+name = "ft-sys-shared"
+version = "0.1.0"
+description = "ft-sdk: SDK for building FifthTry Applications"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+
+[dependencies]
+http = "1"
+bytes = "1"
+serde = "1"
+thiserror = "1"
