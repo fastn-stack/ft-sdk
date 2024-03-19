@@ -14,7 +14,7 @@ authors = [
 ]
 edition = "2021"
 description = "ft: FifthTry Backend"
-license = "Copyright FifthTry"
+license = "BSD-3-Clause"
 repository = "https://github.com/FifthTry/ft"
 homepage = "https://FifthTry.com"
 
