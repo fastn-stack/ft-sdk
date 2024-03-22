@@ -3,6 +3,7 @@ extern "C" {
     fn env_now() -> i32;
     fn env_ud() -> i32;
     fn env_var(ptr: i32, len: i32) -> i32;
+    fn env_random() -> i32;
 }
 
 pub fn print_it(s: String) {
@@ -30,5 +31,10 @@ pub fn ud() -> Option<ft_sys::UserData> {
 pub fn var(name: String) -> Option<String> {
     let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(name);
     let ptr = unsafe { env_var(ptr, len) };
+    ft_sys::memory::json_from_ptr(ptr)
+}
+
+pub fn random() -> f64 {
+    let ptr = unsafe { env_random() };
     ft_sys::memory::json_from_ptr(ptr)
 }
