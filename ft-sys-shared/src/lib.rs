@@ -1,3 +1,7 @@
+//! This crate is part of [ft-sdk](https://docs.rs/ft-sdk/) and provides the
+//! system-level functionality. This crate should not be used directly, and
+//! `ft-sdk` should be used.
+
 /// Request acts as both a request and a response, and is only used for the
 /// communication between guest and host. It is not exposed via ft-sdk.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -63,8 +67,10 @@ impl From<http::Response<bytes::Bytes>> for Request {
     }
 }
 
+/// `DecryptionError` is returned as error when `ft_sdk::decrypt` fails.
 #[derive(Debug, serde::Deserialize, serde::Serialize, thiserror::Error)]
 pub enum DecryptionError {
+    /// Decryption failed.
     #[error("Decryption failed: {0}")]
     Generic(String),
 }

@@ -1,3 +1,4 @@
+//! Functions and types to work with HTTP requests and responses.
 #[derive(Debug)]
 pub enum Error {}
 
@@ -9,6 +10,7 @@ pub fn post(_r: http::Request<bytes::Bytes>) -> Result<http::Response<bytes::Byt
     todo!()
 }
 
+/// Get the current request.
 pub fn current_request() -> http::Request<bytes::Bytes> {
     extern "C" {
         fn http_get_request() -> i32;
@@ -20,6 +22,9 @@ pub fn current_request() -> http::Request<bytes::Bytes> {
     r.into()
 }
 
+/// Send a http response to client.
+///
+/// This function must not be called more than once.
 pub fn send_response(r: http::Response<bytes::Bytes>) {
     extern "C" {
         fn http_send_response(ptr: i32, len: i32);
