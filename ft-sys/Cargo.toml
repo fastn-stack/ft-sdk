@@ -1,6 +1,6 @@
 [package]
 name = "ft-sys"
-version = "0.1.0"
+version = "0.1.1"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
