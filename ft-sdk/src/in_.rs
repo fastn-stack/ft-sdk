@@ -16,4 +16,10 @@ impl In {
             form_errors: std::collections::HashMap::new(),
         })
     }
+
+    pub fn user_agent(&self) -> String {
+        self.req.headers()
+            .get(http::header::USER_AGENT)
+            .and_then(|v| v.to_str().map(|v| v.to_string()).ok()).unwrap_or("anonymous".to_string())
+    }
 }
