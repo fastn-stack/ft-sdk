@@ -122,7 +122,7 @@ pub trait Layout {
             A: ActionWithLog<Self, Self::Error>,
             Self: Sized,
     {
-        let start_time = std::time::Instant::now();
+        let start_time = ft_sys::now();
         let in_ = ft_sdk::In::from_request(r)?;
         let mut l = Self::from_in(in_, RequestType::Action)?;
         let a = A::validate(&mut l)?;
@@ -134,7 +134,7 @@ pub trait Layout {
 
     fn json(&mut self, o: serde_json::Value) -> Result<serde_json::Value, Self::Error>;
     fn render_error(e: Self::Error) -> http::Response<bytes::Bytes>;
-    fn log_to_event(&mut self, start_time: std::time::Instant) -> Result<(), Self::Error>;
+    fn log_to_event(&mut self, start_time: chrono::DateTime<chrono::Utc>) -> Result<(),Self::Error>;
 }
 
 fn a2r(r: ActionOutput) -> http::Response<bytes::Bytes> {

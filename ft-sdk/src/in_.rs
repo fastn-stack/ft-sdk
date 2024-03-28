@@ -22,4 +22,12 @@ impl In {
             .get(http::header::USER_AGENT)
             .and_then(|v| v.to_str().map(|v| v.to_string()).ok()).unwrap_or("anonymous".to_string())
     }
+
+    pub fn json_body<T: serde::de::DeserializeOwned>(&self) -> serde_json::Result<T> {
+        serde_json::from_slice(&self.req.body())
+    }
+
+    pub fn query_string(&self) -> String {
+        self.req.uri().query().unwrap_or_default().to_string()
+    }
 }
