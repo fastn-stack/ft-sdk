@@ -24,7 +24,7 @@ where
     E: std::fmt::Debug + From<ft_sdk::Error>,
 {
     // Validate content in Action struct
-    fn validate(c: &mut L) -> Result<Self, E>
+    fn validate(c: &mut L, start_time: chrono::DateTime<chrono::Utc>) -> Result<Self, E>
     where
         Self: Sized;
     // action_ wrapper for logging
@@ -36,13 +36,9 @@ where
     where
         Self: Sized;
     // actual action logic
-    fn action_(&self, c: &mut L) -> Result<ActionOutput, E>
+    fn action_(&self, c: &mut L, start_time: chrono::DateTime<chrono::Utc>) -> Result<i64, E>
     where
         Self: Sized;
-    // logs error before throwing error
-    fn log_error(c: &mut L, e: E, start_time: chrono::DateTime<chrono::Utc>) -> E;
-    // logs success
-    fn log_success(c: &mut L, start_time: chrono::DateTime<chrono::Utc>);
 }
 
 #[derive(Debug)]
@@ -135,8 +131,7 @@ pub trait Layout {
         let start_time = ft_sys::now();
         let in_ = ft_sdk::In::from_request(r)?;
         let mut l = Self::from_in(in_, RequestType::Action)?;
-
-        let a = A::validate(&mut l).map_err(|e| A::log_error(&mut l, e, start_time))?;
+        let a = A::validate(&mut l, start_time)?;
         let o = a.action(&mut l, start_time)?;
         let r = a2r(o);
         Ok(r)
@@ -144,10 +139,6 @@ pub trait Layout {
 
     fn json(&mut self, o: serde_json::Value) -> Result<serde_json::Value, Self::Error>;
     fn render_error(e: Self::Error) -> http::Response<bytes::Bytes>;
-    fn log_to_event(
-        &mut self,
-        start_time: chrono::DateTime<chrono::Utc>,
-    ) -> Result<(), Self::Error>;
 }
 
 fn a2r(r: ActionOutput) -> http::Response<bytes::Bytes> {
