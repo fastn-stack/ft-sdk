@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 28th Mar 2024
+
+### ft-sdk `0.1.2`
+
+- Added: added action() wrapper for _action() in Action trait (for logging)
+
 ## 22nd Mar 2024
 
 ### ft-sdk `0.1.1`
