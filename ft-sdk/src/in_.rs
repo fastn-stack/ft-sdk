@@ -1,5 +1,3 @@
-use serde_json::Value;
-
 pub struct In {
     pub ud: Option<ft_sdk::UserData>,
     pub req: http::Request<bytes::Bytes>,
@@ -35,7 +33,7 @@ impl In {
         // Removing password fields from body (for logging)
         let json_body = serde_json::from_slice(&self.req.body())?;
         let value = match json_body {
-            Value::Object(mut v) => {
+            serde_json::Value::Object(mut v) => {
                 v.retain(|key, _| !key.contains("password"));
                 serde_json::Value::Object(v)
             }
