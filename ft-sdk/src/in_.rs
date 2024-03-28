@@ -1,3 +1,5 @@
+use serde_json::Value;
+
 pub struct In {
     pub ud: Option<ft_sdk::UserData>,
     pub req: http::Request<bytes::Bytes>,
@@ -18,13 +20,28 @@ impl In {
     }
 
     pub fn user_agent(&self) -> String {
-        self.req.headers()
+        self.req
+            .headers()
             .get(http::header::USER_AGENT)
-            .and_then(|v| v.to_str().map(|v| v.to_string()).ok()).unwrap_or("anonymous".to_string())
+            .and_then(|v| v.to_str().map(|v| v.to_string()).ok())
+            .unwrap_or("anonymous".to_string())
     }
 
     pub fn json_body<T: serde::de::DeserializeOwned>(&self) -> serde_json::Result<T> {
         serde_json::from_slice(&self.req.body())
+    }
+
+    pub fn filtered_json_body<T: serde::de::DeserializeOwned>(&self) -> serde_json::Result<T> {
+        // Removing password fields from body (for logging)
+        let json_body = serde_json::from_slice(&self.req.body())?;
+        let value = match json_body {
+            Value::Object(mut v) => {
+                v.retain(|key, _| !key.contains("password"));
+                serde_json::Value::Object(v)
+            }
+            _ => json_body,
+        };
+        serde_json::from_value(value)
     }
 
     pub fn query_string(&self) -> String {

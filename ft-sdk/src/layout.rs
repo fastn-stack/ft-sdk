@@ -19,21 +19,31 @@ where
         Self: Sized;
 }
 
-pub trait ActionWithLog<L, E>
-    where
-        E: std::fmt::Debug + From<ft_sdk::Error>,
+pub trait Action2<L, E>
+where
+    E: std::fmt::Debug + From<ft_sdk::Error>,
 {
+    // Validate content in Action struct
     fn validate(c: &mut L) -> Result<Self, E>
-        where
-            Self: Sized;
-    fn action_with_log(&self, c: &mut L) -> Result<ActionOutput, E>
-        where
-            Self: Sized;
-    fn action(&self, c: &mut L) -> Result<ActionOutput, E>
-        where
-            Self: Sized;
+    where
+        Self: Sized;
+    // action_ wrapper for logging
+    fn action(
+        &self,
+        c: &mut L,
+        start_time: chrono::DateTime<chrono::Utc>,
+    ) -> Result<ActionOutput, E>
+    where
+        Self: Sized;
+    // actual action logic
+    fn action_(&self, c: &mut L) -> Result<ActionOutput, E>
+    where
+        Self: Sized;
+    // logs error before throwing error
+    fn log_error(c: &mut L, e: E, start_time: chrono::DateTime<chrono::Utc>) -> E;
+    // logs success
+    fn log_success(c: &mut L, start_time: chrono::DateTime<chrono::Utc>);
 }
-
 
 #[derive(Debug)]
 pub enum ActionOutput {
@@ -104,37 +114,40 @@ pub trait Layout {
         Ok(a2r(o))
     }
 
-    fn action_with_log<A>(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes>
-        where
-            A: ActionWithLog<Self, Self::Error>,
-            Self: Sized,
+    fn action2<A>(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes>
+    where
+        A: Action2<Self, Self::Error>,
+        Self: Sized,
     {
-        match Self::_action_with_log::<A>(r) {
+        match Self::_action2::<A>(r) {
             Ok(r) => r,
             Err(e) => Self::render_error(e),
         }
     }
 
-    fn _action_with_log<A>(
+    fn _action2<A>(
         r: http::Request<bytes::Bytes>,
     ) -> Result<http::Response<bytes::Bytes>, Self::Error>
-        where
-            A: ActionWithLog<Self, Self::Error>,
-            Self: Sized,
+    where
+        A: Action2<Self, Self::Error>,
+        Self: Sized,
     {
         let start_time = ft_sys::now();
         let in_ = ft_sdk::In::from_request(r)?;
         let mut l = Self::from_in(in_, RequestType::Action)?;
-        let a = A::validate(&mut l)?;
-        let o = a.action_with_log(&mut l)?;
+
+        let a = A::validate(&mut l).map_err(|e| A::log_error(&mut l, e, start_time))?;
+        let o = a.action(&mut l, start_time)?;
         let r = a2r(o);
-        l.log_to_event(start_time)?;
         Ok(r)
     }
 
     fn json(&mut self, o: serde_json::Value) -> Result<serde_json::Value, Self::Error>;
     fn render_error(e: Self::Error) -> http::Response<bytes::Bytes>;
-    fn log_to_event(&mut self, start_time: chrono::DateTime<chrono::Utc>) -> Result<(),Self::Error>;
+    fn log_to_event(
+        &mut self,
+        start_time: chrono::DateTime<chrono::Utc>,
+    ) -> Result<(), Self::Error>;
 }
 
 fn a2r(r: ActionOutput) -> http::Response<bytes::Bytes> {
