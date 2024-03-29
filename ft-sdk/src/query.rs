@@ -1,8 +1,20 @@
+/// Store query variables
+///
+/// for query string like `?name=foo&age=20`, it will be stored as
+/// `vec![("name", "foo"), ("age", "20")]`
 pub struct Query {
     args: Vec<(String, String)>,
 }
 
 impl Query {
+    /// Get a query variable from its `key`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let req: http::Request<bytes::Bytes> = ...;
+    /// let name: &str = req.query().get("name").unwrap_or("John");
+    /// ```
     pub fn get(&self, key: &str) -> Option<&str> {
         self.args
             .iter()
@@ -11,7 +23,16 @@ impl Query {
     }
 }
 
+/// Get query variables from `http::Request`
+///
+/// # Examples
+///
+/// ```
+/// let req: http::Request<bytes::Bytes> = ...;
+/// let query: Query = req.query();
+/// ```
 pub trait QueryExt {
+    /// parse query variables from `http::Request`
     fn query(&self) -> Query;
 }
 
