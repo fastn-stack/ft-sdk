@@ -1,7 +1,3 @@
-/// Store query variables
-///
-/// for query string like `?name=foo&age=20`, it will be stored as
-/// `vec![("name", "foo"), ("age", "20")]`
 pub struct Query {
     args: Vec<(String, String)>,
 }
