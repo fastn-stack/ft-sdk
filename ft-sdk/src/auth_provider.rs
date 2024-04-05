@@ -1,17 +1,3 @@
-/// This function logs the user in with given email address. If the user is already
-/// logged in, and user does not have an email stored, this email will be stored. If
-/// the user is already logged in, and the email is different, this function will add
-/// the email as an alternative email. In subsequent logins, the user can use any of the
-/// alternate emails to log in.
-///
-/// If the user is logged in, and the email is stored with another user, this function
-/// will return an error.
-///
-/// NOTE: Thinking of delete this function, and only using authenticate().
-pub fn authenticate_via_email(_email: &str) -> ft_sdk::UserId {
-    todo!()
-}
-
 /// In the current session we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some
 /// APIs that require certain scopes to be present. Before calling those APIs, the
