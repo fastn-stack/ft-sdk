@@ -1,16 +1,26 @@
 //! ft_sdk::auth_provider module is only available when the feature "auth-provider" is enabled.
 //! This feature should only be enabled for the auth provider service. Eg email, email-username,
-//! github, google, etc. Applications that need user data should not enable this feature, and
+//! GitHub, Google, etc. Applications that need user data should not enable this feature, and
 //! use the ft_sdk::auth module instead.
 //!
 //! # How Will A Site Create Usernames?
 //!
-//! Usernames are supplied by one of the providers, eg email-username provider requires
-//! user to pick unique username during signup, or Github provider provides username. A
+//! Usernames are supplied by one of the providers, e.g. email-username provider requires
+//! user to pick unique username during signup, or GitHub provider provides username. A
 //! site can accept username from only one provider as each provider have different
 //! namespaces for username. If a site wants username feature, the only way to create account
-//! is via the provider that provides username. If the user wants to login via other provider,
-//! user will be sent to username provider's "create-username" page.
+//! is via the provider that provides username. If the user wants to log in via other provider,
+//! user will be sent to username provider's "create-username" page. If the user wants to log in
+//! via another provider that provides its own username, the username by that provider will be
+//! used if it is available. If the username is not available, the user will be asked to pick a
+//! new username by going to "create-username" page of the provider that provides username, with
+//! the username as default value.
+//!
+//! # How Will User Update Their Data?
+//!
+//! ft_sdk::auth creates a bunch of functions that can be used to update user data, name, email,
+//! username etc. The UI will have be provided by the auth provider, or some other generic auth
+//! setting package.
 
 /// In the current session we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some
@@ -31,9 +41,9 @@ pub struct Scope(pub String);
 /// Auth provider can provide in any of these information about currently logged-in user.
 ///
 /// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
-/// provider. Eg if Github gives use VerifiedEmail, we will add entry for provider: github
-/// provider_id: <github id> and provider: email provider_id: <email>. If the user tries to
-/// login via email, the github provided email will be used. User may not have password in
+/// provider. Eg if GitHub gives use VerifiedEmail, we will add entry for provider: GitHub
+/// provider_id: <GitHub id> and provider: email provider_id: <email>. If the user tries to
+/// log in via email, the GitHub provided email will be used. User may not have password in
 /// that case, so they will have to use reset password flow to create password.
 ///
 /// If we get UserData::VerifiedEmail and we already have UserData::Email for same email address
@@ -42,7 +52,7 @@ pub struct Scope(pub String);
 /// If the provider provides UserData::Username, we store the username against the provider.
 /// If the site needs username feature they have to pick the provider that provides
 /// username. If the provider dropped username changes, the value will not be updated,
-/// meaning once a username is set, the username does not automatically changes. The user
+/// meaning once a username is set, the username does not automatically change. The user
 /// will have an option of changing the username. The username is unique across the site.
 ///
 /// Auth providers can also associate scope with the current session.
@@ -54,8 +64,8 @@ pub struct Scope(pub String);
 fn authenticate(
     _provider_name: &str,
     _provider_id: &str,
-    /// Github may use username as Identity, as user can understand their username, but have never
-    /// seen their github user id. If we show that user is logged in twice via github, we have to
+    /// GitHub may use username as Identity, as user can understand their username, but have never
+    /// seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
     /// show some identity against each, and we will use this identity. Identity is mandatory. It
     /// will be stored as UserData::Identity.
     ///
@@ -78,6 +88,7 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 // class User(models.Model):
 //    id = models.BigAutoField(primary_key=True)
 //    username = models.TextField(max_length=100, null=True) ;; can be empty?
+//    name = models.TextField(max_length=100)
 //    # {
 //         "<provider-name">: {
 //              "<provider-id>": {
