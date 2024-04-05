@@ -8,6 +8,8 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
+[features]
+auth-providers = ["ft-sys/auth-providers"]
 
 [dependencies]
 ft-sys = { path = "../ft-sys", version = "0.1.1" }

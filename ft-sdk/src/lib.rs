@@ -6,6 +6,9 @@
 
 extern crate self as ft_sdk;
 
+mod auth;
+#[cfg(feature = "auth-provider")]
+mod auth_provider;
 mod cookie;
 mod crypto;
 mod in_;
@@ -13,6 +16,7 @@ mod json_body;
 mod layout;
 mod query;
 
+pub use auth::UserId;
 pub use cookie::CookieExt;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use ft_sys::{env, println, PgConnection};

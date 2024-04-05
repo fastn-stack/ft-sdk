@@ -8,6 +8,9 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
+[features]
+auth-providers = []
+
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
