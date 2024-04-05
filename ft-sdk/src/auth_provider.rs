@@ -1,3 +1,17 @@
+//! ft_sdk::auth_provider module is only available when the feature "auth-provider" is enabled.
+//! This feature should only be enabled for the auth provider service. Eg email, email-username,
+//! github, google, etc. Applications that need user data should not enable this feature, and
+//! use the ft_sdk::auth module instead.
+//!
+//! # How Will A Site Create Usernames?
+//!
+//! Usernames are supplied by one of the providers, eg email-username provider requires
+//! user to pick unique username during signup, or Github provider provides username. A
+//! site can accept username from only one provider as each provider have different
+//! namespaces for username. If a site wants username feature, the only way to create account
+//! is via the provider that provides username. If the user wants to login via other provider,
+//! user will be sent to username provider's "create-username" page.
+
 /// In the current session we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some
 /// APIs that require certain scopes to be present. Before calling those APIs, the
@@ -14,15 +28,18 @@ pub struct Scope(pub String);
 /// If the user is logged in, and the provider id is stored with another user, this
 /// function will return an error.
 ///
-/// Auth provider can drop in any of these information about currently logged-in user.
+/// Auth provider can provide in any of these information about currently logged-in user.
 ///
-/// If the provider drops UserData::VerifiedEmail, then we also add the data against "email"
+/// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
 /// provider. Eg if Github gives use VerifiedEmail, we will add entry for provider: github
 /// provider_id: <github id> and provider: email provider_id: <email>. If the user tries to
 /// login via email, the github provided email will be used. User may not have password in
 /// that case, so they will have to use reset password flow to create password.
 ///
-/// If the provider drops UserData::Username, we store the username against the provider.
+/// If we get UserData::VerifiedEmail and we already have UserData::Email for same email address
+/// we will delete the email, and only keep verified email.
+///
+/// If the provider provides UserData::Username, we store the username against the provider.
 /// If the site needs username feature they have to pick the provider that provides
 /// username. If the provider dropped username changes, the value will not be updated,
 /// meaning once a username is set, the username does not automatically changes. The user
@@ -37,6 +54,13 @@ pub struct Scope(pub String);
 fn authenticate(
     _provider_name: &str,
     _provider_id: &str,
+    /// Github may use username as Identity, as user can understand their username, but have never
+    /// seen their github user id. If we show that user is logged in twice via github, we have to
+    /// show some identity against each, and we will use this identity. Identity is mandatory. It
+    /// will be stored as UserData::Identity.
+    ///
+    /// For the same provider_id, if identity changes, we will only keep the latest identity.
+    _identity: &str,
     _data: Vec<ft_sdk::auth::UserData>,
     _scopes: Vec<String>,
     _token: Option<serde_json::Value>,
@@ -44,9 +68,36 @@ fn authenticate(
     todo!()
 }
 
-/// If the scope changes, say auth provider requested more scopes, they will be added
-/// here.
-fn update_scope(_scopes: Vec<String>) {}
+/// we will remove this provider-id from the current account, and create a new account with just
+/// that provider id. All information provided by this provider id will be removed from old account
+/// and added to this account. All sessions logged in via this provider id will be logged out.
+fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
+    todo!()
+}
 
-/// This function logs the user out. This deletes the user cookie.
-fn logout() {}
+// class User(models.Model):
+//    id = models.BigAutoField(primary_key=True)
+//    username = models.TextField(max_length=100, null=True) ;; can be empty?
+//    # {
+//         "<provider-name">: {
+//              "<provider-id>": {
+//                  "scopes": [],  // granted scopes
+//                  "data": [
+//                      { "type": "verified-email", "value": "foo@bar.com", }
+//                   ]
+//              }
+//         }
+//    }
+//    data = models.JSONField()  # all UserData is stored here
+//
+// class Session(models.Model):
+//     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+//     # {
+//         "<provider-name">: {
+//              "<provider-id>": {
+//                  "scopes": [],  // scopes granted in this session
+//                  "token": "token",
+//              }
+//         }
+//    }
+//    data = models.JSONField()  # all UserData is stored here
