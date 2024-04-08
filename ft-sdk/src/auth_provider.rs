@@ -1,3 +1,6 @@
+// TODO: impl login
+// TODO: add create table guards for fastn.user and fastn.session
+//
 //! ft_sdk::auth_provider module is only available when the feature "auth-provider" is enabled.
 //! This feature should only be enabled for the auth provider service. Eg email, email-username,
 //! GitHub, Google, etc. Applications that need user data should not enable this feature, and
@@ -39,44 +42,40 @@ pub struct Scope(pub String);
 /// function will return an error.
 fn login() {
     // copy data of user into session
-    todo!()
 }
 
 /// Auth provider can provide in any of these information about currently logged-in user.
 ///
 /// see [modify_user] for more details.
 fn modify_current_user(
-    _conn: &mut ft_sdk::PgConnection,
-    _provider_name: &str,
-    _provider_id: &str,
+    conn: &mut ft_sdk::PgConnection,
+    provider_name: &str,
+    provider_id: &str,
     // GitHub may use username as Identity, as user can understand their username, but have never
     // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
     // show some identity against each, and we will use this identity. Identity is mandatory. It
     // will be stored as UserData::Identity.
     //
     // For the same provider_id, if identity changes, we will only keep the latest identity.
-    _identity: &str,
-    _data: Vec<ft_sdk::auth::UserData>,
-    _scopes: Vec<String>,
-    _token: Option<serde_json::Value>,
-) -> ft_sdk::UserId {
+    identity: &str,
+    data: Vec<ft_sdk::auth::UserData>,
+    scopes: Vec<String>,
+    token: Option<serde_json::Value>,
+) -> Result<ft_sdk::UserId, ModifyUserError> {
     ft_sdk::auth::user_id()
+        .ok_or(ModifyUserError::UserNotLoggedIn)
         .and_then(|id| {
-            Some(modify_user(
+            modify_user(
                 id,
-                _conn,
-                _provider_name,
-                _provider_id,
-                _identity,
-                _data,
-                _scopes,
-                _token,
-            ))
+                conn,
+                provider_name,
+                provider_id,
+                identity,
+                data,
+                scopes,
+                token,
+            )
         })
-        // TODO:remove this, we'll prolly end up using Result
-        .unwrap()
-
-    // TODO: update session with modified details
 }
 
 /// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
@@ -115,10 +114,125 @@ fn modify_user(
     _data: Vec<ft_sdk::auth::UserData>,
     _scopes: Vec<String>,
     _token: Option<serde_json::Value>,
-) -> ft_sdk::UserId {
+) -> Result<ft_sdk::UserId, ModifyUserError> {
     // modify the user in db
     // return modifier user details
+
+    use diesel::prelude::*;
+
+    let affected = _conn.transaction(|c| {
+        let mut user_data: serde_json::Value = db::user::table
+            .filter(db::user::id.eq(10))
+            .select(db::user::data)
+            .first(c)?;
+
+        let new_user_data =
+            update_provider_data(_provider_id, _provider_name, &mut user_data, _data);
+
+        diesel::insert_into(db::user::table)
+            .values(db::user::name.eq("shaun"))
+            .on_conflict(db::user::id)
+            .do_update()
+            .set(db::user::data.eq(new_user_data))
+            .execute(c)
+    })?;
+
+    dbg!(affected);
+
     todo!()
+}
+
+fn update_provider_data(
+    provider_id: &str,
+    provider_name: &str,
+    user_data: &mut serde_json::Value,
+    data: Vec<crate::auth::UserData>,
+) -> serde_json::Value {
+    use serde_json::Value;
+
+    let data = serde_json::Value::Object(normalise_user_data(data));
+
+    let Value::Object(user_data) = user_data else {
+        // panic is user_data is not an object
+        panic!("")
+    };
+
+    // "<provider-name">: {
+    //      "<provider-id>": {
+    //          "scopes": [],  // granted scopes
+    //          "data": {
+    //              "UserData::VerifiedEmail": "foo@bar.com",
+    //           }
+    //      }
+    // }
+    for (p, v) in user_data.iter_mut() {
+        if p == provider_name {
+            let Value::Object(provider_data) = v else {
+                panic!("")
+            };
+
+            for (p_id, vv) in provider_data.iter_mut() {
+                if p_id == provider_id {
+                    deep_merge(vv, data);
+                    return vv.to_owned();
+                }
+            }
+        }
+    }
+
+    panic!("")
+}
+
+fn deep_merge(a: &mut serde_json::Value, b: serde_json::Value) {
+    use serde_json::Value;
+
+    match (a, b) {
+        // TODO: merge arrays
+        (Value::Object(ref mut a), Value::Object(b)) => {
+            for (k, v) in b {
+                deep_merge(a.entry(k).or_insert(Value::Null), v);
+            }
+        }
+        (a, b) => *a = b,
+    }
+}
+
+fn normalise_user_data(
+    data: Vec<ft_sdk::auth::UserData>,
+) -> serde_json::map::Map<String, serde_json::Value> {
+    use ft_sdk::auth::UserData;
+
+    data.into_iter()
+        .map(|d| match d {
+            UserData::VerifiedEmail(email) => (
+                "verified_email".to_string(),
+                serde_json::Value::String(email),
+            ),
+            UserData::Email(email) => ("email".to_string(), serde_json::Value::String(email)),
+            UserData::Username(username) => {
+                ("username".to_string(), serde_json::Value::String(username))
+            }
+            UserData::Identity(identity) => {
+                ("identity".to_string(), serde_json::Value::String(identity))
+            }
+            UserData::Name(name) => ("name".to_string(), serde_json::Value::String(name)),
+            UserData::FirstName(first_name) => (
+                "first_name".to_string(),
+                serde_json::Value::String(first_name),
+            ),
+            UserData::LastName(last_name) => (
+                "last_name".to_string(),
+                serde_json::Value::String(last_name),
+            ),
+            UserData::Age(age) => ("age".to_string(), serde_json::Value::Number(age.into())),
+            UserData::Phone(phone) => ("phone".to_string(), serde_json::Value::String(phone)),
+            UserData::ProfilePicture(profile_picture) => (
+                "profile_picture".to_string(),
+                serde_json::Value::String(profile_picture),
+            ),
+            UserData::Custom { key, value } => (key, serde_json::Value::String(value)),
+        })
+        .collect()
 }
 
 /// we will remove this provider-id from the current account, and create a new account with just
@@ -156,3 +270,37 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 //              }
 //         }
 //    }
+//
+
+#[derive(Debug, thiserror::Error)]
+enum ModifyUserError {
+    #[error("diesel error: {0}")]
+    Disel(#[from] diesel::result::Error),
+    #[error("user not logged in")]
+    UserNotLoggedIn,
+}
+
+mod db {
+    diesel::table! {
+        use diesel::sql_types::*;
+
+        fastn.user (id) {
+            id -> Int8,
+            name -> Text,
+            data -> Jsonb,
+            created_at -> Timestamptz,
+            updated_at -> Timestamptz,
+        }
+    }
+
+    diesel::table! {
+        use diesel::sql_types::*;
+
+        fastn.session (key) {
+            key -> Text,
+            data -> Jsonb,
+            expires_at -> Timestamptz,
+            created_at -> Timestamptz,
+        }
+    }
+}

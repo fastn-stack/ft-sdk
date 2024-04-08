@@ -26,6 +26,7 @@
         buildInputs = with pkgs; [
           toolchain
           rust-analyzer-unwrapped
+          cargo-expand
         ];
 
         RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
