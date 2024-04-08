@@ -37,9 +37,48 @@ pub struct Scope(pub String);
 ///
 /// If the user is logged in, and the provider id is stored with another user, this
 /// function will return an error.
-///
+fn login() {
+    // copy data of user into session
+    todo!()
+}
+
 /// Auth provider can provide in any of these information about currently logged-in user.
 ///
+/// see [modify_user] for more details.
+fn modify_current_user(
+    _conn: &mut ft_sdk::PgConnection,
+    _provider_name: &str,
+    _provider_id: &str,
+    // GitHub may use username as Identity, as user can understand their username, but have never
+    // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
+    // show some identity against each, and we will use this identity. Identity is mandatory. It
+    // will be stored as UserData::Identity.
+    //
+    // For the same provider_id, if identity changes, we will only keep the latest identity.
+    _identity: &str,
+    _data: Vec<ft_sdk::auth::UserData>,
+    _scopes: Vec<String>,
+    _token: Option<serde_json::Value>,
+) -> ft_sdk::UserId {
+    ft_sdk::auth::user_id()
+        .and_then(|id| {
+            Some(modify_user(
+                id,
+                _conn,
+                _provider_name,
+                _provider_id,
+                _identity,
+                _data,
+                _scopes,
+                _token,
+            ))
+        })
+        // TODO:remove this, we'll prolly end up using Result
+        .unwrap()
+
+    // TODO: update session with modified details
+}
+
 /// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
 /// provider. Eg if GitHub gives use VerifiedEmail, we will add entry for provider: GitHub
 /// provider_id: <GitHub id> and provider: email provider_id: <email>. If the user tries to
@@ -61,20 +100,24 @@ pub struct Scope(pub String);
 /// token. The token is stored against session, and is deleted when the user logs out.
 ///
 /// This function returns the user id.
-fn authenticate(
+fn modify_user(
+    _id: ft_sdk::UserId,
+    _conn: &mut ft_sdk::PgConnection,
     _provider_name: &str,
     _provider_id: &str,
-    /// GitHub may use username as Identity, as user can understand their username, but have never
-    /// seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
-    /// show some identity against each, and we will use this identity. Identity is mandatory. It
-    /// will be stored as UserData::Identity.
-    ///
-    /// For the same provider_id, if identity changes, we will only keep the latest identity.
+    // GitHub may use username as Identity, as user can understand their username, but have never
+    // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
+    // show some identity against each, and we will use this identity. Identity is mandatory. It
+    // will be stored as UserData::Identity.
+    //
+    // For the same provider_id, if identity changes, we will only keep the latest identity.
     _identity: &str,
     _data: Vec<ft_sdk::auth::UserData>,
     _scopes: Vec<String>,
     _token: Option<serde_json::Value>,
 ) -> ft_sdk::UserId {
+    // modify the user in db
+    // return modifier user details
     todo!()
 }
 
@@ -93,16 +136,18 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 //         "<provider-name">: {
 //              "<provider-id>": {
 //                  "scopes": [],  // granted scopes
-//                  "data": [
-//                      { "type": "verified-email", "value": "foo@bar.com", }
-//                   ]
+//                  "data": {
+//                      "UserData::VerifiedEmail": "foo@bar.com",
+//                   }
 //              }
 //         }
 //    }
 //    data = models.JSONField()  # all UserData is stored here
 //
+// # can be used for any per-request data
 // class Session(models.Model):
-//     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+//     key # session key
+//     data = models.JSONField()  # all UserData is stored here
 //     # {
 //         "<provider-name">: {
 //              "<provider-id>": {
@@ -111,4 +156,3 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 //              }
 //         }
 //    }
-//    data = models.JSONField()  # all UserData is stored here
