@@ -111,30 +111,33 @@ fn modify_user(
     //
     // For the same provider_id, if identity changes, we will only keep the latest identity.
     _identity: &str,
-    _data: Vec<ft_sdk::auth::UserData>,
+    data: Vec<ft_sdk::auth::UserData>,
     _scopes: Vec<String>,
     _token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::UserId, ModifyUserError> {
-    // modify the user in db
-    // return modifier user details
-
     use diesel::prelude::*;
 
     let affected = _conn.transaction(|c| {
-        let mut user_data: serde_json::Value = db::user::table
-            .filter(db::user::id.eq(10))
+        let mut old_data = db::user::table
+            .filter(db::user::id.eq(_id.0))
             .select(db::user::data)
-            .first(c)?;
+            .first::<serde_json::Value>(c)?;
 
-        let new_user_data =
-            update_provider_data(_provider_id, _provider_name, &mut user_data, _data);
+        let new_data = get_new_user_data(_provider_id, data, &mut old_data)
+            .map(user_data_to_json)
+            .unwrap(); // TODO: handle errors
 
-        diesel::insert_into(db::user::table)
+        dbg!(&new_data);
+
+        let query = diesel::insert_into(db::user::table)
             .values(db::user::name.eq("shaun"))
             .on_conflict(db::user::id)
             .do_update()
-            .set(db::user::data.eq(new_user_data))
-            .execute(c)
+            .set(db::user::data.eq(new_data));
+
+        ft_sdk::utils::dbg_query(&query);
+
+        query.execute(c)
     })?;
 
     dbg!(affected);
@@ -142,95 +145,207 @@ fn modify_user(
     todo!()
 }
 
-fn update_provider_data(
+///
+fn get_new_user_data<'a>(
     provider_id: &str,
-    provider_name: &str,
-    user_data: &mut serde_json::Value,
-    data: Vec<crate::auth::UserData>,
-) -> serde_json::Value {
-    use serde_json::Value;
+    data: Vec<ft_sdk::auth::UserData>,
+    old_data: &'a mut serde_json::Value,
+) -> Result<std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>, ()> {
+    let mut new_data = std::collections::HashMap::new();
 
-    let data = serde_json::Value::Object(normalise_user_data(data));
+    // If the provider provides UserData::VerifiedEmail, then we also add the
+    // data against "email" provider.
+    for d in &data {
+        match d {
+            ft_sdk::auth::UserData::VerifiedEmail(email) => new_data
+                .entry("email".to_string())
+                .or_insert(Vec::<ft_sdk::auth::UserData>::new())
+                .push(ft_sdk::auth::UserData::Email(email.clone())),
+            _ => {}
+        }
+    }
 
-    let Value::Object(user_data) = user_data else {
-        // panic is user_data is not an object
-        panic!("")
-    };
+    new_data.insert(provider_id.to_string(), data);
 
-    // "<provider-name">: {
-    //      "<provider-id>": {
-    //          "scopes": [],  // granted scopes
-    //          "data": {
-    //              "UserData::VerifiedEmail": "foo@bar.com",
-    //           }
-    //      }
-    // }
-    for (p, v) in user_data.iter_mut() {
-        if p == provider_name {
-            let Value::Object(provider_data) = v else {
-                panic!("")
-            };
+    assert!(old_data.is_object());
 
-            for (p_id, vv) in provider_data.iter_mut() {
-                if p_id == provider_id {
-                    deep_merge(vv, data);
-                    return vv.to_owned();
+    //       "<provider-id>": {
+    //           "scopes": [],  // granted scopes
+    //           "data": {
+    //               "UserData::VerifiedEmail": "foo@bar.com",
+    //            }
+    //       }
+    dbg!(&old_data);
+
+    // WARN: this needs a bunch of tests
+    for (k, v) in old_data.as_object_mut().unwrap() {
+        // If we get UserData::VerifiedEmail and we already have
+        // UserData::Email for same email address we will delete the email,
+        // and only keep verified email
+
+        // if new_data contains this provider id
+        if new_data.contains_key(k.as_str()) {
+            // if provider data contains key `data`
+            if v.is_object() && v.as_object().unwrap().contains_key("data") {
+                let d = v.get_mut("data").unwrap();
+                // if data has `emails` (`emails` means unverified emails)
+                if let Some(emails) = d.clone().get("emails") {
+                    if let Some(emails) = emails.as_array() {
+                        let new_emails = emails.iter().filter_map(|email| {
+                            // TODO: defering error handling to later
+                            let email = email.as_str().unwrap();
+
+                            // if the new data for the current provider has
+                            // a list of verified emails that contains this
+                            // `email` then filter it out
+                            if let None = new_data.get(k.as_str()).unwrap().iter().find(|d| match d
+                            {
+                                ft_sdk::auth::UserData::VerifiedEmail(e) => {
+                                    e.contains(&email.to_string())
+                                }
+                                _ => false,
+                            }) {
+                                Some(serde_json::Value::String(email.to_string()))
+                            } else {
+                                None
+                            }
+                        });
+
+                        d.as_object_mut().unwrap().insert(
+                            "emails".to_string(),
+                            serde_json::Value::Array(new_emails.collect()),
+                        );
+                    }
                 }
             }
         }
     }
 
-    panic!("")
+    dbg!(&old_data);
+
+    let old_data = user_data_from_json(old_data.clone());
+
+    new_data.extend(old_data);
+
+    Ok(new_data)
 }
 
-fn deep_merge(a: &mut serde_json::Value, b: serde_json::Value) {
-    use serde_json::Value;
-
-    match (a, b) {
-        // TODO: merge arrays
-        (Value::Object(ref mut a), Value::Object(b)) => {
-            for (k, v) in b {
-                deep_merge(a.entry(k).or_insert(Value::Null), v);
-            }
-        }
-        (a, b) => *a = b,
-    }
-}
-
-fn normalise_user_data(
-    data: Vec<ft_sdk::auth::UserData>,
-) -> serde_json::map::Map<String, serde_json::Value> {
+fn user_data_to_json(
+    data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
+) -> serde_json::Value {
     use ft_sdk::auth::UserData;
 
-    data.into_iter()
-        .map(|d| match d {
-            UserData::VerifiedEmail(email) => (
-                "verified_email".to_string(),
-                serde_json::Value::String(email),
-            ),
-            UserData::Email(email) => ("email".to_string(), serde_json::Value::String(email)),
-            UserData::Username(username) => {
-                ("username".to_string(), serde_json::Value::String(username))
-            }
-            UserData::Identity(identity) => {
-                ("identity".to_string(), serde_json::Value::String(identity))
-            }
-            UserData::Name(name) => ("name".to_string(), serde_json::Value::String(name)),
-            UserData::FirstName(first_name) => (
-                "first_name".to_string(),
-                serde_json::Value::String(first_name),
-            ),
-            UserData::LastName(last_name) => (
-                "last_name".to_string(),
-                serde_json::Value::String(last_name),
-            ),
-            UserData::Age(age) => ("age".to_string(), serde_json::Value::Number(age.into())),
-            UserData::Phone(phone) => ("phone".to_string(), serde_json::Value::String(phone)),
-            UserData::ProfilePicture(profile_picture) => (
-                "profile_picture".to_string(),
-                serde_json::Value::String(profile_picture),
-            ),
-            UserData::Custom { key, value } => (key, serde_json::Value::String(value)),
+    let map = data
+        .into_iter()
+        .map(|(k, v)| {
+            let v: serde_json::Value = v
+                .into_iter()
+                .map(|d| match d {
+                    UserData::VerifiedEmail(emails) => (
+                        "verified_emails".to_string(),
+                        serde_json::Value::Array(
+                            emails.into_iter().map(serde_json::Value::String).collect(),
+                        ),
+                    ),
+                    UserData::Email(emails) => (
+                        "emails".to_string(),
+                        serde_json::Value::Array(
+                            emails.into_iter().map(serde_json::Value::String).collect(),
+                        ),
+                    ),
+                    UserData::Username(username) => {
+                        ("username".to_string(), serde_json::Value::String(username))
+                    }
+                    UserData::Identity(identity) => {
+                        ("identity".to_string(), serde_json::Value::String(identity))
+                    }
+                    UserData::Name(name) => ("name".to_string(), serde_json::Value::String(name)),
+                    UserData::FirstName(first_name) => (
+                        "first_name".to_string(),
+                        serde_json::Value::String(first_name),
+                    ),
+                    UserData::LastName(last_name) => (
+                        "last_name".to_string(),
+                        serde_json::Value::String(last_name),
+                    ),
+                    UserData::Age(age) => {
+                        ("age".to_string(), serde_json::Value::Number(age.into()))
+                    }
+                    UserData::Phone(phones) => (
+                        "phones".to_string(),
+                        serde_json::Value::Array(
+                            phones.into_iter().map(serde_json::Value::String).collect(),
+                        ),
+                    ),
+                    UserData::ProfilePicture(profile_picture) => (
+                        "profile_picture".to_string(),
+                        serde_json::Value::String(profile_picture),
+                    ),
+                    UserData::Custom { key, value } => (key, serde_json::Value::String(value)),
+                })
+                .collect();
+
+            (k.to_string(), v)
+        })
+        .collect();
+
+    serde_json::Value::Object(map)
+}
+
+fn user_data_from_json(
+    data: serde_json::Value,
+) -> std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>> {
+    assert!(data.is_object());
+
+    data.as_object()
+        .unwrap()
+        .into_iter()
+        .map(|(provider_id, p_data)| {
+            assert!(p_data.is_object());
+            let v = p_data.as_object().unwrap();
+
+            let v = v
+                .into_iter()
+                .map(|(k, v)| match k.as_str() {
+                    "verified_emails" => {
+                        let v = v.as_array().unwrap();
+                        ft_sdk::auth::UserData::VerifiedEmail(
+                            v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
+                        )
+                    }
+                    "emails" => {
+                        let v = v.as_array().unwrap();
+                        ft_sdk::auth::UserData::Email(
+                            v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
+                        )
+                    }
+                    "username" => ft_sdk::auth::UserData::Username(v.as_str().unwrap().to_string()),
+                    "identity" => ft_sdk::auth::UserData::Identity(v.as_str().unwrap().to_string()),
+                    "name" => ft_sdk::auth::UserData::Name(v.as_str().unwrap().to_string()),
+                    "first_name" => {
+                        ft_sdk::auth::UserData::FirstName(v.as_str().unwrap().to_string())
+                    }
+                    "last_name" => {
+                        ft_sdk::auth::UserData::LastName(v.as_str().unwrap().to_string())
+                    }
+                    "age" => ft_sdk::auth::UserData::Age(v.as_u64().unwrap() as u8),
+                    "phones" => {
+                        let v = v.as_array().unwrap();
+                        ft_sdk::auth::UserData::Phone(
+                            v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
+                        )
+                    }
+                    "profile_picture" => {
+                        ft_sdk::auth::UserData::ProfilePicture(v.as_str().unwrap().to_string())
+                    }
+                    _ => ft_sdk::auth::UserData::Custom {
+                        key: k.to_string(),
+                        value: v.as_str().unwrap().to_string(),
+                    },
+                })
+                .collect();
+
+            (provider_id.to_string(), v)
         })
         .collect()
 }
@@ -247,14 +362,12 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 //    username = models.TextField(max_length=100, null=True) ;; can be empty?
 //    name = models.TextField(max_length=100)
 //    # {
-//         "<provider-name">: {
-//              "<provider-id>": {
-//                  "scopes": [],  // granted scopes
-//                  "data": {
-//                      "UserData::VerifiedEmail": "foo@bar.com",
-//                   }
-//              }
-//         }
+//       "<provider-id>": {
+//           "scopes": [],  // granted scopes
+//           "data": {
+//               "UserData::VerifiedEmail": "foo@bar.com",
+//            }
+//       }
 //    }
 //    data = models.JSONField()  # all UserData is stored here
 //
@@ -285,7 +398,7 @@ mod db {
         use diesel::sql_types::*;
 
         fastn.user (id) {
-            id -> Int8,
+            id -> Text,
             name -> Text,
             data -> Jsonb,
             created_at -> Timestamptz,
