@@ -9,7 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-auth-providers = ["ft-sys/auth-providers"]
+auth-providers = []
+# toggle usage of ft_sdk::println! statements
+debug = []
 
 [dependencies]
 ft-sys = { path = "../ft-sys", version = "0.1.1" }

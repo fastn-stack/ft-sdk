@@ -7,15 +7,15 @@
 extern crate self as ft_sdk;
 
 mod auth;
-#[cfg(feature = "auth-provider")]
-mod auth_provider;
+#[cfg(feature = "auth-providers")]
+pub mod auth_provider;
 mod cookie;
 mod crypto;
 mod in_;
 mod json_body;
 mod layout;
 mod query;
-mod utils;
+pub mod utils;
 
 pub use auth::UserId;
 pub use cookie::CookieExt;
