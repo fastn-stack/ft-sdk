@@ -191,12 +191,12 @@ fn get_new_user_data<'a>(
         }
     }
 
-    let result = deep_merge(old_data, new_data);
+    let result = merge_user_data(old_data, new_data);
 
     Ok(result)
 }
 
-fn deep_merge(
+fn merge_user_data(
     new_data: std::collections::HashMap<String, Vec<crate::auth::UserData>>,
     old_data: std::collections::HashMap<String, Vec<crate::auth::UserData>>,
 ) -> std::collections::HashMap<String, Vec<crate::auth::UserData>> {
