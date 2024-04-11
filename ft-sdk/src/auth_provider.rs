@@ -417,3 +417,166 @@ mod db {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn get_new_user_data_happy_path() {
+        let provider_id = "gh-123";
+        let data = vec![ft_sdk::auth::UserData::VerifiedEmail(
+            "test@mail.com".to_string(),
+        )];
+
+        let mut old_data = serde_json::json!({
+            "email": {
+                "data": {
+                    "emails": [],
+                    "verified_emails": [],
+                    "scopes": [],
+                },
+            },
+            "gh-123": {
+                "data": {
+                    "emails": ["test@mail.com", "retain@mail.com"],
+                    "verified_emails": ["old_ver@mail.com"],
+                    "scopes": ["view:repos"],
+                },
+            },
+            "unaffected": {
+                "data": {
+                    "emails": ["unverified@mail.com"],
+                    "name": "Jenny",
+                    "verified_emails": [],
+                },
+            },
+        });
+
+        let expected_json = serde_json::json!({
+            "email": {
+                "data": {
+                    "emails": [],
+                    "verified_emails": ["test@mail.com"],
+                    "scopes": [],
+                }
+            },
+            "gh-123": {
+                "data": {
+                    "emails": ["retain@mail.com"],
+                    "verified_emails": ["old_ver@mail.com", "test@mail.com"],
+                    "scopes": ["view:repos"],
+                },
+            },
+            "unaffected": {
+                "data": {
+                    "emails": ["unverified@mail.com"],
+                    "name": "Jenny",
+                    "verified_emails": [],
+                },
+            },
+        });
+
+        let expected = super::get_new_user_data(provider_id, data, &mut old_data).unwrap();
+        let expected = super::user_data_to_json(expected);
+
+        assert_eq!(expected, expected_json);
+    }
+
+    #[test]
+    fn user_data_to_json() {
+        use ft_sdk::auth::UserData;
+        let mut data = std::collections::HashMap::new();
+
+        data.insert(
+            "email".to_string(),
+            vec![
+                UserData::VerifiedEmail("test@test.com".into()),
+                UserData::Email("test@test.com".into()),
+                UserData::Name("John".into()),
+            ],
+        );
+
+        data.insert(
+            "gh-123".to_string(),
+            vec![ft_sdk::auth::UserData::VerifiedEmail(
+                "test@test.com".to_string(),
+            )],
+        );
+
+        let json = super::user_data_to_json(data);
+
+        let expected_json = serde_json::json!({
+            "email": {
+                "data": {
+                    "emails": [
+                        "test@test.com",
+                    ],
+                    "name": "John",
+                    "verified_emails": [
+                        "test@test.com",
+                    ],
+                },
+            },
+            "gh-123": {
+                "data": {
+                    "emails": [],
+                    "verified_emails": [
+                        "test@test.com",
+                    ],
+                },
+            },
+        });
+
+        assert_eq!(json, expected_json);
+    }
+
+    #[test]
+    fn user_data_from_json() {
+        use ft_sdk::auth::UserData;
+        use std::collections::HashMap;
+
+        let data = serde_json::json!({
+            "email": {
+                "data": {
+                    "emails": [
+                        "test@test.com",
+                        "spam@smth.com",
+                    ],
+                    "name": "John",
+                    "verified_emails": [
+                        "john@mail.com",
+                    ],
+                },
+            },
+            "gh-123": {
+                "data": {
+                    "verified_emails": [
+                        "john@gh.com",
+                    ],
+                },
+            },
+        });
+
+        let result = super::user_data_from_json(data);
+
+        let mut expected = HashMap::new();
+
+        expected.insert(
+            "email".to_string(),
+            vec![
+                UserData::Email("test@test.com".into()),
+                UserData::Email("spam@smth.com".into()),
+                UserData::Name("John".into()),
+                UserData::VerifiedEmail("john@mail.com".into()),
+            ],
+        );
+
+        expected.insert(
+            "gh-123".to_string(),
+            vec![UserData::VerifiedEmail("john@gh.com".into())],
+        );
+
+        assert_eq!(expected, result);
+    }
+}

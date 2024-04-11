@@ -23,3 +23,6 @@ http.workspace = true
 bytes.workspace = true
 serde_urlencoded.workspace = true
 diesel.workspace = true
+
+[dev-dependencies]
+pretty_assertions = "1"

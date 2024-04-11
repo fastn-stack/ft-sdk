@@ -3,16 +3,17 @@ pub struct UserId(pub String);
 /// Any provider can provide any of these information about currently logged-in user,
 /// which is stored against the user in the database. The provider who drops in the
 /// information, if they update it, the value will get updated.
+#[derive(Debug, Clone, PartialEq)]
 pub enum UserData {
-    VerifiedEmail(Vec<String>),
+    VerifiedEmail(String),
     Username(String),
 
     Name(String),
     FirstName(String),
     LastName(String),
-    Email(Vec<String>),
+    Email(String),
     Age(u8),
-    Phone(Vec<String>),
+    Phone(String),
     ProfilePicture(String),
     /// Github may use username as Identity, as user can understand their username, but have never
     /// seen their github user id. If we show that user is logged in twice via github, we have to
@@ -21,7 +22,7 @@ pub enum UserData {
 
     Custom {
         key: String,
-        value: String,
+        value: serde_json::Value,
     },
 }
 
