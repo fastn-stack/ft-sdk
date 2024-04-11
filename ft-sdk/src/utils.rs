@@ -11,7 +11,7 @@
 ///     use diesel::sql_types::*;
 ///
 ///     user (id) {
-///         id -> int8,
+///         id -> Int8,
 ///         name -> Text,
 ///     }
 /// }
@@ -23,7 +23,7 @@
 ///     .filter(user::id.eq(9))
 ///     .limit(1);
 ///
-/// dbg_query(&query);
+/// ft_sdk::utils::dbg_query(&query);
 /// ```
 pub fn dbg_query<T: diesel::query_builder::QueryFragment<diesel::pg::Pg>>(query: &T) {
     #[cfg(feature = "debug")]
