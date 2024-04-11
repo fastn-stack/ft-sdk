@@ -15,6 +15,7 @@ mod query;
 
 pub use cookie::CookieExt;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
+use ft_sys::SqliteConnection;
 pub use ft_sys::{env, println, PgConnection};
 pub use ft_sys::{http, UserData};
 pub use in_::In;
@@ -23,11 +24,17 @@ pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
 pub use query::{Query, QueryExt};
 
 /// Get a connection to the default postgres database.
-///
-/// Most FifthTry Apps should use this function to get the default connection.
 pub fn default_pg() -> Result<PgConnection, Error> {
     use diesel::Connection;
     Ok(PgConnection::establish("default")?)
+}
+
+/// Get a connection to the default sqlite database.
+///
+/// Most FifthTry Apps should use this function to get the default connection.
+pub fn default_sqlite() -> Result<SqliteConnection, Error> {
+    use diesel::Connection;
+    Ok(SqliteConnection::establish("default")?)
 }
 
 #[derive(Debug, thiserror::Error)]

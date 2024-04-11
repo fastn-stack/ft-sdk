@@ -1,0 +1,26 @@
+[package]
+name = "sample-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+lto = true
+opt-level = 's'
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ft-sdk = { version = "0.1", path = "../ft-sdk" }
+http = "1"
+bytes = "1"
+# chrono = { default-features = false, features = [] }
+
+[dependencies.diesel]
+version = "2"
+default-features = false
+features = [
+    #    "chrono", # diesel::sql_types::Timestamptz -> chrono::DateTime<chrono::Utc>
+    #    "serde_json", # diesel::sql_types::Jsonb -> serde_json::Value
+]
+
