@@ -160,74 +160,58 @@ fn get_new_user_data<'a>(
             ft_sdk::auth::UserData::VerifiedEmail(email) => new_data
                 .entry("email".to_string())
                 .or_insert(Vec::<ft_sdk::auth::UserData>::new())
-                .push(ft_sdk::auth::UserData::Email(email.clone())),
+                .push(ft_sdk::auth::UserData::VerifiedEmail(email.clone())),
             _ => {}
         }
     }
 
     new_data.insert(provider_id.to_string(), data);
 
-    assert!(old_data.is_object());
+    let mut old_data = user_data_from_json(old_data.clone());
 
-    //       "<provider-id>": {
-    //           "scopes": [],  // granted scopes
-    //           "data": {
-    //               "UserData::VerifiedEmail": "foo@bar.com",
-    //            }
-    //       }
-    dbg!(&old_data);
-
-    // WARN: this needs a bunch of tests
-    for (k, v) in old_data.as_object_mut().unwrap() {
-        // If we get UserData::VerifiedEmail and we already have
-        // UserData::Email for same email address we will delete the email,
-        // and only keep verified email
-
-        // if new_data contains this provider id
-        if new_data.contains_key(k.as_str()) {
-            // if provider data contains key `data`
-            if v.is_object() && v.as_object().unwrap().contains_key("data") {
-                let d = v.get_mut("data").unwrap();
-                // if data has `emails` (`emails` means unverified emails)
-                if let Some(emails) = d.clone().get("emails") {
-                    if let Some(emails) = emails.as_array() {
-                        let new_emails = emails.iter().filter_map(|email| {
-                            // TODO: defering error handling to later
-                            let email = email.as_str().unwrap();
-
-                            // if the new data for the current provider has
-                            // a list of verified emails that contains this
-                            // `email` then filter it out
-                            if let None = new_data.get(k.as_str()).unwrap().iter().find(|d| match d
-                            {
-                                ft_sdk::auth::UserData::VerifiedEmail(e) => {
-                                    e.contains(&email.to_string())
-                                }
+    for k in new_data.keys() {
+        if let Some(d) = old_data.get(k.as_str()) {
+            let updated_data = d.clone().into_iter().filter(|d| match d {
+                ft_sdk::auth::UserData::Email(email) => {
+                    // check if the email is verified in new_data
+                    !new_data
+                        .get(k.as_str())
+                        .and_then(|d| {
+                            d.iter().find(|nd| match nd {
+                                ft_sdk::auth::UserData::VerifiedEmail(x) => x == email,
                                 _ => false,
-                            }) {
-                                Some(serde_json::Value::String(email.to_string()))
-                            } else {
-                                None
-                            }
-                        });
-
-                        d.as_object_mut().unwrap().insert(
-                            "emails".to_string(),
-                            serde_json::Value::Array(new_emails.collect()),
-                        );
-                    }
+                            })
+                        })
+                        .is_some()
                 }
-            }
+                _ => true,
+            });
+
+            old_data.insert(k.to_string(), updated_data.collect());
         }
     }
 
-    dbg!(&old_data);
+    let result = deep_merge(old_data, new_data);
 
-    let old_data = user_data_from_json(old_data.clone());
+    Ok(result)
+}
 
-    new_data.extend(old_data);
+fn deep_merge(
+    new_data: std::collections::HashMap<String, Vec<crate::auth::UserData>>,
+    old_data: std::collections::HashMap<String, Vec<crate::auth::UserData>>,
+) -> std::collections::HashMap<String, Vec<crate::auth::UserData>> {
+    let mut new_data = new_data;
+    let mut old_data = old_data;
 
-    Ok(new_data)
+    for (k, v) in new_data.iter_mut() {
+        if let Some(old_v) = old_data.get_mut(k) {
+            let mut new_v = v.clone();
+            new_v.append(old_v);
+            *v = new_v;
+        }
+    }
+
+    new_data
 }
 
 fn user_data_to_json(
@@ -238,54 +222,141 @@ fn user_data_to_json(
     let map = data
         .into_iter()
         .map(|(k, v)| {
-            let v: serde_json::Value = v
-                .into_iter()
-                .map(|d| match d {
-                    UserData::VerifiedEmail(emails) => (
-                        "verified_emails".to_string(),
-                        serde_json::Value::Array(
-                            emails.into_iter().map(serde_json::Value::String).collect(),
-                        ),
-                    ),
-                    UserData::Email(emails) => (
-                        "emails".to_string(),
-                        serde_json::Value::Array(
-                            emails.into_iter().map(serde_json::Value::String).collect(),
-                        ),
-                    ),
+            let mut provider_data = serde_json::json!({
+                "data": {
+                    "emails": [],
+                    "verified_emails": [],
+                },
+            });
+
+            for ud in v {
+                match ud {
+                    UserData::VerifiedEmail(email) => provider_data
+                        .as_object_mut()
+                        .expect("value is object")
+                        .get_mut("data")
+                        .expect("data is prepopulated")
+                        .as_object_mut()
+                        .unwrap()
+                        .get_mut("verified_emails")
+                        .expect("verified_emails is prepopulated")
+                        .as_array_mut()
+                        .unwrap()
+                        .push(serde_json::Value::String(email)),
+
+                    UserData::Email(email) => provider_data
+                        .as_object_mut()
+                        .expect("value is object")
+                        .get_mut("data")
+                        .expect("data is prepopulated")
+                        .as_object_mut()
+                        .unwrap()
+                        .get_mut("emails")
+                        .expect("emails is prepopulated")
+                        .as_array_mut()
+                        .unwrap()
+                        .push(serde_json::Value::String(email)),
+
                     UserData::Username(username) => {
-                        ("username".to_string(), serde_json::Value::String(username))
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("username".to_string(), serde_json::Value::String(username));
                     }
                     UserData::Identity(identity) => {
-                        ("identity".to_string(), serde_json::Value::String(identity))
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("identity".to_string(), serde_json::Value::String(identity));
                     }
-                    UserData::Name(name) => ("name".to_string(), serde_json::Value::String(name)),
-                    UserData::FirstName(first_name) => (
-                        "first_name".to_string(),
-                        serde_json::Value::String(first_name),
-                    ),
-                    UserData::LastName(last_name) => (
-                        "last_name".to_string(),
-                        serde_json::Value::String(last_name),
-                    ),
-                    UserData::Age(age) => {
-                        ("age".to_string(), serde_json::Value::Number(age.into()))
+                    UserData::Name(name) => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("name".to_string(), serde_json::Value::String(name));
                     }
-                    UserData::Phone(phones) => (
-                        "phones".to_string(),
-                        serde_json::Value::Array(
-                            phones.into_iter().map(serde_json::Value::String).collect(),
-                        ),
-                    ),
-                    UserData::ProfilePicture(profile_picture) => (
-                        "profile_picture".to_string(),
-                        serde_json::Value::String(profile_picture),
-                    ),
-                    UserData::Custom { key, value } => (key, serde_json::Value::String(value)),
-                })
-                .collect();
 
-            (k.to_string(), v)
+                    UserData::FirstName(f_name) => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("first_name".to_string(), serde_json::Value::String(f_name));
+                    }
+
+                    UserData::LastName(l_name) => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("last_name".to_string(), serde_json::Value::String(l_name));
+                    }
+
+                    UserData::Age(age) => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("age".to_string(), serde_json::Value::Number(age.into()));
+                    }
+                    UserData::Phone(phone) => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert("phone".to_string(), serde_json::Value::String(phone));
+                    }
+                    UserData::ProfilePicture(profile_picture) => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert(
+                                "profile_picture".to_string(),
+                                serde_json::Value::String(profile_picture),
+                            );
+                    }
+                    UserData::Custom { key, value } => {
+                        provider_data
+                            .as_object_mut()
+                            .expect("value is object")
+                            .get_mut("data")
+                            .expect("data is prepopulated")
+                            .as_object_mut()
+                            .unwrap()
+                            .insert(key, value);
+                    }
+                };
+            }
+
+            (k.to_string(), provider_data)
         })
         .collect();
 
@@ -304,48 +375,82 @@ fn user_data_from_json(
             assert!(p_data.is_object());
             let v = p_data.as_object().unwrap();
 
-            let v = v
-                .into_iter()
-                .map(|(k, v)| match k.as_str() {
-                    "verified_emails" => {
-                        let v = v.as_array().unwrap();
-                        ft_sdk::auth::UserData::VerifiedEmail(
-                            v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
-                        )
-                    }
-                    "emails" => {
-                        let v = v.as_array().unwrap();
-                        ft_sdk::auth::UserData::Email(
-                            v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
-                        )
-                    }
-                    "username" => ft_sdk::auth::UserData::Username(v.as_str().unwrap().to_string()),
-                    "identity" => ft_sdk::auth::UserData::Identity(v.as_str().unwrap().to_string()),
-                    "name" => ft_sdk::auth::UserData::Name(v.as_str().unwrap().to_string()),
-                    "first_name" => {
-                        ft_sdk::auth::UserData::FirstName(v.as_str().unwrap().to_string())
-                    }
-                    "last_name" => {
-                        ft_sdk::auth::UserData::LastName(v.as_str().unwrap().to_string())
-                    }
-                    "age" => ft_sdk::auth::UserData::Age(v.as_u64().unwrap() as u8),
-                    "phones" => {
-                        let v = v.as_array().unwrap();
-                        ft_sdk::auth::UserData::Phone(
-                            v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
-                        )
-                    }
-                    "profile_picture" => {
-                        ft_sdk::auth::UserData::ProfilePicture(v.as_str().unwrap().to_string())
-                    }
-                    _ => ft_sdk::auth::UserData::Custom {
-                        key: k.to_string(),
-                        value: v.as_str().unwrap().to_string(),
-                    },
-                })
-                .collect();
+            let data = if v.contains_key("data") {
+                assert!(v.get("data").unwrap().is_object());
 
-            (provider_id.to_string(), v)
+                let v = v.get("data").unwrap().as_object().unwrap();
+
+                let user_data = v
+                    .into_iter()
+                    .flat_map(|(k, v)| match k.as_str() {
+                        "verified_emails" => {
+                            let v = v.as_array().unwrap();
+
+                            v.iter()
+                                .map(|v| {
+                                    ft_sdk::auth::UserData::VerifiedEmail(
+                                        v.as_str().unwrap().to_string(),
+                                    )
+                                })
+                                .collect::<Vec<_>>()
+                        }
+                        "emails" => {
+                            let v = v.as_array().unwrap();
+
+                            v.iter()
+                                .map(|v| {
+                                    ft_sdk::auth::UserData::Email(v.as_str().unwrap().to_string())
+                                })
+                                .collect()
+                        }
+                        "username" => {
+                            vec![ft_sdk::auth::UserData::Username(
+                                v.as_str().unwrap().to_string(),
+                            )]
+                        }
+                        "identity" => {
+                            vec![ft_sdk::auth::UserData::Identity(
+                                v.as_str().unwrap().to_string(),
+                            )]
+                        }
+                        "name" => vec![ft_sdk::auth::UserData::Name(
+                            v.as_str().unwrap().to_string(),
+                        )],
+                        "first_name" => {
+                            vec![ft_sdk::auth::UserData::FirstName(
+                                v.as_str().unwrap().to_string(),
+                            )]
+                        }
+                        "last_name" => {
+                            vec![ft_sdk::auth::UserData::LastName(
+                                v.as_str().unwrap().to_string(),
+                            )]
+                        }
+                        "age" => vec![ft_sdk::auth::UserData::Age(v.as_u64().unwrap() as u8)],
+                        "phones" => {
+                            let v = v.as_array().unwrap();
+                            vec![ft_sdk::auth::UserData::Phone(
+                                v.iter().map(|v| v.as_str().unwrap().to_string()).collect(),
+                            )]
+                        }
+                        "profile_picture" => {
+                            vec![ft_sdk::auth::UserData::ProfilePicture(
+                                v.as_str().unwrap().to_string(),
+                            )]
+                        }
+                        _ => vec![ft_sdk::auth::UserData::Custom {
+                            key: k.to_string(),
+                            value: v.clone(),
+                        }],
+                    })
+                    .collect();
+
+                user_data
+            } else {
+                vec![]
+            };
+
+            (provider_id.to_string(), data)
         })
         .collect()
 }
@@ -363,9 +468,9 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 //    name = models.TextField(max_length=100)
 //    # {
 //       "<provider-id>": {
-//           "scopes": [],  // granted scopes
 //           "data": {
 //               "UserData::VerifiedEmail": "foo@bar.com",
+//           "scopes": [],  // granted scopes
 //            }
 //       }
 //    }
@@ -375,14 +480,7 @@ fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
 // class Session(models.Model):
 //     key # session key
 //     data = models.JSONField()  # all UserData is stored here
-//     # {
-//         "<provider-name">: {
-//              "<provider-id>": {
-//                  "scopes": [],  // scopes granted in this session
-//                  "token": "token",
-//              }
-//         }
-//    }
+//     # see User.data field for the json structure
 //
 
 #[derive(Debug, thiserror::Error)]
