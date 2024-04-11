@@ -5,13 +5,13 @@
 extern crate self as ft_sys;
 
 mod crypto;
-mod diesel;
+mod diesel_pg;
 pub mod env;
 pub mod http;
 pub mod memory;
 
 pub use crypto::{decrypt, encrypt};
-pub use diesel::PgConnection;
+pub use diesel_pg::PgConnection;
 pub use ft_sys_shared::{DecryptionError, UserData};
 
 pub use env::now;
