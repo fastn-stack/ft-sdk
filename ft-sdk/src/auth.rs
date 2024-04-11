@@ -32,8 +32,10 @@ pub struct ProviderUserData {
     provider: String,
 }
 
-/// get the currently logged in user's userid
-pub fn user_id() -> Option<UserId> {
+/// Get the currently logged in user's userid.
+/// If no user is logged in, an empty user will be created and its id will
+/// be returned.
+pub fn user_id() -> UserId {
     todo!()
 }
 

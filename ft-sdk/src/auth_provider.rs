@@ -40,16 +40,16 @@ pub struct Scope(pub String);
 ///
 /// If the user is logged in, and the provider id is stored with another user, this
 /// function will return an error.
-fn login() {
+pub fn login() {
     // copy data of user into session
+    todo!();
 }
 
 /// Auth provider can provide in any of these information about currently logged-in user.
 ///
 /// see [modify_user] for more details.
-fn modify_current_user(
+pub fn modify_current_user(
     conn: &mut ft_sdk::PgConnection,
-    provider_name: &str,
     provider_id: &str,
     // GitHub may use username as Identity, as user can understand their username, but have never
     // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
@@ -59,23 +59,12 @@ fn modify_current_user(
     // For the same provider_id, if identity changes, we will only keep the latest identity.
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
-    scopes: Vec<String>,
-    token: Option<serde_json::Value>,
+    // TODO:
+    // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::UserId, ModifyUserError> {
-    ft_sdk::auth::user_id()
-        .ok_or(ModifyUserError::UserNotLoggedIn)
-        .and_then(|id| {
-            modify_user(
-                id,
-                conn,
-                provider_name,
-                provider_id,
-                identity,
-                data,
-                scopes,
-                token,
-            )
-        })
+    let id = ft_sdk::auth::user_id();
+
+    modify_user(id, conn, provider_id, identity, data)
 }
 
 /// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
@@ -99,38 +88,48 @@ fn modify_current_user(
 /// token. The token is stored against session, and is deleted when the user logs out.
 ///
 /// This function returns the user id.
-fn modify_user(
-    _id: ft_sdk::UserId,
-    _conn: &mut ft_sdk::PgConnection,
-    _provider_name: &str,
-    _provider_id: &str,
+pub fn modify_user(
+    id: ft_sdk::UserId,
+    conn: &mut ft_sdk::PgConnection,
+    provider_id: &str,
     // GitHub may use username as Identity, as user can understand their username, but have never
     // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
     // show some identity against each, and we will use this identity. Identity is mandatory. It
     // will be stored as UserData::Identity.
     //
     // For the same provider_id, if identity changes, we will only keep the latest identity.
-    _identity: &str,
+    identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
-    _scopes: Vec<String>,
-    _token: Option<serde_json::Value>,
+    // TODO:
+    // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::UserId, ModifyUserError> {
     use diesel::prelude::*;
 
-    let affected = _conn.transaction(|c| {
+    let mut data = data;
+    data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
+
+    // find name
+    let name = data.iter().find_map(|d| match d {
+        ft_sdk::auth::UserData::Name(name) => Some(name.clone()),
+        _ => None,
+    });
+
+    if name.is_none() {
+        return Err(ModifyUserError::NameNotProvided);
+    }
+
+    let affected = conn.transaction(|c| {
         let mut old_data = db::user::table
-            .filter(db::user::id.eq(_id.0))
+            .filter(db::user::id.eq(&id.0))
             .select(db::user::data)
             .first::<serde_json::Value>(c)?;
 
-        let new_data = get_new_user_data(_provider_id, data, &mut old_data)
+        let new_data = get_new_user_data(provider_id, data, &mut old_data)
             .map(user_data_to_json)
             .unwrap(); // TODO: handle errors
 
-        dbg!(&new_data);
-
         let query = diesel::insert_into(db::user::table)
-            .values(db::user::name.eq("shaun"))
+            .values(db::user::name.eq(name.unwrap()))
             .on_conflict(db::user::id)
             .do_update()
             .set(db::user::data.eq(new_data));
@@ -140,12 +139,12 @@ fn modify_user(
         query.execute(c)
     })?;
 
-    dbg!(affected);
+    ft_sdk::println!("modified {} user(s)", affected);
 
-    todo!()
+    Ok(id)
 }
 
-///
+/// update existing user's data (`old_data`) with the provided `data`
 fn get_new_user_data<'a>(
     provider_id: &str,
     data: Vec<ft_sdk::auth::UserData>,
@@ -214,7 +213,7 @@ fn merge_user_data(
     new_data
 }
 
-fn user_data_to_json(
+pub fn user_data_to_json(
     data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
 ) -> serde_json::Value {
     use ft_sdk::auth::UserData;
@@ -363,7 +362,7 @@ fn user_data_to_json(
     serde_json::Value::Object(map)
 }
 
-fn user_data_from_json(
+pub fn user_data_from_json(
     data: serde_json::Value,
 ) -> std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>> {
     assert!(data.is_object());
@@ -458,37 +457,18 @@ fn user_data_from_json(
 /// we will remove this provider-id from the current account, and create a new account with just
 /// that provider id. All information provided by this provider id will be removed from old account
 /// and added to this account. All sessions logged in via this provider id will be logged out.
-fn split_account(_provider_name: &str, _provider_id: &str) -> ft_sdk::UserId {
+fn split_account(_provider_id: &str) -> ft_sdk::UserId {
     todo!()
 }
 
-// class User(models.Model):
-//    id = models.BigAutoField(primary_key=True)
-//    username = models.TextField(max_length=100, null=True) ;; can be empty?
-//    name = models.TextField(max_length=100)
-//    # {
-//       "<provider-id>": {
-//           "data": {
-//               "UserData::VerifiedEmail": "foo@bar.com",
-//           "scopes": [],  // granted scopes
-//            }
-//       }
-//    }
-//    data = models.JSONField()  # all UserData is stored here
-//
-// # can be used for any per-request data
-// class Session(models.Model):
-//     key # session key
-//     data = models.JSONField()  # all UserData is stored here
-//     # see User.data field for the json structure
-//
-
 #[derive(Debug, thiserror::Error)]
-enum ModifyUserError {
+pub enum ModifyUserError {
     #[error("diesel error: {0}")]
     Disel(#[from] diesel::result::Error),
     #[error("user not logged in")]
     UserNotLoggedIn,
+    #[error("ft_sdk::auth::UserData::Name is required")]
+    NameNotProvided,
 }
 
 mod db {
