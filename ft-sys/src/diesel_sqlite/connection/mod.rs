@@ -1,3 +1,9 @@
+mod bind_collector;
+// mod sqlite_value;
+
+pub use bind_collector::SqliteBindCollector;
+// pub use sqlite_value::SqliteValue;
+
 extern "C" {
     fn sqlite_connect(ptr: i32, len: i32) -> i32;
 }
@@ -38,13 +44,12 @@ impl diesel::connection::LoadConnection for SqliteConnection {
             + 'query,
         Self::Backend: diesel::expression::QueryMetadata<T::SqlType>,
     {
-        ft_sys::println!("load");
         todo!()
     }
 }
 
 impl diesel::connection::Connection for SqliteConnection {
-    type Backend = diesel::pg::Pg;
+    type Backend = ft_sys::diesel_sqlite::backend::Sqlite;
     type TransactionManager = diesel::connection::AnsiTransactionManager;
 
     fn establish(url: &str) -> diesel::ConnectionResult<Self> {
