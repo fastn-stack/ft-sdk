@@ -1,6 +1,9 @@
 mod backend;
-pub mod connection;
+mod bind_collector;
+mod connection;
 mod query_builder;
-mod value;
+mod sqlite_value;
 
+pub use backend::Sqlite;
 pub use connection::SqliteConnection;
+pub use sqlite_value::SqliteValue;

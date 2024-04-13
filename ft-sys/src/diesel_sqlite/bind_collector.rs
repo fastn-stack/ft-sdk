@@ -1,4 +1,3 @@
-use crate::diesel_sqlite;
 use diesel::query_builder::BindCollector;
 use diesel::serialize::{IsNull, Output};
 use diesel::sql_types::HasSqlType;
