@@ -4,7 +4,7 @@ use super::backend::Sqlite;
 use diesel::query_builder::QueryBuilder;
 use diesel::result::QueryResult;
 
-// mod limit_offset;
+mod limit_offset;
 // mod query_fragment_impls;
 // mod returning;
 
