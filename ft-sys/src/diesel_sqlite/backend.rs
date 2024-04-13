@@ -1,8 +1,8 @@
 //! The SQLite backend
 
-use super::connection::SqliteBindCollector;
+use super::bind_collector::SqliteBindCollector;
 use super::query_builder::SqliteQueryBuilder;
-use diesel::backend::*;
+// use diesel::backend::*;
 use diesel::sql_types::TypeMetadata;
 
 /// The SQLite backend
@@ -36,9 +36,9 @@ pub enum SqliteType {
     Long,
 }
 
-impl Backend for Sqlite {
+impl diesel::backend::Backend for Sqlite {
     type QueryBuilder = SqliteQueryBuilder;
-    type RawValue<'a> = SqliteValue<'a>;
+    type RawValue<'a> = super::sqlite_value::SqliteValue<'a, 'a, 'a>;
     type BindCollector<'a> = SqliteBindCollector<'a>;
 }
 
@@ -47,35 +47,111 @@ impl TypeMetadata for Sqlite {
     type MetadataLookup = ();
 }
 
-impl SqlDialect for Sqlite {
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Float> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Float
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Double> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Double
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Integer> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Integer
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::BigInt> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Long
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::SmallInt> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Integer
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Binary> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Binary
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Bool> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Integer
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Text> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Text
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Date> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Float
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Time> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Float
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Float
+    }
+}
+
+impl diesel::backend::SqlDialect for Sqlite {
     #[cfg(not(feature = "returning_clauses_for_sqlite_3_35"))]
-    type ReturningClause = sql_dialect::returning_clause::DoesNotSupportReturningClause;
+    type ReturningClause =
+        diesel::backend::sql_dialect::returning_clause::DoesNotSupportReturningClause;
     #[cfg(feature = "returning_clauses_for_sqlite_3_35")]
     type ReturningClause = SqliteReturningClause;
 
     type OnConflictClause = SqliteOnConflictClause;
 
     type InsertWithDefaultKeyword =
-        sql_dialect::default_keyword_for_insert::DoesNotSupportDefaultKeyword;
+        diesel::backend::sql_dialect::default_keyword_for_insert::DoesNotSupportDefaultKeyword;
     type BatchInsertSupport = SqliteBatchInsert;
-    type ConcatClause = sql_dialect::concat_clause::ConcatWithPipesClause;
-    type DefaultValueClauseForInsert = sql_dialect::default_value_clause::AnsiDefaultValueClause;
+    type ConcatClause = diesel::backend::sql_dialect::concat_clause::ConcatWithPipesClause;
+    type DefaultValueClauseForInsert =
+        diesel::backend::sql_dialect::default_value_clause::AnsiDefaultValueClause;
 
-    type EmptyFromClauseSyntax = sql_dialect::from_clause_syntax::AnsiSqlFromClauseSyntax;
-    type SelectStatementSyntax = sql_dialect::select_statement_syntax::AnsiSqlSelectStatement;
+    type EmptyFromClauseSyntax =
+        diesel::backend::sql_dialect::from_clause_syntax::AnsiSqlFromClauseSyntax;
+    type SelectStatementSyntax =
+        diesel::backend::sql_dialect::select_statement_syntax::AnsiSqlSelectStatement;
 
-    type ExistsSyntax = sql_dialect::exists_syntax::AnsiSqlExistsSyntax;
-    type ArrayComparison = sql_dialect::array_comparison::AnsiSqlArrayComparison;
+    type ExistsSyntax = diesel::backend::sql_dialect::exists_syntax::AnsiSqlExistsSyntax;
+    type ArrayComparison = diesel::backend::sql_dialect::array_comparison::AnsiSqlArrayComparison;
 }
 
-impl DieselReserveSpecialization for Sqlite {}
-impl TrustedBackend for Sqlite {}
+impl diesel::backend::DieselReserveSpecialization for Sqlite {}
+impl diesel::backend::TrustedBackend for Sqlite {}
 
 #[derive(Debug, Copy, Clone)]
 pub struct SqliteOnConflictClause;
 
-impl sql_dialect::on_conflict_clause::SupportsOnConflictClause for SqliteOnConflictClause {}
-impl sql_dialect::on_conflict_clause::PgLikeOnConflictClause for SqliteOnConflictClause {}
+impl diesel::backend::sql_dialect::on_conflict_clause::SupportsOnConflictClause
+    for SqliteOnConflictClause
+{
+}
+impl diesel::backend::sql_dialect::on_conflict_clause::PgLikeOnConflictClause
+    for SqliteOnConflictClause
+{
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct SqliteBatchInsert;
@@ -83,4 +159,7 @@ pub struct SqliteBatchInsert;
 #[derive(Debug, Copy, Clone)]
 pub struct SqliteReturningClause;
 
-impl sql_dialect::returning_clause::SupportsReturningClause for SqliteReturningClause {}
+impl diesel::backend::sql_dialect::returning_clause::SupportsReturningClause
+    for SqliteReturningClause
+{
+}
