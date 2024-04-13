@@ -1,4 +1,3 @@
-use crate::diesel_sqlite::bind_collector::InternalSqliteBindValue;
 use crate::diesel_sqlite::SqliteType;
 
 pub struct SqliteConnection {
@@ -30,10 +29,25 @@ impl diesel::connection::LoadConnection for SqliteConnection {
             + 'query,
         Self::Backend: diesel::expression::QueryMetadata<T::SqlType>,
     {
+        extern "C" {
+            fn sqlite_query(conn: i32, ptr: i32, len: i32) -> i32;
+        }
+
         ft_sys::println!("load");
         let q = source_to_query(source)?;
-        ft_sys::println!("load: {q:?}");
-        todo!()
+        let (ptr, len) = ft_sys::memory::json_ptr(q);
+        let ptr = unsafe { sqlite_query(self.conn, ptr, len) };
+        let cursor: Result<ft_sys::diesel_sqlite::Cursor, ft_sys_shared::DbError> =
+            ft_sys::memory::json_from_ptr(ptr);
+
+        match cursor {
+            Ok(cursor) => Ok(cursor),
+            Err(e) => {
+                let e = ft_sys::diesel_pg::db_error_to_diesel_error(e);
+                // update_transaction_manager_status(&e, &mut self.transaction_manager);
+                Err(e)
+            }
+        }
     }
 }
 
@@ -71,7 +85,7 @@ impl diesel::connection::Connection for SqliteConnection {
 #[derive(serde::Serialize, Debug)]
 struct Query {
     sql: String,
-    binds: Vec<(InternalSqliteBindValue, SqliteType)>,
+    binds: Vec<(super::Value, SqliteType)>,
 }
 
 fn source_to_query<T>(source: T) -> diesel::QueryResult<Query>

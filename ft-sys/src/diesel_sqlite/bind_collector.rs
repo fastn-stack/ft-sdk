@@ -1,3 +1,4 @@
+use diesel::connection::TransactionManagerStatus::Valid;
 use diesel::query_builder::BindCollector;
 use diesel::serialize::{IsNull, Output};
 use diesel::sql_types::HasSqlType;
@@ -6,7 +7,7 @@ use ft_sys::diesel_sqlite::backend::{Sqlite, SqliteType};
 
 #[derive(Debug, Default, serde::Serialize)]
 pub struct SqliteBindCollector<'a> {
-    pub binds: Vec<(InternalSqliteBindValue, SqliteType)>,
+    pub binds: Vec<(super::Value, SqliteType)>,
     pub _m: std::marker::PhantomData<&'a ()>,
 }
 
@@ -19,129 +20,69 @@ impl SqliteBindCollector<'_> {
     }
 }
 
-/// This type represents a value bound to
-/// a sqlite prepared statement
-///
-/// It can be constructed via the various `From<T>` implementations
-#[derive(Debug)]
-pub struct SqliteBindValue<'a> {
-    pub inner: InternalSqliteBindValue,
-    pub _m: std::marker::PhantomData<&'a ()>,
-}
-
-impl<'a> From<i32> for SqliteBindValue<'a> {
+impl<'a> From<i32> for super::Value {
     fn from(i: i32) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::I32(i),
-            _m: std::marker::PhantomData::default(),
-        }
+        super::Value::Integer(i as i64)
     }
 }
 
-impl<'a> From<i64> for SqliteBindValue<'a> {
+impl<'a> From<i64> for super::Value {
     fn from(i: i64) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::I64(i),
-            _m: std::marker::PhantomData::default(),
-        }
+        super::Value::Integer(i)
     }
 }
 
-impl<'a> From<f64> for SqliteBindValue<'a> {
+impl<'a> From<f64> for super::Value {
     fn from(f: f64) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::F64(f),
-            _m: std::marker::PhantomData::default(),
-        }
+        super::Value::Real(f)
     }
 }
 
-impl<'a, T> From<Option<T>> for SqliteBindValue<'a>
+impl<'a, T> From<Option<T>> for super::Value
 where
-    T: Into<SqliteBindValue<'a>>,
+    T: Into<super::Value>,
 {
     fn from(o: Option<T>) -> Self {
         match o {
             Some(v) => v.into(),
-            None => Self {
-                inner: InternalSqliteBindValue::Null,
-                _m: std::marker::PhantomData::default(),
-            },
+            None => super::Value::Null,
         }
     }
 }
 
-impl<'a> From<&'a str> for SqliteBindValue<'a> {
+impl<'a> From<&'a str> for super::Value {
     fn from(s: &'a str) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::String(s.to_string().into_boxed_str()),
-            _m: std::marker::PhantomData::default(),
-        }
+        super::Value::Text(s.to_string())
     }
 }
 
-impl<'a> From<String> for SqliteBindValue<'a> {
+impl<'a> From<String> for super::Value {
     fn from(s: String) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::String(s.into_boxed_str()),
-            _m: std::marker::PhantomData::default(),
-        }
+        super::Value::Text(s)
     }
 }
 
-impl<'a> From<Vec<u8>> for SqliteBindValue<'a> {
+impl<'a> From<Vec<u8>> for super::Value {
     fn from(b: Vec<u8>) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::Binary(b.into_boxed_slice()),
-            _m: std::marker::PhantomData::default(),
-        }
+        super::Value::Blob(b)
     }
 }
 
-impl<'a> From<&'a [u8]> for SqliteBindValue<'a> {
+impl<'a> From<&'a [u8]> for super::Value {
     fn from(b: &'a [u8]) -> Self {
-        Self {
-            inner: InternalSqliteBindValue::Binary(b.to_vec().into_boxed_slice()),
-            _m: std::marker::PhantomData::default(),
-        }
-    }
-}
-
-#[derive(Debug, serde::Serialize)]
-pub(crate) enum InternalSqliteBindValue {
-    String(Box<str>),
-    Binary(Box<[u8]>),
-    I32(i32),
-    I64(i64),
-    F64(f64),
-    Null,
-}
-
-impl std::fmt::Display for InternalSqliteBindValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let n = match self {
-            InternalSqliteBindValue::String(_) => "Text",
-            InternalSqliteBindValue::Binary(_) => "Binary",
-            InternalSqliteBindValue::I32(_) | InternalSqliteBindValue::I64(_) => "Integer",
-            InternalSqliteBindValue::F64(_) => "Float",
-            InternalSqliteBindValue::Null => "Null",
-        };
-        f.write_str(n)
+        super::Value::Blob(b.to_vec())
     }
 }
 
 impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
-    type Buffer = SqliteBindValue<'a>;
+    type Buffer = super::Value;
 
     fn push_bound_value<T, U>(&mut self, bind: &'a U, metadata_lookup: &mut ()) -> QueryResult<()>
     where
         Sqlite: diesel::sql_types::HasSqlType<T>,
         U: diesel::serialize::ToSql<T, Sqlite> + ?Sized,
     {
-        let value = SqliteBindValue {
-            inner: InternalSqliteBindValue::Null,
-            _m: std::marker::PhantomData::default(),
-        };
+        let value = super::Value::Null;
         let mut to_sql_output = Output::new(value, metadata_lookup);
         let is_null = bind
             .to_sql(&mut to_sql_output)
@@ -150,8 +91,8 @@ impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
         let metadata = Sqlite::metadata(metadata_lookup);
         self.binds.push((
             match is_null {
-                IsNull::No => bind.inner,
-                IsNull::Yes => InternalSqliteBindValue::Null,
+                IsNull::No => bind,
+                IsNull::Yes => super::Value::Null,
             },
             metadata,
         ));
