@@ -38,7 +38,7 @@ pub enum SqliteType {
 
 impl diesel::backend::Backend for Sqlite {
     type QueryBuilder = SqliteQueryBuilder;
-    type RawValue<'a> = super::sqlite_value::SqliteValue<'a, 'a, 'a>;
+    type RawValue<'a> = super::sqlite_value::SqliteValue<'a>;
     type BindCollector<'a> = SqliteBindCollector<'a>;
 }
 
