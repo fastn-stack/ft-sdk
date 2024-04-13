@@ -39,7 +39,7 @@ impl<'a> SqliteValue<'a> {
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub enum Value {
     Null,
     Integer(i64),

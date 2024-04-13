@@ -7,4 +7,4 @@ mod types;
 
 pub use backend::{Sqlite, SqliteType};
 pub use connection::SqliteConnection;
-pub use sqlite_value::SqliteValue;
+pub use sqlite_value::{Cursor, SqliteValue, Value};
