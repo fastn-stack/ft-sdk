@@ -3,7 +3,7 @@ use diesel::query_builder::{BoxedLimitOffsetClause, LimitOffsetClause};
 use diesel::query_builder::{LimitClause, NoLimitClause};
 use diesel::query_builder::{NoOffsetClause, OffsetClause};
 use diesel::result::QueryResult;
-use ft_sys::diesel_sqlite::backend::Sqlite;
+use ft_sys::diesel_sqlite::Sqlite;
 
 impl QueryFragment<Sqlite> for LimitOffsetClause<NoLimitClause, NoOffsetClause> {
     fn walk_ast<'b>(&'b self, _out: AstPass<'_, 'b, Sqlite>) -> QueryResult<()> {
