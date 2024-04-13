@@ -4,14 +4,18 @@ use diesel::sql_types::HasSqlType;
 use diesel::QueryResult;
 use ft_sys::diesel_sqlite::backend::{Sqlite, SqliteType};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, serde::Serialize)]
 pub struct SqliteBindCollector<'a> {
-    pub binds: Vec<(InternalSqliteBindValue<'a>, SqliteType)>,
+    pub binds: Vec<(InternalSqliteBindValue, SqliteType)>,
+    pub _m: std::marker::PhantomData<&'a ()>,
 }
 
 impl SqliteBindCollector<'_> {
     pub fn new() -> Self {
-        Self { binds: Vec::new() }
+        Self {
+            binds: Vec::new(),
+            _m: std::marker::PhantomData::default(),
+        }
     }
 }
 
@@ -21,13 +25,15 @@ impl SqliteBindCollector<'_> {
 /// It can be constructed via the various `From<T>` implementations
 #[derive(Debug)]
 pub struct SqliteBindValue<'a> {
-    pub inner: InternalSqliteBindValue<'a>,
+    pub inner: InternalSqliteBindValue,
+    pub _m: std::marker::PhantomData<&'a ()>,
 }
 
 impl<'a> From<i32> for SqliteBindValue<'a> {
     fn from(i: i32) -> Self {
         Self {
             inner: InternalSqliteBindValue::I32(i),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
@@ -36,6 +42,7 @@ impl<'a> From<i64> for SqliteBindValue<'a> {
     fn from(i: i64) -> Self {
         Self {
             inner: InternalSqliteBindValue::I64(i),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
@@ -44,6 +51,7 @@ impl<'a> From<f64> for SqliteBindValue<'a> {
     fn from(f: f64) -> Self {
         Self {
             inner: InternalSqliteBindValue::F64(f),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
@@ -57,6 +65,7 @@ where
             Some(v) => v.into(),
             None => Self {
                 inner: InternalSqliteBindValue::Null,
+                _m: std::marker::PhantomData::default(),
             },
         }
     }
@@ -65,7 +74,8 @@ where
 impl<'a> From<&'a str> for SqliteBindValue<'a> {
     fn from(s: &'a str) -> Self {
         Self {
-            inner: InternalSqliteBindValue::BorrowedString(s),
+            inner: InternalSqliteBindValue::String(s.to_string().into_boxed_str()),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
@@ -74,6 +84,7 @@ impl<'a> From<String> for SqliteBindValue<'a> {
     fn from(s: String) -> Self {
         Self {
             inner: InternalSqliteBindValue::String(s.into_boxed_str()),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
@@ -82,6 +93,7 @@ impl<'a> From<Vec<u8>> for SqliteBindValue<'a> {
     fn from(b: Vec<u8>) -> Self {
         Self {
             inner: InternalSqliteBindValue::Binary(b.into_boxed_slice()),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
@@ -89,16 +101,15 @@ impl<'a> From<Vec<u8>> for SqliteBindValue<'a> {
 impl<'a> From<&'a [u8]> for SqliteBindValue<'a> {
     fn from(b: &'a [u8]) -> Self {
         Self {
-            inner: InternalSqliteBindValue::BorrowedBinary(b),
+            inner: InternalSqliteBindValue::Binary(b.to_vec().into_boxed_slice()),
+            _m: std::marker::PhantomData::default(),
         }
     }
 }
 
-#[derive(Debug)]
-pub(crate) enum InternalSqliteBindValue<'a> {
-    BorrowedString(&'a str),
+#[derive(Debug, serde::Serialize)]
+pub(crate) enum InternalSqliteBindValue {
     String(Box<str>),
-    BorrowedBinary(&'a [u8]),
     Binary(Box<[u8]>),
     I32(i32),
     I64(i64),
@@ -106,15 +117,11 @@ pub(crate) enum InternalSqliteBindValue<'a> {
     Null,
 }
 
-impl std::fmt::Display for InternalSqliteBindValue<'_> {
+impl std::fmt::Display for InternalSqliteBindValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let n = match self {
-            InternalSqliteBindValue::BorrowedString(_) | InternalSqliteBindValue::String(_) => {
-                "Text"
-            }
-            InternalSqliteBindValue::BorrowedBinary(_) | InternalSqliteBindValue::Binary(_) => {
-                "Binary"
-            }
+            InternalSqliteBindValue::String(_) => "Text",
+            InternalSqliteBindValue::Binary(_) => "Binary",
             InternalSqliteBindValue::I32(_) | InternalSqliteBindValue::I64(_) => "Integer",
             InternalSqliteBindValue::F64(_) => "Float",
             InternalSqliteBindValue::Null => "Null",
@@ -122,51 +129,6 @@ impl std::fmt::Display for InternalSqliteBindValue<'_> {
         f.write_str(n)
     }
 }
-
-// impl InternalSqliteBindValue<'_> {
-//     #[allow(unsafe_code)] // ffi function calls
-//     pub fn result_of(self, ctx: &mut libsqlite3_sys::sqlite3_context) {
-//         use libsqlite3_sys as ffi;
-//         use std::os::raw as libc;
-//         // This unsafe block assumes the following invariants:
-//         //
-//         // - `ctx` points to valid memory
-//         unsafe {
-//             match self {
-//                 InternalSqliteBindValue::BorrowedString(s) => ffi::sqlite3_result_text(
-//                     ctx,
-//                     s.as_ptr() as *const libc::c_char,
-//                     s.len() as libc::c_int,
-//                     ffi::SQLITE_TRANSIENT(),
-//                 ),
-//                 InternalSqliteBindValue::String(s) => ffi::sqlite3_result_text(
-//                     ctx,
-//                     s.as_ptr() as *const libc::c_char,
-//                     s.len() as libc::c_int,
-//                     ffi::SQLITE_TRANSIENT(),
-//                 ),
-//                 InternalSqliteBindValue::Binary(b) => ffi::sqlite3_result_blob(
-//                     ctx,
-//                     b.as_ptr() as *const libc::c_void,
-//                     b.len() as libc::c_int,
-//                     ffi::SQLITE_TRANSIENT(),
-//                 ),
-//                 InternalSqliteBindValue::BorrowedBinary(b) => ffi::sqlite3_result_blob(
-//                     ctx,
-//                     b.as_ptr() as *const libc::c_void,
-//                     b.len() as libc::c_int,
-//                     ffi::SQLITE_TRANSIENT(),
-//                 ),
-//                 InternalSqliteBindValue::I32(i) => ffi::sqlite3_result_int(ctx, i as libc::c_int),
-//                 InternalSqliteBindValue::I64(l) => ffi::sqlite3_result_int64(ctx, l),
-//                 InternalSqliteBindValue::F64(d) => {
-//                     ffi::sqlite3_result_double(ctx, d as libc::c_double)
-//                 }
-//                 InternalSqliteBindValue::Null => ffi::sqlite3_result_null(ctx),
-//             }
-//         }
-//     }
-// }
 
 impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
     type Buffer = SqliteBindValue<'a>;
@@ -178,6 +140,7 @@ impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
     {
         let value = SqliteBindValue {
             inner: InternalSqliteBindValue::Null,
+            _m: std::marker::PhantomData::default(),
         };
         let mut to_sql_output = Output::new(value, metadata_lookup);
         let is_null = bind

@@ -18,7 +18,7 @@ pub struct Sqlite;
 /// The variants of this struct determine what bytes are expected from
 /// `ToSql` impls.
 #[allow(missing_debug_implementations)]
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy, serde::Deserialize)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy, serde::Deserialize, serde::Serialize)]
 pub enum SqliteType {
     /// Bind using `sqlite3_bind_blob`
     Binary,
