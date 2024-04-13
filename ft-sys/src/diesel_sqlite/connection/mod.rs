@@ -1,6 +1,5 @@
-extern "C" {
-    fn sqlite_connect(ptr: i32, len: i32) -> i32;
-}
+use crate::diesel_sqlite::bind_collector::InternalSqliteBindValue;
+use crate::diesel_sqlite::SqliteType;
 
 pub struct SqliteConnection {
     conn: i32,
@@ -48,6 +47,10 @@ impl diesel::connection::Connection for SqliteConnection {
     type TransactionManager = diesel::connection::AnsiTransactionManager;
 
     fn establish(url: &str) -> diesel::ConnectionResult<Self> {
+        extern "C" {
+            fn sqlite_connect(ptr: i32, len: i32) -> i32;
+        }
+
         let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(url.to_string());
         Ok(SqliteConnection {
             conn: unsafe { sqlite_connect(ptr, len) },
@@ -68,4 +71,33 @@ impl diesel::connection::Connection for SqliteConnection {
     ) -> &mut <Self::TransactionManager as diesel::connection::TransactionManager<Self>>::TransactionStateData{
         &mut self.transaction_manager
     }
+}
+
+#[derive(serde::Serialize)]
+struct Query {
+    sql: String,
+    binds: Vec<(InternalSqliteBindValue, SqliteType)>,
+}
+
+fn source_to_query<'a, T>(
+    source: T,
+    metadata_lookup: &mut <super::Sqlite as diesel::sql_types::TypeMetadata>::MetadataLookup,
+) -> diesel::QueryResult<Query>
+where
+    T: diesel::query_builder::QueryFragment<super::Sqlite> + diesel::query_builder::QueryId + 'a,
+{
+    use diesel::query_builder::QueryBuilder;
+
+    let mut qb = super::query_builder::SqliteQueryBuilder::new();
+    source.to_sql(&mut qb, &super::Sqlite)?;
+    let sql = qb.finish();
+
+    let mut rbc = super::bind_collector::SqliteBindCollector::new();
+    source.collect_binds(&mut rbc, metadata_lookup, &super::Sqlite)?;
+
+    // self.metadata_cache.
+    Ok(Query {
+        sql,
+        binds: rbc.binds,
+    })
 }
