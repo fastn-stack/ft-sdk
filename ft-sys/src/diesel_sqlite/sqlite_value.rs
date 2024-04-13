@@ -1,6 +1,5 @@
 pub struct SqliteValue<'a> {
-    pub data: Vec<u8>,
-    _p: std::marker::PhantomData<&'a ()>,
+    raw_value: &'a [u8],
 }
 
 pub struct Row {
@@ -71,14 +70,9 @@ impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
     fn value(
         &self,
     ) -> Option<<ft_sys::diesel_sqlite::Sqlite as diesel::backend::Backend>::RawValue<'_>> {
-        // self.raw.as_ref().map(|v| diesel::pg::PgValue::new(v, self))
-        todo!()
-    }
-}
-
-impl<'f> diesel::pg::TypeOidLookup for Field<'f> {
-    fn lookup(&self) -> std::num::NonZeroU32 {
-        std::num::NonZeroU32::new(self.row.columns[self.idx].oid).unwrap()
+        self.raw.as_ref().map(|v| SqliteValue {
+            raw_value: v.as_slice(),
+        })
     }
 }
 
@@ -91,7 +85,7 @@ pub struct Cursor {
 #[derive(serde::Deserialize, Clone, Debug)]
 pub struct Column {
     pub name: String,
-    pub oid: u32,
+    pub type_: super::SqliteType,
 }
 
 #[derive(serde::Deserialize, Debug)]
