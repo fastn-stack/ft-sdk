@@ -21,7 +21,7 @@ pub fn t() -> String {
     let data: Vec<User> = users::table
         .filter(users::id.gt(0))
         .or_filter(users::name.like("%Luke"))
-        .select(User::as_select())
+        // .select(User::as_select()) // This line makes it think it is Pg!
         // execute the query via the provided
         // async `diesel_async::RunQueryDsl`
         .get_results(&mut connection)
