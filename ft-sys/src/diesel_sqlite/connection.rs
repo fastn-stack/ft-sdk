@@ -7,20 +7,13 @@ pub struct SqliteConnection {
 }
 
 impl diesel::connection::SimpleConnection for SqliteConnection {
-    fn batch_execute(&mut self, _query: &str) -> diesel::QueryResult<()> {
-        ft_sys::println!("sqlite batch execute");
+    fn batch_execute(&mut self, query: &str) -> diesel::QueryResult<()> {
+        ft_sys::println!("sqlite batch execute: {query}");
         todo!()
     }
 }
 
 impl diesel::connection::ConnectionSealed for SqliteConnection {}
-
-extern "C" {
-    // fn pg_connect(ptr: i32, len: i32) -> i32;
-    // fn pg_query(conn: i32, ptr: i32, len: i32) -> i32;
-    // fn pg_execute(conn: i32, ptr: i32, len: i32) -> i32;
-    // fn sqlite_batch_execute(conn: i32, ptr: i32, len: i32) -> i32;
-}
 
 impl diesel::connection::LoadConnection for SqliteConnection {
     type Cursor<'conn, 'query> = ft_sys::diesel_sqlite::sqlite_value::Cursor;
@@ -28,7 +21,7 @@ impl diesel::connection::LoadConnection for SqliteConnection {
 
     fn load<'conn, 'query, T>(
         &'conn mut self,
-        _source: T,
+        source: T,
     ) -> diesel::QueryResult<Self::Cursor<'conn, 'query>>
     where
         T: diesel::query_builder::Query
@@ -38,6 +31,8 @@ impl diesel::connection::LoadConnection for SqliteConnection {
         Self::Backend: diesel::expression::QueryMetadata<T::SqlType>,
     {
         ft_sys::println!("load");
+        let q = source_to_query(source)?;
+        ft_sys::println!("load: {q:?}");
         todo!()
     }
 }
@@ -73,18 +68,15 @@ impl diesel::connection::Connection for SqliteConnection {
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
 struct Query {
     sql: String,
     binds: Vec<(InternalSqliteBindValue, SqliteType)>,
 }
 
-fn source_to_query<'a, T>(
-    source: T,
-    metadata_lookup: &mut <super::Sqlite as diesel::sql_types::TypeMetadata>::MetadataLookup,
-) -> diesel::QueryResult<Query>
+fn source_to_query<T>(source: T) -> diesel::QueryResult<Query>
 where
-    T: diesel::query_builder::QueryFragment<super::Sqlite> + diesel::query_builder::QueryId + 'a,
+    T: diesel::query_builder::QueryFragment<super::Sqlite> + diesel::query_builder::QueryId,
 {
     use diesel::query_builder::QueryBuilder;
 
@@ -93,9 +85,8 @@ where
     let sql = qb.finish();
 
     let mut rbc = super::bind_collector::SqliteBindCollector::new();
-    source.collect_binds(&mut rbc, metadata_lookup, &super::Sqlite)?;
+    source.collect_binds(&mut rbc, &mut (), &super::Sqlite)?;
 
-    // self.metadata_cache.
     Ok(Query {
         sql,
         binds: rbc.binds,
