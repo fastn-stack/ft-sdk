@@ -24,7 +24,8 @@ pub fn t() -> String {
         // .select(User::as_select()) // This line makes it think it is Pg!
         // execute the query via the provided
         // async `diesel_async::RunQueryDsl`
-        .get_results(&mut connection)
+        // .get_results(&mut connection)
+        .load(&mut connection)
         .unwrap();
 
     // for user in data {

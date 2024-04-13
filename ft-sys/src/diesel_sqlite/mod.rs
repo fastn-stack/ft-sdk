@@ -3,6 +3,7 @@ mod bind_collector;
 mod connection;
 mod query_builder;
 mod sqlite_value;
+mod types;
 
 pub use backend::{Sqlite, SqliteType};
 pub use connection::SqliteConnection;
