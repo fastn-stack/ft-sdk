@@ -4,8 +4,10 @@ use diesel::{deserialize, serialize, sql_types};
 
 impl FromSql<sql_types::Integer, super::Sqlite> for i32 {
     fn from_sql(value: super::SqliteValue) -> deserialize::Result<Self> {
-        // Ok(value.read_integer())
-        todo!()
+        match value.raw_value {
+            super::sqlite_value::Value::Integer(i) => Ok(*i as i32),
+            _ => Err("Unexpected type".into()),
+        }
     }
 }
 

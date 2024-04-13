@@ -1,10 +1,19 @@
 pub struct SqliteValue<'a> {
-    raw_value: &'a [u8],
+    pub(crate) raw_value: &'a Value,
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+pub enum Value {
+    Null,
+    Integer(i64),
+    Real(f64),
+    Text(String),
+    Blob(Vec<u8>),
 }
 
 pub struct Row {
     pub columns: Vec<Column>,
-    pub fields: Vec<Option<Vec<u8>>>,
+    pub fields: Vec<Option<Value>>,
 }
 
 impl diesel::row::RowSealed for Row {}
@@ -25,8 +34,14 @@ impl<'a> diesel::row::Row<'a, ft_sys::diesel_sqlite::Sqlite> for Row {
         use diesel::row::RowIndex;
 
         let idx = self.idx(idx)?;
+
+        let raw = match self.fields.get(idx) {
+            Some(v) => v.to_owned(),
+            None => None,
+        };
+
         Some(Field {
-            raw: self.fields.get(idx).unwrap().as_ref(),
+            raw,
             idx,
             row: self,
         })
@@ -58,7 +73,7 @@ impl<'a> diesel::row::RowIndex<&'a str> for Row {
 
 pub struct Field<'f> {
     row: &'f Row,
-    raw: Option<&'f Vec<u8>>,
+    raw: Option<Value>,
     idx: usize,
 }
 
@@ -70,9 +85,7 @@ impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
     fn value(
         &self,
     ) -> Option<<ft_sys::diesel_sqlite::Sqlite as diesel::backend::Backend>::RawValue<'_>> {
-        self.raw.as_ref().map(|v| SqliteValue {
-            raw_value: v.as_slice(),
-        })
+        self.raw.as_ref().map(|raw_value| SqliteValue { raw_value })
     }
 }
 
@@ -90,7 +103,7 @@ pub struct Column {
 
 #[derive(serde::Deserialize, Debug)]
 struct HostRow {
-    fields: Vec<Option<Vec<u8>>>,
+    fields: Vec<Option<Value>>,
 }
 
 impl Iterator for Cursor {
