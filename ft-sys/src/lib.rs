@@ -5,7 +5,9 @@
 extern crate self as ft_sys;
 
 mod crypto;
+#[cfg(feature = "postgres")]
 mod diesel_pg;
+#[cfg(feature = "sqlite")]
 mod diesel_sqlite;
 pub mod env;
 pub mod http;

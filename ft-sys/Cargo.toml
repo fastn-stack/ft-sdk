@@ -8,6 +8,12 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
+[features]
+default = ["postgres", "sqlite", "time"]
+time = []
+postgres = ["diesel/postgres_backend"]
+sqlite = []
+
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
@@ -18,7 +24,4 @@ chrono.workspace = true
 
 [dependencies.diesel]
 version = "2"
-features = [
-    "postgres_backend",
-    "i-implement-a-third-party-backend-and-opt-into-breaking-changes"
-]
+features = ["i-implement-a-third-party-backend-and-opt-into-breaking-changes"]
