@@ -2,7 +2,6 @@
 
 use super::bind_collector::SqliteBindCollector;
 use super::query_builder::SqliteQueryBuilder;
-// use diesel::backend::*;
 use diesel::sql_types::TypeMetadata;
 
 /// The SQLite backend
