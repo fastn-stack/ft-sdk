@@ -70,6 +70,12 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::BigInt> for Sqlite {
     }
 }
 
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamptz> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Long
+    }
+}
+
 impl diesel::sql_types::HasSqlType<diesel::sql_types::SmallInt> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
         SqliteType::Integer
