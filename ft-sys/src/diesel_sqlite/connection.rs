@@ -35,6 +35,7 @@ impl diesel::connection::LoadConnection for SqliteConnection {
 
         ft_sys::println!("load");
         let q = source_to_query(source)?;
+        ft_sys::println!("q: {q:?}");
         let (ptr, len) = ft_sys::memory::json_ptr(q);
         let ptr = unsafe { sqlite_query(self.conn, ptr, len) };
         let cursor: Result<ft_sys::diesel_sqlite::Cursor, ft_sys_shared::DbError> =
@@ -85,7 +86,7 @@ impl diesel::connection::Connection for SqliteConnection {
 #[derive(serde::Serialize, Debug)]
 struct Query {
     sql: String,
-    binds: Vec<(super::Value, SqliteType)>,
+    binds: Vec<super::Value>,
 }
 
 fn source_to_query<T>(source: T) -> diesel::QueryResult<Query>
