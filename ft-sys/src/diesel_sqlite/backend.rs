@@ -113,10 +113,6 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
 }
 
 impl diesel::backend::SqlDialect for Sqlite {
-    #[cfg(not(feature = "returning_clauses_for_sqlite_3_35"))]
-    type ReturningClause =
-        diesel::backend::sql_dialect::returning_clause::DoesNotSupportReturningClause;
-    #[cfg(feature = "returning_clauses_for_sqlite_3_35")]
     type ReturningClause = SqliteReturningClause;
 
     type OnConflictClause = SqliteOnConflictClause;

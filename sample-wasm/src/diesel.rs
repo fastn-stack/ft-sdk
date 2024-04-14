@@ -14,8 +14,41 @@ struct User {
     name: String,
 }
 
+diesel::table! {
+    ft_user (id) {
+        id -> Int8,
+        username -> Text,
+        name -> Text,
+        #[max_length = 100]
+        email -> Varchar,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+#[derive(diesel::Insertable, Debug)]
+#[diesel(table_name = ft_user)]
+pub struct User2 {
+    /// id is guaranteed to be same as `fastn_user(id)`
+    pub id: i64,
+    pub username: String,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
 pub fn t() -> String {
     let mut connection = ft_sdk::default_sqlite().expect("failed to connect to the database");
+
+    let user = User2 {
+        id: 1,
+        username: "yo".to_string(),
+        updated_at: chrono::DateTime::from_timestamp(0, 0),
+    };
+
+    diesel::insert_into(ft_user::table)
+        .values(user)
+        .returning(ft_user::id)
+        .get_result::<i64>(connection)
+        .unwrap();
 
     // use ordinary diesel query dsl to construct your query
     let data: Vec<User> = users::table
