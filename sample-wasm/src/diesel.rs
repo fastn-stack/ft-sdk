@@ -19,11 +19,11 @@ diesel::table! {
     ft_user (updated_at) {
         id -> Int8,
         username -> Text,
-        updated_at -> Timestamptz,
+        updated_at -> ft_sys::SqliteTimestampz,
     }
 }
 
-#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
+#[derive(diesel::Queryable, diesel::Selectable, Debug)]
 #[diesel(table_name = ft_user)]
 #[diesel(treat_none_as_default_value = false)]
 pub struct User2 {
@@ -33,20 +33,26 @@ pub struct User2 {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-pub fn t() -> String {
-    let mut connection = ft_sdk::default_sqlite().expect("failed to connect to the database");
-
+pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
     let user = User2 {
         id: 1,
         username: "yo".to_string(),
         updated_at: chrono::DateTime::from_timestamp(0, 0).unwrap(),
     };
 
-    // diesel::insert_into(ft_user::table)
-    //     .values(user)
-    //     // .returning(ft_user::id)
-    //     .execute(&mut connection)
-    //     .unwrap();
+    let c: usize = diesel::insert_into(ft_user::table)
+        .values((
+            ft_user::id.eq(1),
+            ft_user::username.eq("yo"),
+            ft_user::updated_at.eq(chrono::Utc::now()),
+        ))
+        // .returning(ft_user::id)
+        .execute(c)
+        .unwrap();
+}
+
+pub fn t() -> String {
+    let mut connection = ft_sdk::default_sqlite().expect("failed to connect to the database");
 
     let data: Vec<User2> = ft_user::table
         .select((ft_user::id, ft_user::username, ft_user::updated_at))
@@ -54,6 +60,14 @@ pub fn t() -> String {
         // execute the query via the provided
         // async `diesel_async::RunQueryDsl`
         .get_results(&mut connection)
+        .unwrap();
+
+    let data = ft_user::table
+        .select((ft_user::id, ft_user::username, ft_user::updated_at))
+        .order(ft_user::updated_at.desc())
+        // execute the query via the provided
+        // async `diesel_async::RunQueryDsl`
+        .execute(&mut connection)
         .unwrap();
 
     let data: Vec<User2> = ft_user::table

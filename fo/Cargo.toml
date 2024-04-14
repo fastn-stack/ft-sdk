@@ -1,0 +1,12 @@
+[package]
+name = "fo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4"
+
+[dependencies.diesel]
+version = "2"
+features = ["sqlite", "chrono", "postgres"]
+
