@@ -49,7 +49,7 @@ pub enum Value {
 }
 
 pub struct Row {
-    pub columns: Vec<Column>,
+    pub columns: Vec<String>,
     pub fields: Vec<Option<Value>>,
 }
 
@@ -104,7 +104,7 @@ impl diesel::row::RowIndex<usize> for Row {
 
 impl<'a> diesel::row::RowIndex<&'a str> for Row {
     fn idx(&self, field_name: &'a str) -> Option<usize> {
-        self.columns.iter().position(|c| c.name == field_name)
+        self.columns.iter().position(|c| c == field_name)
     }
 }
 
@@ -116,7 +116,7 @@ pub struct Field<'f> {
 
 impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
     fn field_name(&self) -> Option<&str> {
-        Some(self.row.columns[self.idx].name.as_str())
+        Some(self.row.columns[self.idx].as_str())
     }
 
     fn value(
@@ -128,14 +128,8 @@ impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct Cursor {
-    columns: Vec<Column>,
+    columns: Vec<String>,
     rows: Vec<HostRow>,
-}
-
-#[derive(serde::Deserialize, Clone, Debug)]
-pub struct Column {
-    pub name: String,
-    pub type_: super::SqliteType,
 }
 
 #[derive(serde::Deserialize, Debug)]
