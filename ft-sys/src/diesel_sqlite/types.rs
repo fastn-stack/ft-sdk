@@ -123,53 +123,30 @@ impl ToSql<sql_types::Double, Sqlite> for f64 {
     }
 }
 
-/// The SQLite timestamp with time zone type
-///
-/// ### [`ToSql`] impls
-///
-/// - [`chrono::NaiveDateTime`] with `feature = "chrono"`
-/// - [`chrono::DateTime`] with `feature = "chrono"`
-/// - [`time::PrimitiveDateTime`] with `feature = "time"`
-/// - [`time::OffsetDateTime`] with `feature = "time"`
-///
-/// ### [`FromSql`] impls
-///
-/// - [`chrono::NaiveDateTime`] with `feature = "chrono"`
-/// - [`chrono::DateTime`] with `feature = "chrono"`
-/// - [`time::PrimitiveDateTime`] with `feature = "time"`
-/// - [`time::OffsetDateTime`] with `feature = "time"`
-///
-/// [`ToSql`]: crate::serialize::ToSql
-/// [`FromSql`]: crate::deserialize::FromSql
-#[cfg_attr(
-    feature = "chrono",
-    doc = " [`chrono::NaiveDateTime`]: chrono::naive::NaiveDateTime"
-)]
-#[cfg_attr(
-    not(feature = "chrono"),
-    doc = " [`chrono::NaiveDateTime`]: https://docs.rs/chrono/0.4.19/chrono/naive/struct.NaiveDateTime.html"
-)]
-#[cfg_attr(feature = "chrono", doc = " [`chrono::DateTime`]: chrono::DateTime")]
-#[cfg_attr(
-    not(feature = "chrono"),
-    doc = " [`chrono::DateTime`]: https://docs.rs/chrono/0.4.19/chrono/struct.DateTime.html"
-)]
-#[cfg_attr(
-    feature = "time",
-    doc = " [`time::PrimitiveDateTime`]: time::PrimitiveDateTime"
-)]
-#[cfg_attr(
-    not(feature = "time"),
-    doc = " [`time::PrimitiveDateTime`]: https://docs.rs/time/0.3.9/time/struct.PrimitiveDateTime.html"
-)]
-#[cfg_attr(
-    feature = "time",
-    doc = " [`time::OffsetDateTime`]: time::OffsetDateTime"
-)]
-#[cfg_attr(
-    not(feature = "time"),
-    doc = " [`time::OffsetDateTime`]: https://docs.rs/time/0.3.9/time/struct.OffsetDateTime.html"
-)]
-#[derive(Debug, Clone, Copy, Default, QueryId, SqlType)]
-#[diesel(sqlite_type(name = "Text"))]
-pub struct Timestamptz;
+use diesel::backend::Backend;
+use diesel::sql_types::{BigInt, Timestamptz};
+
+impl ToSql<BigInt, Sqlite> for chrono::DateTime<chrono::Utc> {
+    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> serialize::Result {
+        if let Some(num_nanoseconds) = self.timestamp_nanos_opt() {
+            out.set_value(num_nanoseconds);
+            Ok(IsNull::No)
+        } else {
+            Err(format!("{:?} as nanoseconds is too large to fit in an i64", self).into())
+        }
+    }
+}
+
+impl FromSql<BigInt, Sqlite> for chrono::DateTime<chrono::Utc> {
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let i64_value = <i64 as FromSql<BigInt, Sqlite>>::from_sql(value)?;
+        Ok(chrono::DateTime::from_timestamp_nanos(i64_value))
+    }
+}
+
+impl FromSql<Timestamptz, Sqlite> for chrono::DateTime<chrono::Utc> {
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let i64_value = <i64 as FromSql<BigInt, Sqlite>>::from_sql(value)?;
+        Ok(chrono::DateTime::from_timestamp_nanos(i64_value))
+    }
+}

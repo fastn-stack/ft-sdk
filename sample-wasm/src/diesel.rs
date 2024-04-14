@@ -9,23 +9,25 @@ table! {
 
 #[derive(diesel::Queryable, diesel::Selectable, Debug)]
 #[diesel(table_name = users)]
+#[diesel(treat_none_as_default_value = false)]
 struct User {
     id: i32,
     name: String,
 }
 
 diesel::table! {
-    ft_user (id) {
+    ft_user (updated_at) {
         id -> Int8,
         username -> Text,
         updated_at -> Timestamptz,
     }
 }
 
-#[derive(diesel::Insertable, Debug)]
+#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
 #[diesel(table_name = ft_user)]
+#[diesel(treat_none_as_default_value = false)]
 pub struct User2 {
-    /// id is guaranteed to be same as `fastn_user(id)`
+    /// id is guaranteed to be the same as `fastn_user(id)`
     pub id: i64,
     pub username: String,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -40,11 +42,43 @@ pub fn t() -> String {
         updated_at: chrono::DateTime::from_timestamp(0, 0).unwrap(),
     };
 
-    diesel::insert_into(ft_user::table)
-        .values(user)
-        // .returning(ft_user::id)
-        .execute(&mut connection)
+    // diesel::insert_into(ft_user::table)
+    //     .values(user)
+    //     // .returning(ft_user::id)
+    //     .execute(&mut connection)
+    //     .unwrap();
+
+    let data: Vec<User2> = ft_user::table
+        .select((ft_user::id, ft_user::username, ft_user::updated_at))
+        .order(ft_user::updated_at.desc())
+        // execute the query via the provided
+        // async `diesel_async::RunQueryDsl`
+        .get_results(&mut connection)
         .unwrap();
+
+    let data: Vec<User2> = ft_user::table
+        .select(User2::as_select())
+        .order(ft_user::updated_at.desc())
+        // execute the query via the provided
+        // async `diesel_async::RunQueryDsl`
+        .get_results(&mut connection)
+        .unwrap();
+
+    let data: Vec<(i64, String, chrono::DateTime<chrono::Utc>)> = ft_user::table
+        .select((ft_user::id, ft_user::username, ft_user::updated_at))
+        .order(ft_user::updated_at.desc())
+        // execute the query via the provided
+        // async `diesel_async::RunQueryDsl`
+        .get_results(&mut connection)
+        .unwrap();
+
+    // let data: Vec<(i64, String, chrono::DateTime<chrono::Utc>)> = ft_user::table
+    //     .select(User2::as_select())
+    //     .order(ft_user::updated_at.desc())
+    //     // execute the query via the provided
+    //     // async `diesel_async::RunQueryDsl`
+    //     .get_results(&mut connection)
+    //     .unwrap();
 
     // use ordinary diesel query dsl to construct your query
     let data: Vec<User> = users::table

@@ -1,6 +1,5 @@
 mod backend;
 mod bind_collector;
-mod chrono;
 mod connection;
 mod query_builder;
 mod sqlite_value;
