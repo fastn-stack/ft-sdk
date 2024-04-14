@@ -18,10 +18,6 @@ diesel::table! {
     ft_user (id) {
         id -> Int8,
         username -> Text,
-        name -> Text,
-        #[max_length = 100]
-        email -> Varchar,
-        created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }
 }
@@ -41,13 +37,13 @@ pub fn t() -> String {
     let user = User2 {
         id: 1,
         username: "yo".to_string(),
-        updated_at: chrono::DateTime::from_timestamp(0, 0),
+        updated_at: chrono::DateTime::from_timestamp(0, 0).unwrap(),
     };
 
     diesel::insert_into(ft_user::table)
         .values(user)
-        .returning(ft_user::id)
-        .get_result::<i64>(connection)
+        // .returning(ft_user::id)
+        .execute(&mut connection)
         .unwrap();
 
     // use ordinary diesel query dsl to construct your query
