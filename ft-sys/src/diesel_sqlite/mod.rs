@@ -8,3 +8,4 @@ mod types;
 pub use backend::{Sqlite, SqliteType};
 pub use connection::SqliteConnection;
 pub use sqlite_value::{Cursor, SqliteValue, Value};
+pub use types::SqliteTimestampz;

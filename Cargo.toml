@@ -4,7 +4,7 @@ members = [
     "ft-sys",
     "ft-sys-shared",
 ]
-exclude = ["sample-wasm"]
+exclude = ["sample-wasm", "fo", ]
 resolver = "2"
 
 [workspace.package]
