@@ -14,6 +14,7 @@ crate-type = ["cdylib"]
 ft-sdk = { version = "0.1", path = "../ft-sdk" }
 http = "1"
 bytes = "1"
+chrono = "0.4"
 
 [dependencies.diesel]
 version = "2"

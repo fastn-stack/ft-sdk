@@ -1,6 +1,6 @@
 [package]
 name = "ft-sdk"
-version = "0.1.1"
+version = "0.1.2"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -10,7 +10,7 @@ homepage.workspace = true
 
 
 [dependencies]
-ft-sys = { path = "../ft-sys", version = "0.1.1" }
+ft-sys = { path = "../ft-sys", version = "0.1.2" }
 serde.workspace = true
 serde_json.workspace = true
 chrono.workspace = true
