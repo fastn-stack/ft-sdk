@@ -9,10 +9,11 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["postgres", "sqlite", "time"]
+default = ["postgres", "sqlite", "time", "chrono"]
 time = []
 postgres = ["diesel/postgres_backend"]
 sqlite = []
+chrono = []
 
 [dependencies]
 serde.workspace = true
@@ -24,4 +25,4 @@ chrono.workspace = true
 
 [dependencies.diesel]
 version = "2"
-features = ["i-implement-a-third-party-backend-and-opt-into-breaking-changes"]
+features = ["i-implement-a-third-party-backend-and-opt-into-breaking-changes", "chrono"]
