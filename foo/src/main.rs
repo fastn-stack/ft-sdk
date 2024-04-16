@@ -79,7 +79,7 @@ diesel::table! {
 }
 
 
-#[derive(diesel::Insertable)]
+#[derive(diesel::Insertable, diesel::Selectable, diesel::Queryable)]
 #[diesel(table_name = ft_site_token)]
 pub struct SiteToken {
     pub about: String,
@@ -109,3 +109,13 @@ fn other_insertable(c: &mut diesel::sqlite::SqliteConnection) {
         })
         .execute(c).unwrap();
 }
+
+
+fn querable_ilike(c: &mut diesel::sqlite::SqliteConnection) {
+    ft_site_token::table
+        .select(SiteToken::as_select())
+        .filter(ft_site_token::about.like("%hello%"))
+        .load::<SiteToken>(c)
+        .unwrap();
+}
+
