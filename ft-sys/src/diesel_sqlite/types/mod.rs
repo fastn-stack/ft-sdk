@@ -1,3 +1,5 @@
+pub mod date_time;
+
 use super::{Sqlite, SqliteValue};
 use diesel::deserialize::FromSql;
 use diesel::serialize::{IsNull, Output, ToSql};

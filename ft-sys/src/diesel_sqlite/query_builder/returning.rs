@@ -1,7 +1,7 @@
 use diesel::query_builder::{AstPass, QueryFragment, ReturningClause};
 use diesel::result::QueryResult;
-use ft_sys::diesel_sqlite::Sqlite;
 use ft_sys::diesel_sqlite::backend::SqliteReturningClause;
+use ft_sys::diesel_sqlite::Sqlite;
 
 impl<Expr> QueryFragment<Sqlite, SqliteReturningClause> for ReturningClause<Expr>
 where
