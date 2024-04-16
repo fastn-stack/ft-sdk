@@ -20,5 +20,5 @@ chrono = "0.4"
 [dependencies.diesel]
 version = "2"
 default-features = false
-features = ["sqlite", "chrono"]
+features = ["chrono"]
 

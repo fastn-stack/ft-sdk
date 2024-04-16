@@ -33,24 +33,6 @@ pub struct User2 {
     pub updated_at: i64,
 }
 
-pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
-    let user = User2 {
-        id: 1,
-        username: "yo".to_string(),
-        updated_at: 1,
-    };
-
-    let c: usize = diesel::insert_into(ft_user::table)
-        .values((
-            ft_user::id.eq(1),
-            ft_user::username.eq("yo"),
-            ft_user::updated_at.eq(1),
-        ))
-        // .returning(ft_user::id)
-        .execute(c)
-        .unwrap();
-}
-
 
 
 
