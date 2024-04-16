@@ -123,7 +123,6 @@ impl ToSql<sql_types::Double, Sqlite> for f64 {
     }
 }
 
-use diesel::backend::Backend;
 use diesel::sql_types::BigInt;
 
 impl ToSql<BigInt, Sqlite> for chrono::DateTime<chrono::Utc> {
@@ -151,16 +150,8 @@ impl ToSql<SqliteTimestampz, Sqlite> for chrono::DateTime<chrono::Utc> {
 #[derive(Debug, Clone, Copy, Default, QueryId, SqlType)]
 pub struct SqliteTimestampz;
 
-impl FromSql<BigInt, Sqlite> for chrono::DateTime<chrono::Utc> {
-    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let i64_value = <i64 as FromSql<BigInt, Sqlite>>::from_sql(value)?;
-        Ok(chrono::DateTime::from_timestamp_nanos(i64_value))
-    }
-}
-
 impl FromSql<SqliteTimestampz, Sqlite> for chrono::DateTime<chrono::Utc> {
-    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let i64_value = <i64 as FromSql<BigInt, Sqlite>>::from_sql(value)?;
-        Ok(chrono::DateTime::from_timestamp_nanos(i64_value))
+    fn from_sql(value: SqliteValue) -> deserialize::Result<Self> {
+        Ok(chrono::DateTime::from_timestamp_nanos(value.i64()?))
     }
 }
