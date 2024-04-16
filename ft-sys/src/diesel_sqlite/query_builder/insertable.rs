@@ -4,13 +4,14 @@ use diesel::insertable::InsertValues;
 use diesel::insertable::{CanInsertInSingleQuery, ColumnInsertValue, DefaultableColumnInsertValue};
 use diesel::prelude::*;
 use diesel::query_builder::{AstPass, QueryId, ValuesClause};
-use diesel::query_builder::{DebugQuery, QueryFragment};
+use diesel::query_builder::QueryFragment;
 use diesel::query_dsl::methods::ExecuteDsl;
 use ft_sys::diesel_sqlite::Sqlite;
 use diesel::{QueryResult, Table};
-use std::fmt::{self, Debug, Display};
 use ft_sys::SqliteConnection;
 
+// Todo: Add debug and display traits.
+//      Checkout `diesel::query_builder::insert_statement::insert_with_default_for_sqlite` module
 #[allow(missing_debug_implementations, missing_copy_implementations)]
 pub struct Yes;
 

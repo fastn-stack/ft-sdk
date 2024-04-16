@@ -87,7 +87,7 @@ impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
             .to_sql(&mut to_sql_output)
             .map_err(diesel::result::Error::SerializationError)?;
         let bind = to_sql_output.into_inner();
-        let metadata = Sqlite::metadata(metadata_lookup);
+        let _metadata = Sqlite::metadata(metadata_lookup);
         self.binds.push(match is_null {
             IsNull::No => bind,
             IsNull::Yes => super::Value::Null,

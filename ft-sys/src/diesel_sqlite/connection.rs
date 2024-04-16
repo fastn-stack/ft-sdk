@@ -1,5 +1,3 @@
-use crate::diesel_sqlite::SqliteType;
-
 pub struct SqliteConnection {
     conn: i32,
     transaction_manager: diesel::connection::AnsiTransactionManager,
