@@ -151,6 +151,7 @@ dependencies = [
  "bytes",
  "chrono",
  "diesel",
+ "diesel_derives",
  "ft-sys-shared",
  "http",
  "serde",

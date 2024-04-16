@@ -71,6 +71,20 @@ pub fn insertable(c: &mut ft_sys::SqliteConnection) {
 }
 
 
+pub fn batch_insertable(c: &mut ft_sys::SqliteConnection) {
+    let users = vec![User2 {
+        id: 1,
+        username: "yo".to_string(),
+        updated_at: 1,
+    }];
+
+    let c = diesel::insert_into(ft_user::table)
+        .values(users)
+        .execute(c)
+        .unwrap();
+}
+
+
 
 
 
@@ -205,13 +219,4 @@ fn other_insertable(c: &mut ft_sys::SqliteConnection) {
             site_id: 0,
         })
         .execute(c).unwrap();
-}
-
-
-fn querable_ilike(c: &mut diesel::sqlite::SqliteConnection) {
-    ft_site_token::table
-        .select(SiteToken::as_select())
-        .filter(ft_site_token::about.like("%hello%"))
-        .load::<SiteToken>(c)
-        .unwrap();
 }

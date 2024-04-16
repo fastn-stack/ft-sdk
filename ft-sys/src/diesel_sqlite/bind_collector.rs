@@ -1,9 +1,8 @@
-use diesel::connection::TransactionManagerStatus::Valid;
 use diesel::query_builder::BindCollector;
 use diesel::serialize::{IsNull, Output};
 use diesel::sql_types::HasSqlType;
 use diesel::QueryResult;
-use ft_sys::diesel_sqlite::backend::{Sqlite, SqliteType};
+use ft_sys::diesel_sqlite::backend::Sqlite;
 
 #[derive(Debug, Default, serde::Serialize)]
 pub struct SqliteBindCollector<'a> {

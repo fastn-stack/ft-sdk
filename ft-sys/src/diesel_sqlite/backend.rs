@@ -157,6 +157,8 @@ impl diesel::backend::sql_dialect::on_conflict_clause::PgLikeOnConflictClause
 #[derive(Debug, Copy, Clone)]
 pub struct SqliteBatchInsert;
 
+impl diesel::backend::sql_dialect::batch_insert_support::SupportsBatchInsert for SqliteBatchInsert {}
+
 #[derive(Debug, Copy, Clone)]
 pub struct SqliteReturningClause;
 
