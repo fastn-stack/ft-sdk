@@ -62,7 +62,7 @@ pub fn insertable(c: &mut ft_sys::SqliteConnection) {
 
     let c: usize = diesel::insert_into(ft_user::table)
         .values(user)
-        .returning(ft_user::id)
+        // .returning(ft_user::id)
         .execute(c)
         .unwrap();
 }
