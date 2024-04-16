@@ -19,7 +19,7 @@ diesel::table! {
     ft_user (updated_at) {
         id -> Int8,
         username -> Text,
-        updated_at -> ft_sys::SqliteTimestampz,
+        updated_at -> Int8,
     }
 }
 
@@ -30,21 +30,21 @@ pub struct User2 {
     /// id is guaranteed to be the same as `fastn_user(id)`
     pub id: i64,
     pub username: String,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: i64,
 }
 
 pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
     let user = User2 {
         id: 1,
         username: "yo".to_string(),
-        updated_at: chrono::DateTime::from_timestamp(0, 0).unwrap(),
+        updated_at: 1,
     };
 
     let c: usize = diesel::insert_into(ft_user::table)
         .values((
             ft_user::id.eq(1),
             ft_user::username.eq("yo"),
-            ft_user::updated_at.eq(chrono::Utc::now()),
+            ft_user::updated_at.eq(1),
         ))
         // .returning(ft_user::id)
         .execute(c)
@@ -78,7 +78,7 @@ pub fn t() -> String {
         .get_results(&mut connection)
         .unwrap();
 
-    let data: Vec<(i64, String, chrono::DateTime<chrono::Utc>)> = ft_user::table
+    let data: Vec<(i64, String, i64)> = ft_user::table
         .select((ft_user::id, ft_user::username, ft_user::updated_at))
         .order(ft_user::updated_at.desc())
         // execute the query via the provided
