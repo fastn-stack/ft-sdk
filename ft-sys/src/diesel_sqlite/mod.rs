@@ -5,7 +5,7 @@ mod query_builder;
 mod sqlite_value;
 mod types;
 
-pub use backend::{Sqlite, SqliteType};
+pub use backend::Sqlite;
 pub use connection::SqliteConnection;
 pub use sqlite_value::{Cursor, SqliteValue, Value};
 pub use types::SqliteTimestampz;
