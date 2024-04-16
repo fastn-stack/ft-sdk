@@ -53,19 +53,53 @@ pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
 
 
 
+
+
+
+
+
+
+
+
+diesel::table! {
+    ft_user_3 (id) {
+        id -> Int8
+    }
+}
+
+#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
+#[diesel(table_name = ft_user_3)]
+#[diesel(treat_none_as_default_value = false)]
+pub struct User3 {
+    pub id: i64,
+}
+
+
+
 pub fn insertable(c: &mut ft_sys::SqliteConnection) {
-    let user = User2 {
-        id: 1,
-        username: "yo".to_string(),
-        updated_at: 1,
+    let user = User3 {
+        id: 1
     };
 
-    let c: usize = diesel::insert_into(ft_user::table)
+    let c = diesel::insert_into(ft_user_3::table)
         .values(user)
-        // .returning(ft_user::id)
-        .execute(c)
+        .returning(ft_user_3::id)
+        .get_result::<i64>(c)
         .unwrap();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 pub fn t() -> String {
     let mut connection = ft_sdk::default_sqlite().expect("failed to connect to the database");
