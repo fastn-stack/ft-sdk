@@ -23,7 +23,7 @@ diesel::table! {
     }
 }
 
-#[derive(diesel::Queryable, diesel::Selectable, Debug)]
+#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
 #[diesel(table_name = ft_user)]
 #[diesel(treat_none_as_default_value = false)]
 pub struct User2 {
@@ -47,6 +47,22 @@ pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
             ft_user::updated_at.eq(1),
         ))
         // .returning(ft_user::id)
+        .execute(c)
+        .unwrap();
+}
+
+
+
+pub fn insertable(c: &mut ft_sys::SqliteConnection) {
+    let user = User2 {
+        id: 1,
+        username: "yo".to_string(),
+        updated_at: 1,
+    };
+
+    let c: usize = diesel::insert_into(ft_user::table)
+        .values(user)
+        .returning(ft_user::id)
         .execute(c)
         .unwrap();
 }
