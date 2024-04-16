@@ -6,8 +6,8 @@ fn main() {
 
 diesel::table! {
     table_with_ts (ts) {
-        // ts -> diesel::sql_types::TimestamptzSqlite,
-        ts -> diesel::sql_types::Timestamptz,
+        ts -> diesel::sql_types::TimestamptzSqlite,
+        // ts -> diesel::sql_types::Timestamptz,
         // ts -> diesel::sqlite::sql_types::Timestamptz,
     }
 }
@@ -20,8 +20,8 @@ diesel::table! {
     }
 }
 
-// pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
-pub fn i(c: &mut PgConnection) {
+pub fn i(c: &mut diesel::sqlite::SqliteConnection) {
+// pub fn i(c: &mut PgConnection) {
     // let data: Vec<(i64, String /* chrono::DateTime<chrono::Utc> */)> = ft_user::table
     let data: Vec<chrono::DateTime<chrono::Utc>> = table_with_ts::table
         // .select((ft_user::id, ft_user::username, ft_user::updated_at))
@@ -132,3 +132,35 @@ fn querable_ilike(c: &mut diesel::sqlite::SqliteConnection) {
         .unwrap();
 }
 
+
+
+diesel::table! {
+    ft_user_3 (id) {
+        id -> Int8,
+        username -> Text,
+        updated_at -> TimestamptzSqlite,
+    }
+}
+
+#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
+#[diesel(table_name = ft_user_3)]
+#[diesel(treat_none_as_default_value = false)]
+pub struct User3 {
+    /// id is guaranteed to be the same as `fastn_user(id)`
+    pub id: i64,
+    pub username: String,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+pub fn chrono(c: &mut diesel::sqlite::SqliteConnection) {
+    let user = User3 {
+        id: 1,
+        username: "yo".to_string(),
+        updated_at: chrono::Utc::now(),
+    };
+
+    let c = diesel::insert_into(ft_user_3::table)
+        .values(user)
+        .returning(ft_user_3::id)
+        .get_result::<i64>(c)
+        .unwrap();
+}
