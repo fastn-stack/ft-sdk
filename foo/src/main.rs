@@ -54,3 +54,58 @@ pub fn insertable(c: &mut diesel::sqlite::SqliteConnection) {
 }
 
 
+
+
+
+
+
+
+
+
+
+diesel::table! {
+    ft_site_token (id) {
+        id -> Int8,
+        about -> Text,
+        token -> Text,
+        can_read -> Bool,
+        can_write -> Bool,
+        last_used_at -> Nullable<Int8>,
+        created_at -> Int8,
+        updated_at -> Int8,
+        created_by -> Int8,
+        site_id -> Int8,
+    }
+}
+
+
+#[derive(diesel::Insertable)]
+#[diesel(table_name = ft_site_token)]
+pub struct SiteToken {
+    pub about: String,
+    pub token: String,
+    pub can_read: bool,
+    pub can_write: bool,
+    pub last_used_at: Option<i64>,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub created_by: i64,
+    pub site_id: i64,
+}
+
+
+fn other_insertable(c: &mut diesel::sqlite::SqliteConnection) {
+    diesel::insert_into(ft_site_token::table)
+        .values(SiteToken {
+            about: "".to_string(),
+            token: "".to_string(),
+            can_read: false,
+            can_write: false,
+            last_used_at: None,
+            created_at: 0,
+            updated_at: 0,
+            created_by: 0,
+            site_id: 0,
+        })
+        .execute(c).unwrap();
+}
