@@ -15,7 +15,7 @@ pub mod memory;
 
 pub use crypto::{decrypt, encrypt};
 pub use diesel_pg::PgConnection;
-pub use diesel_sqlite::{SqliteConnection, SqliteTimestampz};
+pub use diesel_sqlite::{SqliteConnection, SqliteTimestampz, Timestamptz};
 pub use ft_sys_shared::{DecryptionError, UserData};
 
 pub use env::now;

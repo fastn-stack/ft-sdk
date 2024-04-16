@@ -118,6 +118,12 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
     }
 }
 
+impl diesel::sql_types::HasSqlType<diesel::sql_types::TimestamptzSqlite> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Double
+    }
+}
+
 impl diesel::backend::SqlDialect for Sqlite {
     type ReturningClause = SqliteReturningClause;
 

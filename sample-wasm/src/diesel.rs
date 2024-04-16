@@ -231,7 +231,7 @@ diesel::table! {
     ft_user_4 (id) {
         id -> Int8,
         username -> Text,
-        updated_at -> ft_sys::SqliteTimestampz,
+        updated_at -> TimestamptzSqlite,
     }
 }
 
@@ -239,17 +239,17 @@ diesel::table! {
 #[diesel(table_name = ft_user_4)]
 #[diesel(treat_none_as_default_value = false)]
 pub struct User4 {
-    /// id is guaranteed to be the same as `fastn_user(id)`
     pub id: i64,
     pub username: String,
-    // pub updated_at: chrono::DateTime<chrono::Utc>, todo
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 pub fn chrono(c: &mut ft_sys::SqliteConnection) {
     let user = User4 {
         id: 1,
         username: "yo".to_string(),
-        // updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now(),
     };
+
 
     let c = diesel::insert_into(ft_user_4::table)
         .values(user)
