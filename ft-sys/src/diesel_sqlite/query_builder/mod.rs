@@ -7,6 +7,7 @@ use diesel::result::QueryResult;
 mod insertable;
 mod limit_offset;
 mod returning;
+mod date_time;
 // mod query_fragment_impls;
 // mod returning;
 
@@ -44,3 +45,9 @@ impl QueryBuilder<Sqlite> for SqliteQueryBuilder {
         self.sql
     }
 }
+
+
+/*use diesel::expression::Expression;
+impl<T: Expression> Expression for chrono::DateTime<chrono::Utc> {
+    type SqlType = T::SqlType;
+}*/

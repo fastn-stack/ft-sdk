@@ -231,7 +231,7 @@ diesel::table! {
     ft_user_4 (id) {
         id -> Int8,
         username -> Text,
-        updated_at -> TimestamptzSqlite,
+        updated_at -> Timestamp,
     }
 }
 
@@ -241,13 +241,13 @@ diesel::table! {
 pub struct User4 {
     pub id: i64,
     pub username: String,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::NaiveDateTime,
 }
 pub fn chrono(c: &mut ft_sys::SqliteConnection) {
     let user = User4 {
         id: 1,
         username: "yo".to_string(),
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now().naive_utc(),
     };
 
 

@@ -118,7 +118,7 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
     }
 }
 
-impl diesel::sql_types::HasSqlType<diesel::sql_types::TimestamptzSqlite> for Sqlite {
+impl diesel::sql_types::HasSqlType<ft_sys::Timestamptz> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
         SqliteType::Double
     }

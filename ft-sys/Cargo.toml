@@ -25,7 +25,8 @@ chrono.workspace = true
 
 [dependencies.diesel]
 version = "2"
-features = ["i-implement-a-third-party-backend-and-opt-into-breaking-changes", "chrono", "sqlite"]
+features = ["i-implement-a-third-party-backend-and-opt-into-breaking-changes"]
+default-features = false
 
 [dependencies.diesel_derives]
 version = "2"
