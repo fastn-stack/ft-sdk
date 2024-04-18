@@ -125,19 +125,6 @@ impl ToSql<sql_types::Double, Sqlite> for f64 {
     }
 }
 
-use diesel::sql_types::BigInt;
-
-impl ToSql<BigInt, Sqlite> for chrono::DateTime<chrono::Utc> {
-    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> serialize::Result {
-        if let Some(num_nanoseconds) = self.timestamp_nanos_opt() {
-            out.set_value(num_nanoseconds);
-            Ok(IsNull::No)
-        } else {
-            Err(format!("{:?} as nanoseconds is too large to fit in an i64", self).into())
-        }
-    }
-}
-
 // diesel::sql_type::Timestamp -> NaiveDateTime with nano sec
 // diesel::sql_type::Timestamp -> i64 with nano sec
 // diesel::sql_type::Timestampz -> chrono::DateTime<Utc> with nano sec
