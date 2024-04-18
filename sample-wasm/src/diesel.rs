@@ -257,3 +257,35 @@ pub fn chrono(c: &mut ft_sys::SqliteConnection) {
         .get_result::<i64>(c)
         .unwrap();
 }
+
+
+diesel::table! {
+    ft_user_5 (id) {
+        id -> Int8,
+        username -> Text,
+        updated_at -> Timestamptz,
+    }
+}
+
+#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
+#[diesel(table_name = ft_user_5)]
+#[diesel(treat_none_as_default_value = false)]
+pub struct User5 {
+    pub id: i64,
+    pub username: String,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+pub fn chrono_datetime(c: &mut ft_sys::SqliteConnection) {
+    let user = crate::diesel::User5 {
+        id: 1,
+        username: "yo".to_string(),
+        updated_at: chrono::Utc::now(),
+    };
+
+
+    let c = diesel::insert_into(crate::diesel::ft_user_5::table)
+        .values(user)
+        .returning(crate::diesel::ft_user_5::id)
+        .get_result::<i64>(c)
+        .unwrap();
+}
