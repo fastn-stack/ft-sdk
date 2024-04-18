@@ -7,7 +7,6 @@ use diesel::result::QueryResult;
 mod insertable;
 mod limit_offset;
 mod returning;
-mod date_time;
 // mod query_fragment_impls;
 // mod returning;
 
