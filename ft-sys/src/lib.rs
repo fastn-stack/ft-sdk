@@ -5,6 +5,8 @@
 extern crate self as ft_sys;
 
 mod crypto;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod db_error;
 #[cfg(feature = "postgres")]
 mod diesel_pg;
 #[cfg(feature = "sqlite")]
@@ -14,8 +16,19 @@ pub mod http;
 pub mod memory;
 
 pub use crypto::{decrypt, encrypt};
+#[cfg(feature = "postgres")]
 pub use diesel_pg::PgConnection;
+#[cfg(feature = "sqlite")]
 pub use diesel_sqlite::SqliteConnection;
 pub use ft_sys_shared::{DecryptionError, UserData};
+
+#[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
+compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
+
+#[cfg(feature = "sqlite-default")]
+pub type Connection = SqliteConnection;
+
+#[cfg(feature = "postgres-default")]
+pub type Connection = PgConnection;
 
 pub use env::now;

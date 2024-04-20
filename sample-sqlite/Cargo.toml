@@ -11,8 +11,7 @@ opt-level = 's'
 crate-type = ["cdylib"]
 
 [dependencies]
-ft-sdk = { version = "0.1", path = "../ft-sdk" }
-ft-sys = { version = "0.1", path = "../ft-sys" }
+ft-sdk = { version = "0.1", path = "../ft-sdk", features = ["sqlite-default"] }
 http = "1"
 bytes = "1"
 chrono = "0.4"
@@ -20,5 +19,4 @@ chrono = "0.4"
 [dependencies.diesel]
 version = "2"
 default-features = false
-features = ["chrono"]
 

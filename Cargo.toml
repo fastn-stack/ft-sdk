@@ -4,7 +4,7 @@ members = [
     "ft-sys",
     "ft-sys-shared",
 ]
-exclude = ["sample-wasm", "foo", ]
+exclude = ["sample-sqlite", "foo", ]
 resolver = "2"
 
 [workspace.package]
