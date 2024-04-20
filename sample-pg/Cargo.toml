@@ -1,0 +1,22 @@
+[package]
+name = "sample-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+lto = true
+opt-level = 's'
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ft-sdk = { version = "0.1", path = "../ft-sdk", features = ["postgres-default"], default-features = false }
+http = "1"
+bytes = "1"
+chrono = "0.4"
+
+[dependencies.diesel]
+version = "2"
+default-features = false
+
