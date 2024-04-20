@@ -33,16 +33,6 @@ pub struct User2 {
     pub updated_at: chrono::NaiveDateTime,
 }
 
-
-
-
-
-
-
-
-
-
-
 diesel::table! {
     ft_user_3 (id) {
         id -> Int8
@@ -56,12 +46,8 @@ pub struct User3 {
     pub id: i64,
 }
 
-
-
 pub fn insertable(c: &mut ft_sdk::Connection) {
-    let user = User3 {
-        id: 1
-    };
+    let user = User3 { id: 1 };
 
     let c = diesel::insert_into(ft_user_3::table)
         .values(user)
@@ -70,12 +56,13 @@ pub fn insertable(c: &mut ft_sdk::Connection) {
         .unwrap();
 }
 
-
 pub fn batch_insertable(c: &mut ft_sdk::Connection) {
     let users = vec![User2 {
         id: 1,
         username: "yo".to_string(),
-        updated_at: chrono::DateTime::from_timestamp_micros(1).unwrap().naive_utc(),
+        updated_at: chrono::DateTime::from_timestamp_micros(1)
+            .unwrap()
+            .naive_utc(),
     }];
 
     let c = diesel::insert_into(ft_user::table)
@@ -83,19 +70,6 @@ pub fn batch_insertable(c: &mut ft_sdk::Connection) {
         .execute(c)
         .unwrap();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 pub fn t() -> String {
     let mut connection = ft_sdk::default_sqlite().expect("failed to connect to the database");
@@ -163,16 +137,6 @@ fn print_user(user: &User) {
     ft_sdk::println!("id: {}, name: {}", user.id, user.name);
 }
 
-
-
-
-
-
-
-
-
-
-
 diesel::table! {
     ft_site_token (id) {
         id -> Int8,
@@ -187,7 +151,6 @@ diesel::table! {
         site_id -> Int8,
     }
 }
-
 
 #[derive(diesel::Insertable, diesel::Selectable, diesel::Queryable)]
 #[diesel(table_name = ft_site_token)]
@@ -204,7 +167,6 @@ pub struct SiteToken {
     pub site_id: i64,
 }
 
-
 fn other_insertable(c: &mut ft_sdk::SqliteConnection) {
     diesel::insert_into(ft_site_token::table)
         .values(SiteToken {
@@ -218,14 +180,9 @@ fn other_insertable(c: &mut ft_sdk::SqliteConnection) {
             created_by: 0,
             site_id: 0,
         })
-        .execute(c).unwrap();
+        .execute(c)
+        .unwrap();
 }
-
-
-
-
-
-
 
 diesel::table! {
     ft_user_4 (id) {
@@ -251,14 +208,12 @@ pub fn chrono(c: &mut ft_sdk::SqliteConnection) {
         updated_at: chrono::Utc::now().naive_utc(),
     };
 
-
     let c = diesel::insert_into(ft_user_4::table)
         .values(user)
         .returning(ft_user_4::id)
         .get_result::<i64>(c)
         .unwrap();
 }
-
 
 diesel::table! {
     ft_user_5 (id) {
@@ -283,10 +238,40 @@ pub fn chrono_datetime(c: &mut ft_sdk::SqliteConnection) {
         updated_at: chrono::Utc::now().naive_utc(),
     };
 
-
     let c = diesel::insert_into(crate::diesel::ft_user_5::table)
         .values(user)
         .returning(crate::diesel::ft_user_5::id)
         .get_result::<i64>(c)
         .unwrap();
+}
+
+diesel::table! {
+    ft_user_6 (id) {
+        id -> Int8,
+        username -> Text,
+        updated_at -> ft_sdk::SqliteTimestamptz,
+    }
+}
+
+// #[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
+// #[diesel(table_name = ft_user_6)]
+// #[diesel(treat_none_as_default_value = false)]
+// pub struct User6 {
+//     pub id: i64,
+//     pub username: String,
+//     pub updated_at: chrono::DateTime<chrono::Utc>,
+// }
+
+pub fn chrono_datetime_utc(c: &mut ft_sdk::SqliteConnection) {
+    // let user = crate::diesel::User6 {
+    //     id: 1,
+    //     username: "yo".to_string(),
+    //     updated_at: chrono::Utc::now(),
+    // };
+
+    // let c = diesel::insert_into(crate::diesel::ft_user_5::table)
+    //     .values(user)
+    //     .returning(crate::diesel::ft_user_5::id)
+    //     .get_result::<i64>(c)
+    //     .unwrap();
 }
