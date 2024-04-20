@@ -12,7 +12,7 @@ impl diesel::connection::SimpleConnection for PgConnection {
         match res {
             Ok(_) => Ok(()),
             Err(e) => {
-                let e = ft_sys::diesel_pg::db_error_to_diesel_error(e);
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
                 // update_transaction_manager_status(&e, &mut self.transaction_manager);
                 Err(e)
             }
@@ -92,7 +92,7 @@ impl diesel::connection::LoadConnection for PgConnection {
         match cursor {
             Ok(cursor) => Ok(cursor),
             Err(e) => {
-                let e = ft_sys::diesel_pg::db_error_to_diesel_error(e);
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
                 // update_transaction_manager_status(&e, &mut self.transaction_manager);
                 Err(e)
             }
@@ -138,7 +138,7 @@ impl diesel::connection::Connection for PgConnection {
         match res {
             Ok(size) => Ok(size),
             Err(e) => {
-                let e = ft_sys::diesel_pg::db_error_to_diesel_error(e);
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
                 // update_transaction_manager_status(&e, &mut self.transaction_manager);
                 Err(e)
             }

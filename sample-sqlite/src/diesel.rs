@@ -19,7 +19,7 @@ diesel::table! {
     ft_user (updated_at) {
         id -> Int8,
         username -> Text,
-        updated_at -> Int8,
+        updated_at -> Timestamp,
     }
 }
 
@@ -30,7 +30,7 @@ pub struct User2 {
     /// id is guaranteed to be the same as `fastn_user(id)`
     pub id: i64,
     pub username: String,
-    pub updated_at: i64,
+    pub updated_at: chrono::NaiveDateTime,
 }
 
 
@@ -58,7 +58,7 @@ pub struct User3 {
 
 
 
-pub fn insertable(c: &mut ft_sys::SqliteConnection) {
+pub fn insertable(c: &mut ft_sdk::Connection) {
     let user = User3 {
         id: 1
     };
@@ -71,11 +71,11 @@ pub fn insertable(c: &mut ft_sys::SqliteConnection) {
 }
 
 
-pub fn batch_insertable(c: &mut ft_sys::SqliteConnection) {
+pub fn batch_insertable(c: &mut ft_sdk::Connection) {
     let users = vec![User2 {
         id: 1,
         username: "yo".to_string(),
-        updated_at: 1,
+        updated_at: chrono::DateTime::from_timestamp_micros(1).unwrap().naive_utc(),
     }];
 
     let c = diesel::insert_into(ft_user::table)
@@ -124,7 +124,7 @@ pub fn t() -> String {
         .get_results(&mut connection)
         .unwrap();
 
-    let data: Vec<(i64, String, i64)> = ft_user::table
+    let data: Vec<(i64, String, chrono::NaiveDateTime)> = ft_user::table
         .select((ft_user::id, ft_user::username, ft_user::updated_at))
         .order(ft_user::updated_at.desc())
         // execute the query via the provided
@@ -205,7 +205,7 @@ pub struct SiteToken {
 }
 
 
-fn other_insertable(c: &mut ft_sys::SqliteConnection) {
+fn other_insertable(c: &mut ft_sdk::SqliteConnection) {
     diesel::insert_into(ft_site_token::table)
         .values(SiteToken {
             about: "".to_string(),
@@ -243,7 +243,8 @@ pub struct User4 {
     pub username: String,
     pub updated_at: chrono::NaiveDateTime,
 }
-pub fn chrono(c: &mut ft_sys::SqliteConnection) {
+
+pub fn chrono(c: &mut ft_sdk::SqliteConnection) {
     let user = User4 {
         id: 1,
         username: "yo".to_string(),
@@ -263,7 +264,7 @@ diesel::table! {
     ft_user_5 (id) {
         id -> Int8,
         username -> Text,
-        updated_at -> Timestamptz,
+        updated_at -> Timestamp,
     }
 }
 
@@ -273,13 +274,13 @@ diesel::table! {
 pub struct User5 {
     pub id: i64,
     pub username: String,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::NaiveDateTime,
 }
-pub fn chrono_datetime(c: &mut ft_sys::SqliteConnection) {
+pub fn chrono_datetime(c: &mut ft_sdk::SqliteConnection) {
     let user = crate::diesel::User5 {
         id: 1,
         username: "yo".to_string(),
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now().naive_utc(),
     };
 
 
