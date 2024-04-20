@@ -45,7 +45,6 @@ impl QueryBuilder<Sqlite> for SqliteQueryBuilder {
     }
 }
 
-
 /*use diesel::expression::Expression;
 impl<T: Expression> Expression for chrono::DateTime<chrono::Utc> {
     type SqlType = T::SqlType;
