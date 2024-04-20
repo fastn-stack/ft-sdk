@@ -16,12 +16,12 @@ struct HostRow {
 }
 
 impl Iterator for Cursor {
-    type Item = Result<ft_sys::diesel::PgRow, diesel::result::Error>;
+    type Item = Result<ft_sys::diesel_pg::PgRow, diesel::result::Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         // TODO: instead of pop, return from front, use idx to keep track of current row
         match self.rows.pop() {
-            Some(v) => Some(Ok(ft_sys::diesel::PgRow {
+            Some(v) => Some(Ok(ft_sys::diesel_pg::PgRow {
                 columns: self.columns.clone(),
                 fields: v.fields,
             })),

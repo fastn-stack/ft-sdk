@@ -20,19 +20,42 @@ pub mod utils;
 pub use auth::UserId;
 pub use cookie::CookieExt;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
-pub use ft_sys::{env, println, PgConnection};
-pub use ft_sys::{http, UserData};
+#[cfg(feature = "postgres")]
+pub use ft_sys::PgConnection;
+#[cfg(feature = "sqlite")]
+pub use ft_sys::SqliteConnection;
+pub use ft_sys::{env, http, println, UserData};
 pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
 pub use query::{Query, QueryExt};
 
+#[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
+compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
+
+#[cfg(feature = "sqlite-default")]
+pub type Connection = ft_sys::SqliteConnection;
+
+#[cfg(feature = "postgres-default")]
+pub type Connection = ft_sys::PgConnection;
+
+#[cfg(feature = "sqlite")]
+pub use ft_sys::SqliteTimestamptz;
+
 /// Get a connection to the default postgres database.
-///
-/// Most FifthTry Apps should use this function to get the default connection.
+#[cfg(feature = "postgres")]
 pub fn default_pg() -> Result<PgConnection, Error> {
     use diesel::Connection;
     Ok(PgConnection::establish("default")?)
+}
+
+/// Get a connection to the default sqlite database.
+///
+/// Most FifthTry Apps should use this function to get the default connection.
+#[cfg(feature = "sqlite")]
+pub fn default_sqlite() -> Result<SqliteConnection, Error> {
+    use diesel::Connection;
+    Ok(SqliteConnection::establish("default")?)
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -40,9 +63,11 @@ pub enum Error {
     #[error("serde_json error {0}")]
     Serde(#[from] serde_json::Error),
 
+    #[cfg(any(feature = "postgres", feature = "sqlite"))]
     #[error("diesel error {0}")]
     Diesel(#[from] diesel::result::Error),
 
+    #[cfg(any(feature = "postgres", feature = "sqlite"))]
     #[error("diesel connection error {0}")]
     DieselConnection(#[from] diesel::result::ConnectionError),
 }

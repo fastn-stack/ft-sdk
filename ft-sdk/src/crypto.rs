@@ -24,6 +24,7 @@ impl From<PlainText> for EncryptedString {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl diesel::serialize::ToSql<diesel::sql_types::Text, diesel::pg::Pg> for EncryptedString {
     fn to_sql<'a>(
         &'a self,

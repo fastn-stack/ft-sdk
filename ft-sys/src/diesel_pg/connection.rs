@@ -12,7 +12,7 @@ impl diesel::connection::SimpleConnection for PgConnection {
         match res {
             Ok(_) => Ok(()),
             Err(e) => {
-                let e = ft_sys::diesel::db_error_to_diesel_error(e);
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
                 // update_transaction_manager_status(&e, &mut self.transaction_manager);
                 Err(e)
             }
@@ -69,8 +69,8 @@ where
 }
 
 impl diesel::connection::LoadConnection for PgConnection {
-    type Cursor<'conn, 'query> = ft_sys::diesel::Cursor;
-    type Row<'conn, 'query> = ft_sys::diesel::PgRow;
+    type Cursor<'conn, 'query> = ft_sys::diesel_pg::Cursor;
+    type Row<'conn, 'query> = ft_sys::diesel_pg::PgRow;
 
     fn load<'conn, 'query, T>(
         &'conn mut self,
@@ -86,13 +86,13 @@ impl diesel::connection::LoadConnection for PgConnection {
         let q = source_to_query(source, self)?;
         let (ptr, len) = ft_sys::memory::json_ptr(q);
         let ptr = unsafe { pg_query(self.conn, ptr, len) };
-        let cursor: Result<ft_sys::diesel::Cursor, ft_sys_shared::DbError> =
+        let cursor: Result<ft_sys::diesel_pg::Cursor, ft_sys_shared::DbError> =
             ft_sys::memory::json_from_ptr(ptr);
 
         match cursor {
             Ok(cursor) => Ok(cursor),
             Err(e) => {
-                let e = ft_sys::diesel::db_error_to_diesel_error(e);
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
                 // update_transaction_manager_status(&e, &mut self.transaction_manager);
                 Err(e)
             }
@@ -138,7 +138,7 @@ impl diesel::connection::Connection for PgConnection {
         match res {
             Ok(size) => Ok(size),
             Err(e) => {
-                let e = ft_sys::diesel::db_error_to_diesel_error(e);
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
                 // update_transaction_manager_status(&e, &mut self.transaction_manager);
                 Err(e)
             }

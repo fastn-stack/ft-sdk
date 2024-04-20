@@ -1,5 +1,5 @@
 pub struct PgRow {
-    pub columns: Vec<ft_sys::diesel::Column>,
+    pub columns: Vec<ft_sys::diesel_pg::Column>,
     pub fields: Vec<Option<Vec<u8>>>,
 }
 
@@ -32,7 +32,7 @@ impl<'a> diesel::row::Row<'a, diesel::pg::Pg> for PgRow {
         &self,
         range: std::ops::Range<usize>,
     ) -> diesel::row::PartialRow<'_, Self::InnerPartialRow> {
-        diesel::row::PartialRow::new(self, range)
+        diesel::row::PartialRow::new::<diesel::pg::Pg>(self, range)
     }
 }
 
