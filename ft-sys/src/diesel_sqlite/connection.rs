@@ -20,12 +20,12 @@ impl diesel::connection::LoadConnection for SqliteConnection {
         &'conn mut self,
         source: T,
     ) -> diesel::QueryResult<Self::Cursor<'conn, 'query>>
-    where
-        T: diesel::query_builder::Query
+        where
+            T: diesel::query_builder::Query
             + diesel::query_builder::QueryFragment<Self::Backend>
             + diesel::query_builder::QueryId
             + 'query,
-        Self::Backend: diesel::expression::QueryMetadata<T::SqlType>,
+            Self::Backend: diesel::expression::QueryMetadata<T::SqlType>,
     {
         extern "C" {
             fn sqlite_query(conn: i32, ptr: i32, len: i32) -> i32;
@@ -67,8 +67,8 @@ impl diesel::connection::Connection for SqliteConnection {
     }
 
     fn execute_returning_count<T>(&mut self, _source: &T) -> diesel::QueryResult<usize>
-    where
-        T: diesel::query_builder::QueryFragment<Self::Backend> + diesel::query_builder::QueryId,
+        where
+            T: diesel::query_builder::QueryFragment<Self::Backend> + diesel::query_builder::QueryId,
     {
         ft_sys::println!("execute returning count");
         todo!()
@@ -76,7 +76,7 @@ impl diesel::connection::Connection for SqliteConnection {
 
     fn transaction_state(
         &mut self,
-    ) -> &mut <Self::TransactionManager as diesel::connection::TransactionManager<Self>>::TransactionStateData{
+    ) -> &mut <Self::TransactionManager as diesel::connection::TransactionManager<Self>>::TransactionStateData {
         &mut self.transaction_manager
     }
 }
@@ -88,8 +88,8 @@ struct Query {
 }
 
 fn source_to_query<T>(source: T) -> diesel::QueryResult<Query>
-where
-    T: diesel::query_builder::QueryFragment<super::Sqlite> + diesel::query_builder::QueryId,
+    where
+        T: diesel::query_builder::QueryFragment<super::Sqlite> + diesel::query_builder::QueryId,
 {
     use diesel::query_builder::QueryBuilder;
 
