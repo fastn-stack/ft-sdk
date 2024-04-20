@@ -25,7 +25,9 @@
 ///
 /// ft_sdk::utils::dbg_query(&query);
 /// ```
-pub fn dbg_query<T: diesel::query_builder::QueryFragment<diesel::pg::Pg>>(query: &T) {
+pub fn dbg_query<T: diesel::query_builder::QueryFragment<B>, B: diesel::backend::Backend>(
+    query: &T,
+) {
     #[cfg(feature = "debug")]
-    ft_sdk::println!("{:?}", diesel::debug_query::<diesel::pg::Pg, _>(query));
+    ft_sdk::println!("{:?}", diesel::debug_query::<B, _>(query));
 }

@@ -12,8 +12,6 @@ homepage.workspace = true
 auth-providers = []
 # toggle usage of ft_sdk::println! statements
 debug = []
-
-[features]
 default = ["sqlite-default"]
 postgres-default = ["ft-sys/postgres-default", "postgres"]
 postgres = ["ft-sys/postgres", "diesel"]

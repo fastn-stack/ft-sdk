@@ -76,6 +76,7 @@ checksum = "03fc05c17098f21b89bc7d98fe1dd3cce2c11c2ad8e145f2a44fe08ed28eb559"
 dependencies = [
  "chrono",
  "diesel_derives",
+ "serde_json",
 ]
 
 [[package]]
