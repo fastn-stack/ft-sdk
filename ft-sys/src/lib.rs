@@ -22,6 +22,9 @@ pub use diesel_pg::PgConnection;
 pub use diesel_sqlite::SqliteConnection;
 pub use ft_sys_shared::{DecryptionError, UserData};
 
+#[cfg(feature = "sqlite")]
+pub use ft_sys::diesel_sqlite::Timestamptz as SqliteTimestamptz;
+
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
 compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
 
