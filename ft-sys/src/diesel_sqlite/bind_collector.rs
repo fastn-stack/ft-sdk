@@ -14,30 +14,30 @@ impl SqliteBindCollector<'_> {
     pub fn new() -> Self {
         Self {
             binds: Vec::new(),
-            _m: std::marker::PhantomData::default(),
+            _m: std::marker::PhantomData,
         }
     }
 }
 
-impl<'a> From<i32> for super::Value {
+impl From<i32> for super::Value {
     fn from(i: i32) -> Self {
         super::Value::Integer(i as i64)
     }
 }
 
-impl<'a> From<i64> for super::Value {
+impl From<i64> for super::Value {
     fn from(i: i64) -> Self {
         super::Value::Integer(i)
     }
 }
 
-impl<'a> From<f64> for super::Value {
+impl From<f64> for super::Value {
     fn from(f: f64) -> Self {
         super::Value::Real(f)
     }
 }
 
-impl<'a, T> From<Option<T>> for super::Value
+impl<T> From<Option<T>> for super::Value
 where
     T: Into<super::Value>,
 {
@@ -55,13 +55,13 @@ impl<'a> From<&'a str> for super::Value {
     }
 }
 
-impl<'a> From<String> for super::Value {
+impl From<String> for super::Value {
     fn from(s: String) -> Self {
         super::Value::Text(s)
     }
 }
 
-impl<'a> From<Vec<u8>> for super::Value {
+impl From<Vec<u8>> for super::Value {
     fn from(b: Vec<u8>) -> Self {
         super::Value::Blob(b)
     }

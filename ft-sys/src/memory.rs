@@ -1,5 +1,9 @@
 /// Allocate memory into the wasm linear memory
 /// and return the offset to the start of the block.
+/// # Safety
+///
+/// This function is unsafe because it dereferences the pointer. There is no way to
+/// make this function unsafe.
 #[no_mangle]
 #[allow(clippy::uninit_vec)]
 pub fn alloc(len: i32) -> i32 {
@@ -28,6 +32,10 @@ pub fn alloc(len: i32) -> i32 {
 }
 
 /// de-allocating the memory
+/// # Safety
+///
+/// This function is unsafe because it dereferences the pointer. There is no way to
+/// make this function unsafe.
 #[no_mangle]
 pub unsafe fn dealloc(ptr: i32) {
     let size = ptr_len(ptr);
@@ -37,12 +45,20 @@ pub unsafe fn dealloc(ptr: i32) {
 }
 
 /// de-allocating the memory
+/// # Safety
+///
+/// This function is unsafe because it dereferences the pointer. There is no way to
+/// make this function unsafe.
 #[no_mangle]
 pub unsafe fn dealloc_with_len(ptr: i32, len: i32) {
     let data = Vec::from_raw_parts(ptr as *mut u8, len as usize, len as usize);
     drop(data);
 }
 
+/// # Safety
+///
+/// This function is unsafe because it dereferences the pointer. There is no way to
+/// make this function unsafe.
 pub unsafe fn ptr_len(ptr: i32) -> i32 {
     let len_bytes = Vec::from_raw_parts(ptr as *mut u8, 4, 4);
     let len = i32::from_ne_bytes([len_bytes[0], len_bytes[1], len_bytes[2], len_bytes[3]]);
@@ -50,10 +66,18 @@ pub unsafe fn ptr_len(ptr: i32) -> i32 {
     len
 }
 
+/// # Safety
+///
+/// This function is unsafe because it dereferences the pointer. There is no way to
+/// make this function unsafe.
 pub(crate) fn string_from_ptr(ptr: i32) -> String {
     unsafe { String::from_utf8_unchecked(bytes_from_ptr(ptr).into()) }
 }
 
+/// # Safety
+///
+/// This function is unsafe because it dereferences the pointer. There is no way to
+/// make this function unsafe.
 fn bytes_from_ptr(ptr: i32) -> bytes::Bytes {
     unsafe {
         let len = ptr_len(ptr);
