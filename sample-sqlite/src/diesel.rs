@@ -249,29 +249,29 @@ diesel::table! {
     ft_user_6 (id) {
         id -> Int8,
         username -> Text,
-        updated_at -> ft_sdk::SqliteTimestamptz,
+        updated_at -> Timestamptz,
     }
 }
 
-// #[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
-// #[diesel(table_name = ft_user_6)]
-// #[diesel(treat_none_as_default_value = false)]
-// pub struct User6 {
-//     pub id: i64,
-//     pub username: String,
-//     pub updated_at: chrono::DateTime<chrono::Utc>,
-// }
+#[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
+#[diesel(table_name = ft_user_6)]
+#[diesel(treat_none_as_default_value = false)]
+pub struct User6 {
+    pub id: i64,
+    pub username: String,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
 
 pub fn chrono_datetime_utc(c: &mut ft_sdk::SqliteConnection) {
-    // let user = crate::diesel::User6 {
-    //     id: 1,
-    //     username: "yo".to_string(),
-    //     updated_at: chrono::Utc::now(),
-    // };
+    let user = User6 {
+        id: 1,
+        username: "yo".to_string(),
+        updated_at: chrono::Utc::now(),
+    };
 
-    // let c = diesel::insert_into(crate::diesel::ft_user_5::table)
-    //     .values(user)
-    //     .returning(crate::diesel::ft_user_5::id)
-    //     .get_result::<i64>(c)
-    //     .unwrap();
+    let c = diesel::insert_into(ft_user_6::table)
+        .values(user)
+        .returning(ft_user_6::id)
+        .get_result::<i64>(c)
+        .unwrap();
 }
