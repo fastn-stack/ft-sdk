@@ -159,8 +159,8 @@ pub fn t() -> String {
         .get_results(&mut connection)
         .unwrap();
 
-    for user in data {
-        print_user(&user);
+    for user in &data {
+        print_user(user);
     }
 
     format!("hello {:?}!!!, this is demo\n", data)
