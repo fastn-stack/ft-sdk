@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct UserId(pub String);
 
 /// Any provider can provide any of these information about currently logged-in user,
@@ -33,9 +34,8 @@ pub struct ProviderUserData {
 }
 
 /// Get the currently logged in user's userid.
-/// If no user is logged in, an empty user will be created and its id will
-/// be returned.
-pub fn user_id() -> UserId {
+/// returns `None` if the user is not logged in.
+pub fn user_id() -> Option<UserId> {
     todo!()
 }
 

@@ -32,24 +32,11 @@
 /// caller can request the user to log in again with the required scopes.
 pub struct Scope(pub String);
 
-/// This function logs the user in with given provider name and provider id. If the user
-/// is already logged in, and user does not have a provider id stored, this provider id
-/// will be stored. If the user is already logged in, and the provider id is different,
-/// this id would be added as alternate id. In subsequent logins, the user can use any of
-/// the alternate ids to log in.
-///
-/// If the user is logged in, and the provider id is stored with another user, this
-/// function will return an error.
-pub fn login() {
-    // copy data of user into session
-    todo!();
-}
-
-/// Auth provider can provide in any of these information about currently logged-in user.
-///
-/// see [modify_user] for more details.
-pub fn modify_current_user(
-    conn: &mut ft_sdk::PgConnection,
+/// This function logs the user in with given provider name and provider id.
+/// If the user is already logged in, and the provider id is different, this id would be added as
+/// alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
+pub fn authenticate(
+    conn: &mut ft_sdk::Connection,
     provider_id: &str,
     // GitHub may use username as Identity, as user can understand their username, but have never
     // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
@@ -60,13 +47,55 @@ pub fn modify_current_user(
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
     // TODO:
-    // token: Option<serde_json::Value>,
-) -> Result<ft_sdk::UserId, ModifyUserError> {
-    let id = ft_sdk::auth::user_id();
+    // _token: Option<serde_json::Value>,
+) -> Result<ft_sdk::UserId, AuthError> {
+    let user_id = if let Some(id) = ft_sdk::auth::user_id() {
+        id
+    } else {
+        create_empty_user()?
+    };
 
-    modify_user(id, conn, provider_id, identity, data)
+    modify_user(&user_id, conn, provider_id, identity, data)?;
+
+    login(conn, &user_id, provider_id, identity)?;
+
+    Ok(user_id)
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum AuthError {
+    #[error("diesel error: {0}")]
+    Disel(#[from] diesel::result::Error),
+    #[error("ft_sdk::auth::UserData::Name is required")]
+    NameNotProvided,
+}
+
+/// returns `true` if there's a [UserData::VerifiedEmail] for the provided email
+///
+/// this makes a db call to check if the email is already verified.
+pub fn check_email(email: &str) -> bool {
+    // `UserData::VerifiedEmail` from any provider is also stored under the
+    // "email" provider so we only check the email provider in db
+    todo!()
+}
+
+fn create_empty_user() -> Result<ft_sdk::UserId, AuthError> {
+    todo!()
+}
+
+/// persist the user in session
+fn login(
+    conn: &mut ft_sdk::Connection,
+    user_id: &ft_sdk::UserId,
+    provider_id: &str,
+    identity: &str,
+) -> Result<(), AuthError> {
+    // copy data of user into session
+    todo!();
+}
+
+/// Normalise and save user details
+///
 /// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
 /// provider. Eg if GitHub gives use VerifiedEmail, we will add entry for provider: GitHub
 /// provider_id: <GitHub id> and provider: email provider_id: <email>. If the user tries to
@@ -86,23 +115,15 @@ pub fn modify_current_user(
 ///
 /// Auth providers can also drop in a token that can be used to call APIs that require
 /// token. The token is stored against session, and is deleted when the user logs out.
-///
-/// This function returns the user id.
-pub fn modify_user(
-    id: ft_sdk::UserId,
-    conn: &mut ft_sdk::PgConnection,
+fn modify_user(
+    id: &ft_sdk::UserId,
+    conn: &mut ft_sdk::Connection,
     provider_id: &str,
-    // GitHub may use username as Identity, as user can understand their username, but have never
-    // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
-    // show some identity against each, and we will use this identity. Identity is mandatory. It
-    // will be stored as UserData::Identity.
-    //
-    // For the same provider_id, if identity changes, we will only keep the latest identity.
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
     // TODO:
     // token: Option<serde_json::Value>,
-) -> Result<ft_sdk::UserId, ModifyUserError> {
+) -> Result<(), AuthError> {
     use diesel::prelude::*;
 
     let mut data = data;
@@ -115,7 +136,7 @@ pub fn modify_user(
     });
 
     if name.is_none() {
-        return Err(ModifyUserError::NameNotProvided);
+        return Err(AuthError::NameNotProvided);
     }
 
     let affected = conn.transaction(|c| {
@@ -134,14 +155,14 @@ pub fn modify_user(
             .do_update()
             .set(db::user::data.eq(new_data));
 
-        ft_sdk::utils::dbg_query(&query);
+        ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
 
         query.execute(c)
     })?;
 
     ft_sdk::println!("modified {} user(s)", affected);
 
-    Ok(id)
+    Ok(())
 }
 
 /// update existing user's data (`old_data`) with the provided `data`
@@ -213,7 +234,7 @@ fn merge_user_data(
     new_data
 }
 
-pub fn user_data_to_json(
+fn user_data_to_json(
     data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
 ) -> serde_json::Value {
     use ft_sdk::auth::UserData;
@@ -362,7 +383,7 @@ pub fn user_data_to_json(
     serde_json::Value::Object(map)
 }
 
-pub fn user_data_from_json(
+fn user_data_from_json(
     data: serde_json::Value,
 ) -> std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>> {
     assert!(data.is_object());
@@ -459,16 +480,6 @@ pub fn user_data_from_json(
 /// and added to this account. All sessions logged in via this provider id will be logged out.
 fn split_account(_provider_id: &str) -> ft_sdk::UserId {
     todo!()
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum ModifyUserError {
-    #[error("diesel error: {0}")]
-    Disel(#[from] diesel::result::Error),
-    #[error("user not logged in")]
-    UserNotLoggedIn,
-    #[error("ft_sdk::auth::UserData::Name is required")]
-    NameNotProvided,
 }
 
 mod db {

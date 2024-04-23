@@ -6,8 +6,7 @@
 
 extern crate self as ft_sdk;
 
-mod auth;
-#[cfg(feature = "auth-providers")]
+pub mod auth;
 pub mod auth_provider;
 mod cookie;
 mod crypto;
@@ -38,7 +37,6 @@ pub type Connection = ft_sys::SqliteConnection;
 
 #[cfg(feature = "postgres-default")]
 pub type Connection = ft_sys::PgConnection;
-
 
 /// Get a connection to the default postgres database.
 #[cfg(feature = "postgres")]
