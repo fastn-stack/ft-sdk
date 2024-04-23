@@ -12,6 +12,10 @@ impl JsonBody {
             None => Ok(None),
         }
     }
+
+    pub fn json<T: serde::de::DeserializeOwned>(&self) -> serde_json::Result<T> {
+        serde_json::from_value(serde_json::Value::Object(self.body.clone()))
+    }
 }
 
 pub trait JsonBodyExt {

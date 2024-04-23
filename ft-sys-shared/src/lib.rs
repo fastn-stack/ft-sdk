@@ -49,6 +49,26 @@ impl From<Request> for http::Response<bytes::Bytes> {
     }
 }
 
+impl From<http::Request<bytes::Bytes>> for Request {
+    fn from(r: http::Request<bytes::Bytes>) -> Self {
+        let uri =  r.uri().to_string();
+        let method =  r.method().to_string();
+        let (parts, body) = r.into_parts();
+        let headers = parts
+            .headers
+            .iter()
+            .map(|(k, v)| (k.as_str().to_string(), v.as_bytes().to_vec()))
+            .collect();
+
+        Request {
+            uri,
+            method,
+            headers,
+            body: body.to_vec(),
+        }
+    }
+}
+
 impl From<http::Response<bytes::Bytes>> for Request {
     fn from(r: http::Response<bytes::Bytes>) -> Self {
         let (parts, body) = r.into_parts();
