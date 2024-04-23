@@ -4,7 +4,7 @@ use diesel::serialize::{IsNull, Output, ToSql};
 use diesel::sql_types::Timestamp;
 use diesel::{deserialize, serialize};
 use diesel_derives::{QueryId, SqlType};
-use ft_sys::diesel_sqlite::{Sqlite, SqliteValue};
+use ft_sqlite_backend::{Sqlite, SqliteValue};
 
 impl FromSql<Timestamp, Sqlite> for NaiveDateTime {
     fn from_sql(bytes: SqliteValue<'_>) -> deserialize::Result<Self> {

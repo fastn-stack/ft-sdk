@@ -55,7 +55,7 @@ pub struct Row {
 
 impl diesel::row::RowSealed for Row {}
 
-impl<'a> diesel::row::Row<'a, ft_sys::diesel_sqlite::Sqlite> for Row {
+impl<'a> diesel::row::Row<'a, ft_sqlite_backend::Sqlite> for Row {
     type Field<'f> = Field<'f> where 'a: 'f, Self: 'f;
     type InnerPartialRow = Self;
 
@@ -88,7 +88,7 @@ impl<'a> diesel::row::Row<'a, ft_sys::diesel_sqlite::Sqlite> for Row {
         &self,
         range: std::ops::Range<usize>,
     ) -> diesel::row::PartialRow<'_, Self::InnerPartialRow> {
-        diesel::row::PartialRow::new::<ft_sys::diesel_sqlite::Sqlite>(self, range)
+        diesel::row::PartialRow::new::<ft_sqlite_backend::Sqlite>(self, range)
     }
 }
 
@@ -114,14 +114,14 @@ pub struct Field<'f> {
     idx: usize,
 }
 
-impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
+impl<'a> diesel::row::Field<'a, ft_sqlite_backend::Sqlite> for Field<'a> {
     fn field_name(&self) -> Option<&str> {
         Some(self.row.columns[self.idx].as_str())
     }
 
     fn value(
         &self,
-    ) -> Option<<ft_sys::diesel_sqlite::Sqlite as diesel::backend::Backend>::RawValue<'_>> {
+    ) -> Option<<ft_sqlite_backend::Sqlite as diesel::backend::Backend>::RawValue<'_>> {
         self.raw.as_ref().map(|raw_value| SqliteValue { raw_value })
     }
 }

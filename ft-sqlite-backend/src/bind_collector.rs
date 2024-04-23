@@ -2,7 +2,7 @@ use diesel::query_builder::BindCollector;
 use diesel::serialize::{IsNull, Output};
 use diesel::sql_types::HasSqlType;
 use diesel::QueryResult;
-use ft_sys::diesel_sqlite::backend::Sqlite;
+use ft_sqlite_backend::backend::Sqlite;
 
 #[derive(Debug, Default, serde::Serialize)]
 pub struct SqliteBindCollector<'a> {

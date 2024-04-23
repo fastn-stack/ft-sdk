@@ -143,6 +143,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ft-sqlite-backend"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "diesel",
+ "diesel_derives",
+ "serde",
+]
+
+[[package]]
 name = "ft-sys"
 version = "0.1.2"
 dependencies = [

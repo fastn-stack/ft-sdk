@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "ft-sdk",
+    "ft-sqlite-backend",
     "ft-sys",
     "ft-sys-shared",
 ]
