@@ -1,5 +1,5 @@
 [package]
-name = "sample-wasm"
+name = "sample-sqlite"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,9 +14,9 @@ crate-type = ["cdylib"]
 ft-sdk = { version = "0.1", path = "../ft-sdk/", features = ["sqlite-default"] }
 http = "1"
 bytes = "1"
-chrono = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+chrono = { version = "0.4", features = ["serde"], default-features = false }
 
 [dependencies.diesel]
 version = "2"
