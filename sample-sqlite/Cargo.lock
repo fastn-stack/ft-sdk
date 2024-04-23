@@ -283,6 +283,8 @@ dependencies = [
  "diesel",
  "ft-sdk",
  "http",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
