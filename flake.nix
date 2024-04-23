@@ -12,8 +12,9 @@
         inherit system overlays;
       };
 
-      toolchain = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain).override {
+      toolchain = pkgs.rust-bin.stable.latest.default.override {
         extensions = [ "rustfmt" "clippy" "rust-src" ];
+        targets = [ "wasm32-unknown-unknown" ];
       };
     in
     {
