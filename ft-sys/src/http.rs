@@ -2,12 +2,16 @@
 #[derive(Debug)]
 pub enum Error {}
 
-pub fn get(_r: http::Request<bytes::Bytes>) -> Result<http::Response<bytes::Bytes>, Error> {
-    todo!()
+pub fn send(r: http::Request<bytes::Bytes>) -> Result<http::Response<bytes::Bytes>, Error> {
+    let r: ft_sys_shared::Request = r.into();
+    let (ptr, len) = ft_sys::memory::json_ptr(r);
+    let ptr = unsafe { http_send_request(ptr, len) };
+    let r: ft_sys_shared::Request = ft_sys::memory::json_from_ptr(ptr);
+    Ok(r.into())
 }
 
-pub fn post(_r: http::Request<bytes::Bytes>) -> Result<http::Response<bytes::Bytes>, Error> {
-    todo!()
+extern "C" {
+    fn http_send_request(ptr: i32, len: i32) -> i32;
 }
 
 /// Get the current request.
