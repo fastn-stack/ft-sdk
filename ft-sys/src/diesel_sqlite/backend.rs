@@ -120,6 +120,12 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamptz> for Sqlite {
     }
 }
 
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Jsonb> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        SqliteType::Binary
+    }
+}
+
 impl diesel::backend::SqlDialect for Sqlite {
     type ReturningClause = SqliteReturningClause;
 
