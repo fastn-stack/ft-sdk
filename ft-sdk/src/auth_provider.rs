@@ -8,24 +8,24 @@
 //!
 //! # How Will A Site Create Usernames?
 //!
-//! Usernames are supplied by one of the providers, e.g. email-username provider requires
-//! user to pick unique username during signup, or GitHub provider provides username. A
-//! site can accept username from only one provider as each provider have different
-//! namespaces for username. If a site wants username feature, the only way to create account
-//! is via the provider that provides username. If the user wants to log in via other provider,
+//! Usernames are supplied by one of the providers, e.g., email-username provider requires
+//! user to pick a unique username during signup, or GitHub provider provides username. A
+//! site can accept username from only one provider as each provider has different
+//! namespaces for username. If a site wants username feature, the only way to create an account
+//! is via the provider that provides username. If the user wants to log in via another provider,
 //! user will be sent to username provider's "create-username" page. If the user wants to log in
 //! via another provider that provides its own username, the username by that provider will be
 //! used if it is available. If the username is not available, the user will be asked to pick a
 //! new username by going to "create-username" page of the provider that provides username, with
 //! the username as default value.
 //!
-//! # How Will User Update Their Data?
+//! # How Will Users Update Their Data?
 //!
 //! ft_sdk::auth creates a bunch of functions that can be used to update user data, name, email,
-//! username etc. The UI will have be provided by the auth provider, or some other generic auth
+//! username etc. The UI will have been provided by the auth provider, or some other generic auth
 //! setting package.
 
-/// In the current session we have zero or more scopes dropped by different auth
+/// In the current session, we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some
 /// APIs that require certain scopes to be present. Before calling those APIs, the
 /// caller can check if the session has enough scopes to call that api. If not, the
@@ -65,7 +65,7 @@ pub fn authenticate(
 #[derive(Debug, thiserror::Error)]
 pub enum AuthError {
     #[error("diesel error: {0}")]
-    Disel(#[from] diesel::result::Error),
+    Diesel(#[from] diesel::result::Error),
     #[error("ft_sdk::auth::UserData::Name is required")]
     NameNotProvided,
 }
@@ -73,9 +73,9 @@ pub enum AuthError {
 /// returns `true` if there's a [UserData::VerifiedEmail] for the provided email
 ///
 /// this makes a db call to check if the email is already verified.
-pub fn check_email(email: &str) -> bool {
+pub fn check_email(_email: &str) -> bool {
     // `UserData::VerifiedEmail` from any provider is also stored under the
-    // "email" provider so we only check the email provider in db
+    // "email" provider, so we only check the email provider in db
     todo!()
 }
 
@@ -99,22 +99,22 @@ fn login(
 /// If the provider provides UserData::VerifiedEmail, then we also add the data against "email"
 /// provider. Eg if GitHub gives use VerifiedEmail, we will add entry for provider: GitHub
 /// provider_id: <GitHub id> and provider: email provider_id: <email>. If the user tries to
-/// log in via email, the GitHub provided email will be used. User may not have password in
+/// log in via email, the GitHub provided email will be used. Users may not have a password in
 /// that case, so they will have to use reset password flow to create password.
 ///
-/// If we get UserData::VerifiedEmail and we already have UserData::Email for same email address
+/// If we get UserData::VerifiedEmail and we already have UserData::Email for the same email address,
 /// we will delete the email, and only keep verified email.
 ///
 /// If the provider provides UserData::Username, we store the username against the provider.
-/// If the site needs username feature they have to pick the provider that provides
+/// If the site needs username feature, they have to pick the provider that provides
 /// username. If the provider dropped username changes, the value will not be updated,
 /// meaning once a username is set, the username does not automatically change. The user
 /// will have an option of changing the username. The username is unique across the site.
 ///
-/// Auth providers can also associate scope with the current session.
+/// Each provider can also associate scope with the current session.
 ///
-/// Auth providers can also drop in a token that can be used to call APIs that require
-/// token. The token is stored against session, and is deleted when the user logs out.
+/// Each provider can also drop in a token that can be used to call APIs that require
+/// a token. The token is stored against session, and is deleted when the user logs out.
 fn modify_user(
     id: &ft_sdk::UserId,
     conn: &mut ft_sdk::Connection,
@@ -475,9 +475,10 @@ fn user_data_from_json(
         .collect()
 }
 
-/// we will remove this provider-id from the current account, and create a new account with just
-/// that provider id. All information provided by this provider id will be removed from old account
-/// and added to this account. All sessions logged in via this provider id will be logged out.
+/// We will remove this provider-id from the current account, and create a new account with
+/// just that provider id. All information provided by this provider id will be removed from
+/// an old account and added to this account. All sessions logged in via this provider id
+/// will be logged out.
 fn split_account(_provider_id: &str) -> ft_sdk::UserId {
     todo!()
 }

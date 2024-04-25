@@ -1,7 +1,7 @@
 #[derive(Clone)]
 pub struct UserId(pub String);
 
-/// Any provider can provide any of these information about currently logged-in user,
+/// Any provider can provide any of this information about currently logged-in user,
 /// which is stored against the user in the database. The provider who drops in the
 /// information, if they update it, the value will get updated.
 #[derive(Debug, Clone, PartialEq)]
@@ -16,8 +16,8 @@ pub enum UserData {
     Age(u8),
     Phone(String),
     ProfilePicture(String),
-    /// Github may use username as Identity, as user can understand their username, but have never
-    /// seen their github user id. If we show that user is logged in twice via github, we have to
+    /// GitHub may use username as Identity, as user can understand their username, but have never
+    /// seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
     /// show some identity against each, and we will use this identity.
     Identity(String),
 
@@ -33,8 +33,7 @@ pub struct ProviderUserData {
     provider: String,
 }
 
-/// Get the currently logged in user's userid.
-/// returns `None` if the user is not logged in.
+/// Get the currently logged-in user's userid. returns `None` if the user is not logged in.
 pub fn user_id() -> Option<UserId> {
     todo!()
 }
@@ -64,7 +63,7 @@ pub fn session_provider_ids(_provider: &str) -> Vec<String> {
     todo!()
 }
 
-/// This returns a list of providers whose credentials are attached to current user
+/// This returns a list of providers whose credentials are attached to the current user
 /// account.
 pub fn providers() -> Vec<String> {
     todo!()
