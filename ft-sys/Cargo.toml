@@ -13,7 +13,7 @@ default = ["sqlite-default"]
 postgres-default = ["postgres"]
 postgres = ["diesel/postgres_backend", "diesel", "diesel_derives"]
 sqlite-default = ["sqlite"]
-sqlite = ["diesel", "diesel_derives", "diesel/postgres_backend"]
+sqlite = ["diesel", "diesel_derives", "diesel/postgres_backend", "ft-sys-shared/sqlite"]
 
 [dependencies]
 serde.workspace = true

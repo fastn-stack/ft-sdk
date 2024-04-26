@@ -80,12 +80,25 @@ impl diesel::connection::Connection for SqliteConnection {
         })
     }
 
-    fn execute_returning_count<T>(&mut self, _source: &T) -> diesel::QueryResult<usize>
+    fn execute_returning_count<T>(&mut self, source: &T) -> diesel::QueryResult<usize>
     where
         T: diesel::query_builder::QueryFragment<Self::Backend> + diesel::query_builder::QueryId,
     {
         ft_sys::println!("execute returning count");
-        todo!()
+        let q = source_to_query(source)?;
+        let (ptr, len) = ft_sys::memory::json_ptr(q);
+
+        let ptr = unsafe { sqlite_execute(ptr, len) };
+
+        let res: Result<usize, ft_sys_shared::DbError> = ft_sys::memory::json_from_ptr(ptr);
+        match res {
+            Ok(size) => Ok(size),
+            Err(e) => {
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
+                // update_transaction_manager_status(&e, &mut self.transaction_manager);
+                Err(e)
+            }
+        }
     }
 
     fn transaction_state(
@@ -95,10 +108,14 @@ impl diesel::connection::Connection for SqliteConnection {
     }
 }
 
+extern "C" {
+    fn sqlite_execute(ptr: i32, len: i32) -> i32;
+}
+
 #[derive(serde::Serialize, Debug)]
 struct Query {
     sql: String,
-    binds: Vec<super::Value>,
+    binds: Vec<ft_sys_shared::SqliteRawValue>,
 }
 
 fn source_to_query<T>(source: T) -> diesel::QueryResult<Query>

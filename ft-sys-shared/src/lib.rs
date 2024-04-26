@@ -2,6 +2,9 @@
 //! system-level functionality. This crate should not be used directly, and
 //! `ft-sdk` should be used.
 
+mod rusqlite_value;
+pub use rusqlite_value::SqliteRawValue;
+
 /// Request acts as both a request and a response, and is only used for the
 /// communication between guest and host. It is not exposed via ft-sdk.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -119,3 +122,4 @@ pub enum DbError {
     },
     UnableToSendCommand(String),
 }
+
