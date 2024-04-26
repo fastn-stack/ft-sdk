@@ -29,17 +29,11 @@ thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = "2"
 serde_urlencoded = "0.7"
-
-
-[workspace.dependencies.rusqlite]
-version = "0.31"
-features = [
-    # We are using bundled version of rusqlite, so we do not need sqlitelib, headers as a
-    # dependency. By default, if we do not bundle, our binary will link against system
-    # provided sqlite, which would have been a good thing, if we used system sqlite, our
-    # binary size would be smaller, compile time lesser, but unfortunately we can not assume
-    # sqlite dynamic library is installed on everyone's machine. We can choose to give two
-    # binaries, one with bundled, one without, but it is not worth the tradeoff right now.
-    "bundled",
-    "column_decltype",
-]
+#rusqlite = { package = "libsql-rusqlite", version = "0.30", default-features = false, features = [
+#    "libsql-experimental",
+#    "column_decltype",
+#    "load_extension",
+#    "modern_sqlite",
+#    "functions",
+#    "limits",
+#] }

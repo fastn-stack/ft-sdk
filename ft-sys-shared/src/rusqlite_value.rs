@@ -63,7 +63,7 @@ impl<'a> From<&'a [u8]> for crate::SqliteRawValue {
         crate::SqliteRawValue::Blob(b.to_vec())
     }
 }
-
+/*
 impl rusqlite::types::ToSql for SqliteRawValue {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
         match self {
@@ -85,7 +85,7 @@ impl rusqlite::types::ToSql for SqliteRawValue {
         }
     }
 }
-
+*/
 
 
 
