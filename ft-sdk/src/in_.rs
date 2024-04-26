@@ -12,7 +12,8 @@ impl In {
             req,
             // remove the following `.unwrap()` sometime before 2262-04-11T23:47:16.854775807
             now: ft_sys::now(),
-            ud: ft_sdk::env::ud(),
+            // ud: ft_sdk::env::ud(),
+            ud: ft_sdk::auth::ud(),
             set_cookies: std::collections::HashMap::new(),
             form_errors: std::collections::HashMap::new(),
         })

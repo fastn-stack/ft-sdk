@@ -12,6 +12,7 @@ mod in_;
 mod json_body;
 mod layout;
 mod query;
+mod auth;
 
 pub use cookie::CookieExt;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
@@ -48,7 +49,13 @@ pub fn default_pg() -> Result<PgConnection, Error> {
 #[cfg(feature = "sqlite")]
 pub fn default_sqlite() -> Result<SqliteConnection, Error> {
     use diesel::Connection;
-    Ok(SqliteConnection::establish("default")?)
+    let db = ft_sys::env::var("DB_FILE".to_string());
+    let db_url = match db {
+        Some(v) => v,
+        None => "default".to_string(),
+    };
+
+    Ok(SqliteConnection::establish(db_url.as_str())?)
 }
 
 #[derive(Debug, thiserror::Error)]
