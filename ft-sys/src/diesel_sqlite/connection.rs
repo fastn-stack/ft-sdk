@@ -6,8 +6,22 @@ pub struct SqliteConnection {
 impl diesel::connection::SimpleConnection for SqliteConnection {
     fn batch_execute(&mut self, query: &str) -> diesel::QueryResult<()> {
         ft_sys::println!("sqlite batch execute: {query}");
-        todo!()
+        let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(query.to_string());
+        let ptr = unsafe { sqlite_batch_execute(ptr, len) };
+        let res: Result<(), ft_sys_shared::DbError> = ft_sys::memory::json_from_ptr(ptr);
+        match res {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                let e = ft_sys::db_error::db_error_to_diesel_error(e);
+                // update_transaction_manager_status(&e, &mut self.transaction_manager);
+                Err(e)
+            }
+        }
     }
+}
+
+extern "C" {
+    fn sqlite_batch_execute(ptr: i32, len: i32) -> i32;
 }
 
 impl diesel::connection::ConnectionSealed for SqliteConnection {}
