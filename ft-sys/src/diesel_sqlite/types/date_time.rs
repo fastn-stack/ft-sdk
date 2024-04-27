@@ -72,7 +72,7 @@ impl FromSql<diesel::sql_types::Timestamptz, Sqlite> for chrono::DateTime<chrono
                 Err(format!("Invalid datetime string: {:?}", t).into())
             }
             _ => Err(format!(
-                "Unexpected type, expected const_u8 found {:?}",
+                "Unexpected type, expected Integer or Text, found {:?}",
                 v.raw_value.kind()
             )
             .into()),
