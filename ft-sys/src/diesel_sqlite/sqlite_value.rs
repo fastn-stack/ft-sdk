@@ -1,56 +1,67 @@
 pub struct SqliteValue<'a> {
-    pub(crate) raw_value: &'a Value,
+    pub(crate) raw_value: &'a ft_sys_shared::SqliteRawValue,
 }
 
 impl<'a> SqliteValue<'a> {
     pub(crate) fn i32(&self) -> diesel::deserialize::Result<i32> {
         match self.raw_value {
-            Value::Integer(i) => Ok(*i as i32),
-            _ => Err("Unexpected type".into()),
+            ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i as i32),
+            _ => Err(format!(
+                "Unexpected type, expected i32 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn i64(&self) -> diesel::deserialize::Result<i64> {
         match self.raw_value {
-            Value::Integer(i) => Ok(*i),
-            _ => Err("Unexpected type".into()),
+            ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i),
+            _ => Err(format!(
+                "Unexpected type, expected i64 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn f64(&self) -> diesel::deserialize::Result<f64> {
         match self.raw_value {
-            Value::Real(i) => Ok(*i),
-            _ => Err("Unexpected type".into()),
+            ft_sys_shared::SqliteRawValue::Real(i) => Ok(*i),
+            _ => Err(format!(
+                "Unexpected type, expected f64 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn const_str(&self) -> diesel::deserialize::Result<*const str> {
         match self.raw_value {
-            Value::Text(i) => Ok(i.as_str() as *const _),
-            _ => Err("Unexpected type".into()),
+            ft_sys_shared::SqliteRawValue::Text(i) => Ok(i.as_str() as *const _),
+            _ => Err(format!(
+                "Unexpected type, expected const_str found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn const_u8(&self) -> diesel::deserialize::Result<*const [u8]> {
         match self.raw_value {
-            Value::Blob(i) => Ok(i.as_slice()),
-            _ => Err("Unexpected type".into()),
+            ft_sys_shared::SqliteRawValue::Blob(i) => Ok(i.as_slice()),
+            _ => Err(format!(
+                "Unexpected type, expected const_u8 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
-pub enum Value {
-    Null,
-    Integer(i64),
-    Real(f64),
-    Text(String),
-    Blob(Vec<u8>),
-}
-
 pub struct Row {
     pub columns: Vec<String>,
-    pub fields: Vec<Option<Value>>,
+    pub fields: Vec<Option<ft_sys_shared::SqliteRawValue>>,
 }
 
 impl diesel::row::RowSealed for Row {}
@@ -110,7 +121,7 @@ impl<'a> diesel::row::RowIndex<&'a str> for Row {
 
 pub struct Field<'f> {
     row: &'f Row,
-    raw: Option<Value>,
+    raw: Option<ft_sys_shared::SqliteRawValue>,
     idx: usize,
 }
 
@@ -122,7 +133,10 @@ impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
     fn value(
         &self,
     ) -> Option<<ft_sys::diesel_sqlite::Sqlite as diesel::backend::Backend>::RawValue<'_>> {
-        self.raw.as_ref().map(|raw_value| SqliteValue { raw_value })
+        self.raw.as_ref().and_then(|raw_value| match raw_value {
+            ft_sys_shared::SqliteRawValue::Null => None,
+            _ => Some(SqliteValue { raw_value }),
+        })
     }
 }
 
@@ -134,7 +148,7 @@ pub struct Cursor {
 
 #[derive(serde::Deserialize, Debug)]
 struct HostRow {
-    fields: Vec<Option<Value>>,
+    fields: Vec<Option<ft_sys_shared::SqliteRawValue>>,
 }
 
 impl Iterator for Cursor {

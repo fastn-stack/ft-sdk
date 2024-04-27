@@ -2,6 +2,11 @@
 //! system-level functionality. This crate should not be used directly, and
 //! `ft-sdk` should be used.
 
+extern crate self as ft_sys_shared;
+
+mod sqlite;
+pub use sqlite::{SqliteRawValue, SqliteType};
+
 /// Request acts as both a request and a response, and is only used for the
 /// communication between guest and host. It is not exposed via ft-sdk.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -51,8 +56,8 @@ impl From<Request> for http::Response<bytes::Bytes> {
 
 impl From<http::Request<bytes::Bytes>> for Request {
     fn from(r: http::Request<bytes::Bytes>) -> Self {
-        let uri =  r.uri().to_string();
-        let method =  r.method().to_string();
+        let uri = r.uri().to_string();
+        let method = r.method().to_string();
         let (parts, body) = r.into_parts();
         let headers = parts
             .headers
