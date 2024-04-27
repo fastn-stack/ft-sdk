@@ -37,13 +37,6 @@ impl<'a> SqliteValue<'a> {
             _ => Err("Unexpected type".into()),
         }
     }
-
-    pub(crate) fn jsonb(&self) -> diesel::deserialize::Result<serde_json::Value> {
-        match self.raw_value {
-            Value::Jsonb(i) => Ok(serde_json::from_slice(i)?),
-            _ => Err("Unexpected type".into()),
-        }
-    }
 }
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
