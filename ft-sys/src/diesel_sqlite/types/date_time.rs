@@ -5,6 +5,32 @@ use diesel::sql_types::Timestamp;
 use diesel::{deserialize, serialize};
 use ft_sys::diesel_sqlite::{Sqlite, SqliteValue};
 
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Date> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        ft_sys_shared::SqliteType::Text
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Time> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        ft_sys_shared::SqliteType::Integer
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        // we want to store the date as number of nanoseconds since the unix epoch.
+        // in future we will add TimestampMilli
+        ft_sys_shared::SqliteType::Integer
+    }
+}
+
+impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamptz> for Sqlite {
+    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
+        ft_sys_shared::SqliteType::Integer
+    }
+}
+
 impl FromSql<Timestamp, Sqlite> for NaiveDateTime {
     fn from_sql(bytes: SqliteValue<'_>) -> deserialize::Result<Self> {
         Ok(DateTime::from_timestamp_nanos(bytes.i64()?).naive_utc())

@@ -67,32 +67,6 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Text> for Sqlite {
     }
 }
 
-impl diesel::sql_types::HasSqlType<diesel::sql_types::Date> for Sqlite {
-    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        ft_sys_shared::SqliteType::Text
-    }
-}
-
-impl diesel::sql_types::HasSqlType<diesel::sql_types::Time> for Sqlite {
-    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        ft_sys_shared::SqliteType::Integer
-    }
-}
-
-impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
-    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        // we want to store the date as number of nanoseconds since the unix epoch.
-        // in future we will add TimestampMilli
-        ft_sys_shared::SqliteType::Integer
-    }
-}
-
-impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamptz> for Sqlite {
-    fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        ft_sys_shared::SqliteType::Integer
-    }
-}
-
 impl diesel::backend::SqlDialect for Sqlite {
     type ReturningClause = SqliteReturningClause;
 

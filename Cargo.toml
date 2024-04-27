@@ -27,7 +27,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
-diesel = "2"
+diesel = { version = "2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
 #rusqlite = { package = "libsql-rusqlite", version = "0.30", default-features = false, features = [
 #    "libsql-experimental",
@@ -37,3 +37,9 @@ serde_urlencoded = "0.7"
 #    "functions",
 #    "limits",
 #] }
+
+[workspace.dependencies.serde_sqlite_jsonb]
+# we are using our own fork as the original crate does not compile again wasm
+# path = "../serde-sqlite-jsonb"
+git = "https://github.com/FifthTry/serde-sqlite-jsonb"
+rev = "d3348a0fcf8c3bb417fdc9eb9247415e99096e15"

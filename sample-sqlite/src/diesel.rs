@@ -39,6 +39,13 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    json_data (id) {
+        id -> Int8,
+        data -> Jsonb,
+    }
+}
+
 #[derive(diesel::Insertable, diesel::Queryable, diesel::Selectable, Debug)]
 #[diesel(table_name = ft_user_3)]
 #[diesel(treat_none_as_default_value = false)]
@@ -74,62 +81,87 @@ pub fn batch_insertable(c: &mut ft_sdk::Connection) {
 pub fn t() -> String {
     let mut connection = ft_sdk::default_sqlite().expect("failed to connect to the database");
 
-    let data: Vec<User2> = ft_user::table
-        .select((ft_user::id, ft_user::username, ft_user::updated_at))
-        .order(ft_user::updated_at.desc())
-        // execute the query via the provided
-        // async `diesel_async::RunQueryDsl`
-        .get_results(&mut connection)
-        .unwrap();
+    let data: diesel::QueryResult<Vec<serde_json::Value>> = json_data::table
+        .select(json_data::data)
+        .get_results(&mut connection);
 
-    let data = ft_user::table
-        .select((ft_user::id, ft_user::username, ft_user::updated_at))
-        .order(ft_user::updated_at.desc())
-        // execute the query via the provided
-        // async `diesel_async::RunQueryDsl`
-        .execute(&mut connection)
-        .unwrap();
+    ft_sdk::println!("json_data table res: {:?}", data);
 
-    let data: Vec<User2> = ft_user::table
-        .select(User2::as_select())
-        .order(ft_user::updated_at.desc())
-        // execute the query via the provided
-        // async `diesel_async::RunQueryDsl`
-        .get_results(&mut connection)
-        .unwrap();
+    let d = serde_json::json!({
+        "name": "John",
+        "age": 29,
+        "phones": [
+            "+44 1234567",
+            "+44 2345678",
+        ],
+        "config": {
+            "prefers_email": true,
+        },
+    });
 
-    let data: Vec<(i64, String, chrono::NaiveDateTime)> = ft_user::table
-        .select((ft_user::id, ft_user::username, ft_user::updated_at))
-        .order(ft_user::updated_at.desc())
-        // execute the query via the provided
-        // async `diesel_async::RunQueryDsl`
-        .get_results(&mut connection)
-        .unwrap();
+    let affected = diesel::insert_into(json_data::table)
+        .values((json_data::id.eq(69), json_data::data.eq(d)))
+        .returning(json_data::id)
+        .get_result::<i64>(&mut connection);
 
-    // let data: Vec<(i64, String, chrono::DateTime<chrono::Utc>)> = ft_user::table
+    ft_sdk::println!("affected: {:?}", affected);
+
+    // let data: Vec<User2> = ft_user::table
+    //     .select((ft_user::id, ft_user::username, ft_user::updated_at))
+    //     .order(ft_user::updated_at.desc())
+    //     // execute the query via the provided
+    //     // async `diesel_async::RunQueryDsl`
+    //     .get_results(&mut connection)
+    //     .unwrap();
+    //
+    // let data = ft_user::table
+    //     .select((ft_user::id, ft_user::username, ft_user::updated_at))
+    //     .order(ft_user::updated_at.desc())
+    //     // execute the query via the provided
+    //     // async `diesel_async::RunQueryDsl`
+    //     .execute(&mut connection)
+    //     .unwrap();
+    //
+    // let data: Vec<User2> = ft_user::table
     //     .select(User2::as_select())
     //     .order(ft_user::updated_at.desc())
     //     // execute the query via the provided
     //     // async `diesel_async::RunQueryDsl`
     //     .get_results(&mut connection)
     //     .unwrap();
-
-    // use ordinary diesel query dsl to construct your query
-    let data: Vec<User> = users::table
-        .filter(users::id.gt(0))
-        .or_filter(users::name.like("%Luke"))
-        .select(User::as_select())
-        .order(users::id.desc())
-        // execute the query via the provided
-        // async `diesel_async::RunQueryDsl`
-        // .get_results(&mut connection)
-        .get_results(&mut connection)
-        .unwrap();
-
-    // for user in data {
-    //     print_user(&user);
+    //
+    // let data: Vec<(i64, String, chrono::NaiveDateTime)> = ft_user::table
+    //     .select((ft_user::id, ft_user::username, ft_user::updated_at))
+    //     .order(ft_user::updated_at.desc())
+    //     // execute the query via the provided
+    //     // async `diesel_async::RunQueryDsl`
+    //     .get_results(&mut connection)
+    //     .unwrap();
+    //
+    // // let data: Vec<(i64, String, chrono::DateTime<chrono::Utc>)> = ft_user::table
+    // //     .select(User2::as_select())
+    // //     .order(ft_user::updated_at.desc())
+    // //     // execute the query via the provided
+    // //     // async `diesel_async::RunQueryDsl`
+    // //     .get_results(&mut connection)
+    // //     .unwrap();
+    //
+    // // use ordinary diesel query dsl to construct your query
+    // let data: Vec<User> = users::table
+    //     .filter(users::id.gt(0))
+    //     .or_filter(users::name.like("%Luke"))
+    //     .select(User::as_select())
+    //     .order(users::id.desc())
+    //     // execute the query via the provided
+    //     // async `diesel_async::RunQueryDsl`
+    //     // .get_results(&mut connection)
+    //     .get_results(&mut connection)
+    //     .unwrap();
+    //
+    // for user in &data {
+    //     print_user(user);
     // }
-
+    //
     format!("hello {:?}!!!, this is demo\n", data)
 }
 
