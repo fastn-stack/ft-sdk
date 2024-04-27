@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 27th Apr 2024
+
+### ft-sys-shared: `0.1.1-alpha.1`
+
+- Added sqlite related types.
+
 ## 22nd Mar 2024
 
 ### ft-sdk `0.1.1`
