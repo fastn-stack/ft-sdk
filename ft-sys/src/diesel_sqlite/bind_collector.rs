@@ -23,9 +23,9 @@ impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
     type Buffer = ft_sys_shared::SqliteRawValue;
 
     fn push_bound_value<T, U>(&mut self, bind: &'a U, metadata_lookup: &mut ()) -> QueryResult<()>
-        where
-            Sqlite: diesel::sql_types::HasSqlType<T>,
-            U: diesel::serialize::ToSql<T, Sqlite> + ?Sized,
+    where
+        Sqlite: diesel::sql_types::HasSqlType<T>,
+        U: diesel::serialize::ToSql<T, Sqlite> + ?Sized,
     {
         let value = ft_sys_shared::SqliteRawValue::Null;
         let mut to_sql_output = Output::new(value, metadata_lookup);

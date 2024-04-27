@@ -1,5 +1,3 @@
-#![cfg(feature = "sqlite")]
-
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub enum SqliteRawValue {
     Null,
@@ -9,60 +7,60 @@ pub enum SqliteRawValue {
     Blob(Vec<u8>),
 }
 
-
-impl From<i32> for crate::SqliteRawValue {
+impl From<i32> for SqliteRawValue {
     fn from(i: i32) -> Self {
-        crate::SqliteRawValue::Integer(i as i64)
+        SqliteRawValue::Integer(i as i64)
     }
 }
 
-impl From<i64> for crate::SqliteRawValue {
+impl From<i64> for SqliteRawValue {
     fn from(i: i64) -> Self {
-        crate::SqliteRawValue::Integer(i)
+        SqliteRawValue::Integer(i)
     }
 }
 
-impl From<f64> for crate::SqliteRawValue {
+impl From<f64> for SqliteRawValue {
     fn from(f: f64) -> Self {
-        crate::SqliteRawValue::Real(f)
+        SqliteRawValue::Real(f)
     }
 }
 
-impl<T> From<Option<T>> for crate::SqliteRawValue
-    where
-        T: Into<crate::SqliteRawValue>,
+impl<T> From<Option<T>> for SqliteRawValue
+where
+    T: Into<SqliteRawValue>,
 {
     fn from(o: Option<T>) -> Self {
         match o {
             Some(v) => v.into(),
-            None => crate::SqliteRawValue::Null,
+            None => SqliteRawValue::Null,
         }
     }
 }
 
-impl<'a> From<&'a str> for crate::SqliteRawValue {
+impl<'a> From<&'a str> for SqliteRawValue {
     fn from(s: &'a str) -> Self {
-        crate::SqliteRawValue::Text(s.to_string())
+        SqliteRawValue::Text(s.to_string())
     }
 }
 
-impl From<String> for crate::SqliteRawValue {
+impl From<String> for SqliteRawValue {
     fn from(s: String) -> Self {
-        crate::SqliteRawValue::Text(s)
+        SqliteRawValue::Text(s)
     }
 }
 
-impl From<Vec<u8>> for crate::SqliteRawValue {
+impl From<Vec<u8>> for SqliteRawValue {
     fn from(b: Vec<u8>) -> Self {
-        crate::SqliteRawValue::Blob(b)
+        SqliteRawValue::Blob(b)
     }
 }
 
-impl<'a> From<&'a [u8]> for crate::SqliteRawValue {
+impl<'a> From<&'a [u8]> for SqliteRawValue {
     fn from(b: &'a [u8]) -> Self {
-        crate::SqliteRawValue::Blob(b.to_vec())
+        SqliteRawValue::Blob(b.to_vec())
     }
 }
+
 /*
 impl rusqlite::types::ToSql for SqliteRawValue {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
@@ -86,6 +84,3 @@ impl rusqlite::types::ToSql for SqliteRawValue {
     }
 }
 */
-
-
-
