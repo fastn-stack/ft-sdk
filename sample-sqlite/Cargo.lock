@@ -321,6 +321,7 @@ dependencies = [
 [[package]]
 name = "serde_sqlite_jsonb"
 version = "0.1.0"
+source = "git+https://github.com/FifthTry/serde-sqlite-jsonb?rev=d3348a0fcf8c3bb417fdc9eb9247415e99096e15#d3348a0fcf8c3bb417fdc9eb9247415e99096e15"
 dependencies = [
  "serde",
  "serde_json",

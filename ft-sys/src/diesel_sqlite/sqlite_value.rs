@@ -46,7 +46,6 @@ pub enum Value {
     Real(f64),
     Text(String),
     Blob(Vec<u8>),
-    Jsonb(Vec<u8>),
 }
 
 pub struct Row {

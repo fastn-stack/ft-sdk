@@ -23,7 +23,7 @@ impl ToSql<sql_types::Jsonb, Sqlite> for serde_json::Value {
 impl<'a> SqliteValue<'a> {
     pub(crate) fn jsonb(&self) -> diesel::deserialize::Result<serde_json::Value> {
         match self.raw_value {
-            Value::Jsonb(i) => Ok(serde_sqlite_jsonb::from_slice(i)?),
+            Value::Blob(i) => Ok(serde_sqlite_jsonb::from_slice(i)?),
             _ => Err("Unexpected type".into()),
         }
     }

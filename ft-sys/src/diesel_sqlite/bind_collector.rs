@@ -70,7 +70,7 @@ impl From<Vec<u8>> for super::Value {
 impl From<serde_json::Value> for super::Value {
     fn from(b: serde_json::Value) -> Self {
         let b = serde_json::to_vec(&b).unwrap();
-        super::Value::Jsonb(b)
+        super::Value::Blob(b)
     }
 }
 
