@@ -308,8 +308,6 @@ dependencies = [
 [[package]]
 name = "serde_sqlite_jsonb"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28eb962d30138aa087a29ea05a791232bac2987c854d9b06c91de0dc61e69e7c"
 dependencies = [
  "serde",
  "serde_json",

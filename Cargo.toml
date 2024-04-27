@@ -29,4 +29,9 @@ thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = { version = "2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
-serde_sqlite_jsonb = "0.1"
+
+[workspace.dependencies.serde_sqlite_jsonb]
+# we are using our own fork as the original crate does not compile again wasm
+path = "../serde-sqlite-jsonb"
+git = "https://github.com/FifthTry/serde-sqlite-jsonb"
+rev = "usize-to-u64"
