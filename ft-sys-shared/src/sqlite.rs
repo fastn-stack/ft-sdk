@@ -1,3 +1,21 @@
+/// Determines how a bind parameter is given to SQLite
+///
+/// Diesel deals with bind parameters after serialization as opaque blobs of
+/// bytes. However, SQLite instead has several functions where it expects the
+/// relevant C types.
+///
+/// The variants of this struct determine what bytes are expected from
+/// `ToSql` impls.
+#[allow(missing_debug_implementations)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy, serde::Deserialize, serde::Serialize)]
+pub enum SqliteType {
+    Null,
+    Integer,
+    Real,
+    Text,
+    Blob,
+}
+
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub enum SqliteRawValue {
     Null,
@@ -5,6 +23,18 @@ pub enum SqliteRawValue {
     Real(f64),
     Text(String),
     Blob(Vec<u8>),
+}
+
+impl SqliteRawValue {
+    pub fn kind(&self) -> SqliteType {
+        match self {
+            SqliteRawValue::Null => SqliteType::Null,
+            SqliteRawValue::Integer(_) => SqliteType::Integer,
+            SqliteRawValue::Real(_) => SqliteType::Real,
+            SqliteRawValue::Text(_) => SqliteType::Text,
+            SqliteRawValue::Blob(_) => SqliteType::Blob,
+        }
+    }
 }
 
 impl From<i32> for SqliteRawValue {
@@ -62,6 +92,7 @@ impl<'a> From<&'a [u8]> for SqliteRawValue {
 }
 
 /*
+#[cfg(feature = "rusqlite")]
 impl rusqlite::types::ToSql for SqliteRawValue {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
         match self {

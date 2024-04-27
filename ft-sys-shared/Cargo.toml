@@ -10,7 +10,7 @@ homepage.workspace = true
 
 
 [features]
-sqlite = []
+rusqlite = []
 
 [dependencies]
 http.workspace = true

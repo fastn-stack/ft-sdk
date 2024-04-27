@@ -6,35 +6,55 @@ impl<'a> SqliteValue<'a> {
     pub(crate) fn i32(&self) -> diesel::deserialize::Result<i32> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i as i32),
-            _ => Err("Unexpected type".into()),
+            _ => Err(format!(
+                "Unexpected type, expected i32 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn i64(&self) -> diesel::deserialize::Result<i64> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i),
-            _ => Err("Unexpected type".into()),
+            _ => Err(format!(
+                "Unexpected type, expected i64 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn f64(&self) -> diesel::deserialize::Result<f64> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Real(i) => Ok(*i),
-            _ => Err("Unexpected type".into()),
+            _ => Err(format!(
+                "Unexpected type, expected f64 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn const_str(&self) -> diesel::deserialize::Result<*const str> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Text(i) => Ok(i.as_str() as *const _),
-            _ => Err("Unexpected type".into()),
+            _ => Err(format!(
+                "Unexpected type, expected const_str found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 
     pub(crate) fn const_u8(&self) -> diesel::deserialize::Result<*const [u8]> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Blob(i) => Ok(i.as_slice()),
-            _ => Err("Unexpected type".into()),
+            _ => Err(format!(
+                "Unexpected type, expected const_u8 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 }
