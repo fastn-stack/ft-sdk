@@ -29,3 +29,4 @@ thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = { version = "2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
+serde_sqlite_jsonb = "0.1"

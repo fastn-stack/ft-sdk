@@ -51,8 +51,8 @@ impl From<Request> for http::Response<bytes::Bytes> {
 
 impl From<http::Request<bytes::Bytes>> for Request {
     fn from(r: http::Request<bytes::Bytes>) -> Self {
-        let uri =  r.uri().to_string();
-        let method =  r.method().to_string();
+        let uri = r.uri().to_string();
+        let method = r.method().to_string();
         let (parts, body) = r.into_parts();
         let headers = parts
             .headers
