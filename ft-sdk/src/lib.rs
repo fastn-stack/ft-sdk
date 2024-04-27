@@ -9,6 +9,7 @@ extern crate self as ft_sdk;
 mod auth;
 mod cookie;
 mod crypto;
+pub mod email;
 mod in_;
 mod json_body;
 mod layout;
