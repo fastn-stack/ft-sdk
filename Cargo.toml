@@ -41,5 +41,5 @@ serde_urlencoded = "0.7"
 [workspace.dependencies.serde_sqlite_jsonb]
 # we are using our own fork as the original crate does not compile again wasm
 # path = "../serde-sqlite-jsonb"
-git = "https://github.com/FifthTry/serde-sqlite-jsonb"
-rev = "d3348a0fcf8c3bb417fdc9eb9247415e99096e15"
+package = "fifthtry-serde_sqlite_jsonb"
+version = "0.1"

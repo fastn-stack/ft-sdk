@@ -114,6 +114,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fifthtry-serde_sqlite_jsonb"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da69e00a6abe54a103acd8edf2f500f14a60a2923a63625de345ac473bedb00f"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -151,11 +161,11 @@ dependencies = [
  "chrono",
  "diesel",
  "diesel_derives",
+ "fifthtry-serde_sqlite_jsonb",
  "ft-sys-shared",
  "http",
  "serde",
  "serde_json",
- "serde_sqlite_jsonb",
 ]
 
 [[package]]
@@ -303,15 +313,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "serde_sqlite_jsonb"
-version = "0.1.0"
-source = "git+https://github.com/FifthTry/serde-sqlite-jsonb?rev=d3348a0fcf8c3bb417fdc9eb9247415e99096e15#d3348a0fcf8c3bb417fdc9eb9247415e99096e15"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]

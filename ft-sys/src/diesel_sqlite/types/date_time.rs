@@ -60,7 +60,7 @@ impl FromSql<diesel::sql_types::Timestamptz, Sqlite> for chrono::DateTime<chrono
                 // %T	00:34:60
                 // %.6f	.026490
                 //
-                // Since the django generated string does not include timezone we can not use
+                // Since the django generated string does not include timezone we cannot use
                 // chrono::DateTime::parse_from_str(t, "%F %T%.6f") directly. So we parse into
                 // NaiveDateTime and convert to DateTime<Utc>.
                 if let Ok(v) = chrono::NaiveDateTime::parse_from_str(t, "%F %T%.6f") {
