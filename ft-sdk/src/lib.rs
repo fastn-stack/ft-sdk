@@ -34,7 +34,6 @@ pub type Connection = ft_sys::SqliteConnection;
 #[cfg(feature = "postgres-default")]
 pub type Connection = ft_sys::PgConnection;
 
-
 /// Get a connection to the default postgres database.
 #[cfg(feature = "postgres")]
 pub fn default_pg() -> Result<PgConnection, Error> {

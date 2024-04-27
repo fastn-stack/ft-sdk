@@ -1,4 +1,5 @@
 pub mod date_time;
+mod jsonb;
 
 use super::{Sqlite, SqliteValue};
 use diesel::deserialize::FromSql;
@@ -124,12 +125,3 @@ impl ToSql<sql_types::Double, Sqlite> for f64 {
         Ok(IsNull::No)
     }
 }
-
-// diesel::sql_type::Timestamp -> NaiveDateTime with nano sec
-// diesel::sql_type::Timestamp -> i64 with nano sec
-// diesel::sql_type::Timestampz -> chrono::DateTime<Utc> with nano sec
-// diesel::sql_type::Timestampz -> i64 with nano sec
-// ft_sys::micro::Timestamp -> NaiveDateTime with micro sec
-// ft_sys::micro::Timestamp -> i64 with micro sec
-// ft_sys::micro::Timestampz -> chrono::DateTime<Utc> with micro sec
-// ft_sys::micro::Timestampz -> i64 with micro sec

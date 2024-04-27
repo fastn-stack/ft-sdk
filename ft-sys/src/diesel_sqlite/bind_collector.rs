@@ -67,6 +67,13 @@ impl From<Vec<u8>> for super::Value {
     }
 }
 
+impl From<serde_json::Value> for super::Value {
+    fn from(b: serde_json::Value) -> Self {
+        let b = serde_json::to_vec(&b).unwrap();
+        super::Value::Blob(b)
+    }
+}
+
 impl<'a> From<&'a [u8]> for super::Value {
     fn from(b: &'a [u8]) -> Self {
         super::Value::Blob(b.to_vec())
