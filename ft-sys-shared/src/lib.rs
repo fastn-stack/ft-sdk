@@ -2,6 +2,11 @@
 //! system-level functionality. This crate should not be used directly, and
 //! `ft-sdk` should be used.
 
+extern crate self as ft_sys_shared;
+
+mod sqlite;
+pub use sqlite::{SqliteRawValue, SqliteType};
+
 /// Request acts as both a request and a response, and is only used for the
 /// communication between guest and host. It is not exposed via ft-sdk.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]

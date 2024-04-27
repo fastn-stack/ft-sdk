@@ -9,8 +9,12 @@ repository.workspace = true
 homepage.workspace = true
 
 
+[features]
+rusqlite = []
+
 [dependencies]
 http.workspace = true
 bytes.workspace = true
 serde.workspace = true
 thiserror.workspace = true
+#rusqlite = { workspace = true, optional = true }

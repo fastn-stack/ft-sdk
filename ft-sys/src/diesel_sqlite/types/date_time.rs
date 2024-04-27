@@ -1,4 +1,3 @@
-use crate::diesel_sqlite::backend::SqliteType;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::deserialize::FromSql;
 use diesel::serialize::{IsNull, Output, ToSql};
@@ -8,13 +7,13 @@ use ft_sys::diesel_sqlite::{Sqlite, SqliteValue};
 
 impl diesel::sql_types::HasSqlType<diesel::sql_types::Date> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        SqliteType::Long
+        ft_sys_shared::SqliteType::Text
     }
 }
 
 impl diesel::sql_types::HasSqlType<diesel::sql_types::Time> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        SqliteType::Long
+        ft_sys_shared::SqliteType::Integer
     }
 }
 
@@ -22,13 +21,13 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamp> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
         // we want to store the date as number of nanoseconds since the unix epoch.
         // in future we will add TimestampMilli
-        SqliteType::Long
+        ft_sys_shared::SqliteType::Integer
     }
 }
 
 impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamptz> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
-        SqliteType::Long
+        ft_sys_shared::SqliteType::Integer
     }
 }
 
