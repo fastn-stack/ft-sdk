@@ -133,7 +133,10 @@ impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
     fn value(
         &self,
     ) -> Option<<ft_sys::diesel_sqlite::Sqlite as diesel::backend::Backend>::RawValue<'_>> {
-        self.raw.as_ref().map(|raw_value| SqliteValue { raw_value })
+        self.raw.as_ref().and_then(|raw_value| match raw_value {
+            ft_sys_shared::SqliteRawValue::Null => None,
+            _ => Some(SqliteValue { raw_value }),
+        })
     }
 }
 
