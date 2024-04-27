@@ -1,4 +1,3 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::deserialize::FromSql;
 use diesel::serialize::{IsNull, Output, ToSql};
 use diesel::sql_types::Timestamp;
@@ -31,13 +30,13 @@ impl diesel::sql_types::HasSqlType<diesel::sql_types::Timestamptz> for Sqlite {
     }
 }
 
-impl FromSql<Timestamp, Sqlite> for NaiveDateTime {
+impl FromSql<Timestamp, Sqlite> for chrono::NaiveDateTime {
     fn from_sql(bytes: SqliteValue<'_>) -> deserialize::Result<Self> {
-        Ok(DateTime::from_timestamp_nanos(bytes.i64()?).naive_utc())
+        Ok(chrono::DateTime::from_timestamp_nanos(bytes.i64()?).naive_utc())
     }
 }
 
-impl ToSql<Timestamp, Sqlite> for NaiveDateTime {
+impl ToSql<Timestamp, Sqlite> for chrono::NaiveDateTime {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> serialize::Result {
         if let Some(num_nanoseconds) = self.and_utc().timestamp_nanos_opt() {
             out.set_value(num_nanoseconds);
@@ -48,13 +47,40 @@ impl ToSql<Timestamp, Sqlite> for NaiveDateTime {
     }
 }
 
-impl FromSql<diesel::sql_types::Timestamptz, Sqlite> for DateTime<Utc> {
-    fn from_sql(bytes: SqliteValue<'_>) -> deserialize::Result<Self> {
-        Ok(DateTime::from_timestamp_nanos(bytes.i64()?))
+impl FromSql<diesel::sql_types::Timestamptz, Sqlite> for chrono::DateTime<chrono::Utc> {
+    fn from_sql(v: SqliteValue<'_>) -> deserialize::Result<Self> {
+        match v.raw_value {
+            ft_sys_shared::SqliteRawValue::Integer(i) => {
+                Ok(chrono::DateTime::from_timestamp_nanos(*i))
+            }
+            ft_sys_shared::SqliteRawValue::Text(t) => {
+                // Django inserts values like: 2024-04-27 07:14:08.961359
+                // https://docs.rs/chrono/latest/chrono/format/strftime/
+                // %F	2001-07-08
+                // %T	00:34:60
+                // %.6f	.026490
+                //
+                // Since the django generated string does not include timezone we can not use
+                // chrono::DateTime::parse_from_str(t, "%F %T%.6f") directly. So we parse into
+                // NaiveDateTime and convert to DateTime<Utc>.
+                if let Ok(v) = chrono::NaiveDateTime::parse_from_str(t, "%F %T%.6f") {
+                    return Ok(chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(
+                        v,
+                        chrono::Utc,
+                    ));
+                }
+                Err(format!("Invalid datetime string: {:?}", t).into())
+            }
+            _ => Err(format!(
+                "Unexpected type, expected const_u8 found {:?}",
+                v.raw_value.kind()
+            )
+            .into()),
+        }
     }
 }
 
-impl ToSql<diesel::sql_types::Timestamptz, Sqlite> for DateTime<Utc> {
+impl ToSql<diesel::sql_types::Timestamptz, Sqlite> for chrono::DateTime<chrono::Utc> {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> serialize::Result {
         if let Some(num_nanoseconds) = self.timestamp_nanos_opt() {
             out.set_value(num_nanoseconds);

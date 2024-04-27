@@ -23,7 +23,11 @@ impl<'a> SqliteValue<'a> {
     pub(crate) fn jsonb(&self) -> diesel::deserialize::Result<serde_json::Value> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Blob(i) => Ok(serde_sqlite_jsonb::from_slice(i)?),
-            _ => Err("Unexpected type".into()),
+            _ => Err(format!(
+                "Unexpected type, expected Blog, found: {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
         }
     }
 }
