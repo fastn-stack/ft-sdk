@@ -1,4 +1,9 @@
+#[cfg(feature = "sqlite-default")]
+mod sqlite;
+
 use diesel::prelude::*;
+#[cfg(feature = "sqlite-default")]
+use sqlite::{EMAIL_TABLE, MIGRATION_TABLE, SESSION_TABLE, USER_TABLE};
 
 #[derive(Debug, thiserror::Error)]
 pub enum MigrationError {
@@ -60,19 +65,11 @@ table! {
 }
 
 fn create_migration_table(conn: &mut ft_sdk::Connection) -> Result<(), diesel::result::Error> {
-    diesel::dsl::sql_query(
-        r#"
-        CREATE TABLE IF NOT EXISTS
-            fastn_migration
-        (
-            id INTEGER PRIMARY KEY,
-            migration_number INTEGER NOT NULL,
-            applied_on INTEGER NOT NULL
-        )
-    "#,
-    )
-    .execute(conn)
-    .map(|_| ())
+    diesel::dsl::sql_query(MIGRATION_TABLE).execute(conn)?;
+    diesel::dsl::sql_query(EMAIL_TABLE).execute(conn)?;
+    diesel::dsl::sql_query(USER_TABLE).execute(conn)?;
+    diesel::dsl::sql_query(SESSION_TABLE).execute(conn)?;
+    Ok(())
 }
 
 fn find_latest_applied_migration_number(
