@@ -3,6 +3,7 @@
 //! line tool to use help developers build FifthTry Apps or when self-hosting
 //! FifthTry Apps.
 #![forbid(unsafe_code)]
+#![deny(unused_extern_crates)]
 
 extern crate self as ft_sdk;
 
