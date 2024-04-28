@@ -13,8 +13,6 @@ pub enum MigrationError {
     CanNotFindLatestAppliedMigrationNumber(diesel::result::Error),
     #[error("Invalid migration: {0}")]
     InvalidMigration(#[from] InvalidMigrationError),
-    #[error("Invalid migration numbers: {0} < {1}, migration deleted?")]
-    InvalidMigrationNumbers(i32, i32),
     #[error("apply migration error: {0}")]
     ApplyMigration(#[from] ApplyMigrationError),
 }
