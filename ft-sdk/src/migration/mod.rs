@@ -21,6 +21,7 @@ pub fn migrate<T>(
     conn: &mut ft_sdk::Connection,
     migration_sqls: include_dir::Dir,
     migration_functions: std::collections::HashMap<i32, T>,
+    now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), MigrationError>
 where
     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
@@ -40,8 +41,8 @@ where
 
     for migration in migrations {
         match migration {
-            Cmd::Sql { id, sql } => apply_sql_migration(conn, id, sql.as_str())?,
-            Cmd::Fn { id, r#fn } => apply_fn_migration(conn, id, r#fn)?,
+            Cmd::Sql { id, sql } => apply_sql_migration(conn, id, sql.as_str(), now)?,
+            Cmd::Fn { id, r#fn } => apply_fn_migration(conn, id, r#fn, now)?,
         }
     }
 
@@ -60,23 +61,25 @@ fn apply_sql_migration(
     conn: &mut ft_sdk::Connection,
     id: i32,
     sql: &str,
+    now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), ApplyMigrationError> {
     diesel::dsl::sql_query(sql)
         .execute(conn)
         .map_err(ApplyMigrationError::FailedToApplyMigration)?;
-    mark_migration_applied(conn, id).map_err(ApplyMigrationError::FailedToRecordMigration)
+    mark_migration_applied(conn, id, now).map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
 fn apply_fn_migration<T>(
     conn: &mut ft_sdk::Connection,
     id: i32,
     r#fn: T,
+    now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), ApplyMigrationError>
 where
     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 {
     r#fn(conn).map_err(ApplyMigrationError::FailedToApplyMigration)?;
-    mark_migration_applied(conn, id).map_err(ApplyMigrationError::FailedToRecordMigration)
+    mark_migration_applied(conn, id, now).map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
 table! {
@@ -90,9 +93,13 @@ table! {
 pub fn mark_migration_applied(
     conn: &mut ft_sdk::Connection,
     id: i32,
+    now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), diesel::result::Error> {
     diesel::insert_into(fastn_migration::table)
-        .values(fastn_migration::migration_number.eq(id))
+        .values((
+            fastn_migration::migration_number.eq(id),
+            fastn_migration::applied_on.eq(now),
+        ))
         .execute(conn)
         .map(|_| ())
 }
