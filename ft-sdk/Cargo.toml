@@ -15,7 +15,7 @@ postgres-default = ["ft-sys/postgres-default", "postgres"]
 postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
-migration = ["diesel"]
+migration = [] # only if either sqlite-default or postgres-default is activated
 
 [dependencies]
 ft-sys = { path = "../ft-sys", version = "0.1.2", default-features = false }
