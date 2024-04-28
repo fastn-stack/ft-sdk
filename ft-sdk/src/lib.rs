@@ -13,6 +13,11 @@ pub mod email;
 mod in_;
 mod json_body;
 mod layout;
+#[cfg(all(
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
+))]
+mod migration;
 mod query;
 
 pub use cookie::CookieExt;
@@ -25,6 +30,11 @@ pub use ft_sys::{env, http, println, UserData};
 pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
+#[cfg(all(
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
+))]
+pub use migration::migrate;
 pub use query::{Query, QueryExt};
 
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
