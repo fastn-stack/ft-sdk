@@ -28,14 +28,14 @@ CREATE TABLE IF NOT EXISTS fastn_email_queue
     body_text    TEXT NOT NULL,
     body_html    TEXT NOT NULL,
     retry_count  INTEGER NOT NULL DEFAULT 0,
-    created_at   INTEGER WITH TIME ZONE NOT NULL,
-    sent_at      INTEGER WITH TIME ZONE NOT NULL,
+    created_at   INTEGER NOT NULL,
+    sent_at      INTEGER NOT NULL,
     -- mkind is any string, used for product analytics etc
     mkind        TEXT NOT NULL,
     -- status: pending, sent, failed. sent and failed items may removed from
     -- the queue every so often
     status       TEXT NOT NULL
-) STRIC;
+) STRICT;
 
 "#;
 
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS fastn_user
     id       INTEGER PRIMARY KEY,
     name     TEXT NULL,
     username TEXT NULL,
-    data     JSONB -- this stores ft_sdk::auth::UserData
+    data     TEXT -- this stores ft_sdk::auth::UserData
 ) STRICT;
 
 "#;
@@ -56,8 +56,8 @@ pub(super) const SESSION_TABLE: &str = r#"
 CREATE TABLE IF NOT EXISTS fastn_session
 (
     id   INTEGER PRIMARY KEY,
-    uid  BIGINT NULL,
-    data JSONB, -- this is the session data only
+    uid  INTEGER NULL,
+    data TEXT, -- this is the session data only
 
     CONSTRAINT fk_fastn_user
         FOREIGN KEY (uid)
