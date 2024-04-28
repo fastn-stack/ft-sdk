@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS
     fastn_migration
 (
     id               INTEGER PRIMARY KEY,
-    migration_number INTEGER NOT NULL,
+    migration_number INTEGER NOT NULL UNIQUE,
+    migration_name   TEXT NOT NULL,
     applied_on       INTEGER NOT NULL
 ) STRICT;
 
