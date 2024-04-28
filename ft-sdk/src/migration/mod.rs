@@ -17,14 +17,14 @@ pub enum MigrationError {
     ApplyMigration(#[from] ApplyMigrationError),
 }
 
-pub fn migrate<T>(
+pub fn migrate(
     conn: &mut ft_sdk::Connection,
     migration_sqls: include_dir::Dir,
-    migration_functions: Vec<(i32, &'static str, T)>,
+    // migration_functions: Vec<(i32, &'static str, T)>,
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), MigrationError>
-where
-    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
+// where
+//     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 {
     // check if the migration table exists, if not create it
     create_migration_table(conn).map_err(MigrationError::CanNotCreateMigrationTable)?;
@@ -35,7 +35,7 @@ where
 
     let migrations = sort_migrations(
         migration_sqls,
-        migration_functions,
+        // migration_functions,
         latest_applied_migration_number,
     )?;
 
@@ -43,8 +43,7 @@ where
         match migration {
             Cmd::Sql { id, name, sql } => {
                 apply_sql_migration(conn, id, name.as_str(), sql.as_str(), now)?
-            }
-            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, id, name, r#fn, now)?,
+            } // Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, id, name, r#fn, now)?,
         }
     }
 
@@ -73,20 +72,20 @@ fn apply_sql_migration(
         .map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
-fn apply_fn_migration<T>(
-    conn: &mut ft_sdk::Connection,
-    id: i32,
-    name: &str,
-    r#fn: T,
-    now: &chrono::DateTime<chrono::Utc>,
-) -> Result<(), ApplyMigrationError>
-where
-    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
-{
-    r#fn(conn).map_err(ApplyMigrationError::FailedToApplyMigration)?;
-    mark_migration_applied(conn, id, name, now)
-        .map_err(ApplyMigrationError::FailedToRecordMigration)
-}
+// fn apply_fn_migration<T>(
+//     conn: &mut ft_sdk::Connection,
+//     id: i32,
+//     name: &str,
+//     r#fn: T,
+//     now: &chrono::DateTime<chrono::Utc>,
+// ) -> Result<(), ApplyMigrationError>
+// where
+//     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
+// {
+//     r#fn(conn).map_err(ApplyMigrationError::FailedToApplyMigration)?;
+//     mark_migration_applied(conn, id, name, now)
+//         .map_err(ApplyMigrationError::FailedToRecordMigration)
+// }
 
 table! {
     fastn_migration {
@@ -144,35 +143,31 @@ pub enum InvalidMigrationError {
     SqlFileIsNotInteger(#[from] std::num::ParseIntError),
 }
 
-enum Cmd<T> {
-    Sql {
-        id: i32,
-        name: String,
-        sql: String,
-    },
-    Fn {
-        id: i32,
-        name: &'static str,
-        r#fn: T,
-    },
+enum Cmd {
+    Sql { id: i32, name: String, sql: String },
+    // Fn {
+    //     id: i32,
+    //     name: &'static str,
+    //     r#fn: T,
+    // },
 }
 
-impl<T> Cmd<T> {
+impl Cmd {
     fn id(&self) -> i32 {
         match self {
             Cmd::Sql { id, .. } => *id,
-            Cmd::Fn { id, .. } => *id,
+            // Cmd::Fn { id, .. } => *id,
         }
     }
 }
 
-fn sort_migrations<T>(
+fn sort_migrations(
     migration_sqls: include_dir::Dir,
-    migration_functions: Vec<(i32, &'static str, T)>,
+    // migration_functions: Vec<(i32, &'static str, T)>,
     after: Option<i32>,
-) -> Result<Vec<Cmd<T>>, InvalidMigrationError>
-where
-    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
+) -> Result<Vec<Cmd>, InvalidMigrationError>
+// where
+//     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 {
     let mut cmds = vec![];
 
@@ -210,15 +205,15 @@ where
         }
     }
 
-    for (migration_number, name, the_fn) in migration_functions.into_iter() {
-        if Some(migration_number) > after {
-            cmds.push(Cmd::Fn {
-                id: migration_number,
-                name,
-                r#fn: the_fn,
-            })
-        }
-    }
+    // for (migration_number, name, the_fn) in migration_functions.into_iter() {
+    //     if Some(migration_number) > after {
+    //         cmds.push(Cmd::Fn {
+    //             id: migration_number,
+    //             name,
+    //             r#fn: the_fn,
+    //         })
+    //     }
+    // }
 
     cmds.sort_by_key(|k| k.id());
 
