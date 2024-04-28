@@ -88,7 +88,9 @@ pub enum InvalidMigrationError {
     #[error("Duplicate migration number: {0}")]
     DuplicateMigration(i32),
     #[error("Invalid sql file not utf8: {0:?}")]
-    InvalidSqlFileNotUtf8(std::ffi::OsString),
+    InvalidSqlFileNameNotUtf8(std::ffi::OsString),
+    #[error("Invalid sql content not utf8: {0}, {1:?}")]
+    InvalidSqlFileContentNotUtf8(i32, std::string::FromUtf8Error),
     #[error("SQL file is not integer: {0:?}")]
     SqlFileIsNotInteger(#[from] std::num::ParseIntError),
 }
@@ -111,7 +113,7 @@ where
         let file_stem = match file_stem.to_str() {
             Some(v) => v,
             None => {
-                return Err(InvalidMigrationError::InvalidSqlFileNotUtf8(
+                return Err(InvalidMigrationError::InvalidSqlFileNameNotUtf8(
                     file_stem.into(),
                 ))
             }
@@ -141,7 +143,7 @@ where
     Ok(latest_migration_number)
 }
 
-pub fn apply_migrations<T>(
+fn apply_migrations<T>(
     _conn: &mut ft_sdk::Connection,
     _migration_sqls: &include_dir::Dir,
     _migration_functions: &std::collections::HashMap<i32, T>,
@@ -151,4 +153,79 @@ where
     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 {
     todo!()
+}
+
+enum Cmd<T> {
+    Sql { id: i32, sql: String },
+    Fn { id: i32, r#fn: T },
+}
+
+impl<T> Cmd<T> {
+    fn id(&self) -> i32 {
+        match self {
+            Cmd::Sql { id, .. } => *id,
+            Cmd::Fn { id, .. } => *id,
+        }
+    }
+}
+
+fn sort_migrations<T>(
+    migration_sqls: include_dir::Dir,
+    migration_functions: std::collections::HashMap<i32, T>,
+    after: Option<i32>,
+) -> Result<Vec<Cmd<T>>, InvalidMigrationError>
+where
+    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
+{
+    let mut cmds = vec![];
+
+    for file in migration_sqls.files() {
+        if file.path().extension() != Some(std::ffi::OsStr::new("sql")) {
+            continue;
+        }
+
+        let file_stem = file.path().file_stem().unwrap();
+        let file_stem = match file_stem.to_str() {
+            Some(v) => v,
+            None => {
+                return Err(InvalidMigrationError::InvalidSqlFileNameNotUtf8(
+                    file_stem.into(),
+                ))
+            }
+        };
+
+        let migration_number = file_stem.parse()?;
+
+        if migration_functions.contains_key(&migration_number) {
+            return Err(InvalidMigrationError::DuplicateMigration(migration_number));
+        }
+
+        if Some(migration_number) > after {
+            cmds.push(Cmd::Sql {
+                id: migration_number,
+                sql: match String::from_utf8(file.contents().to_vec()) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        return Err(InvalidMigrationError::InvalidSqlFileContentNotUtf8(
+                            migration_number,
+                            e,
+                        ))
+                    }
+                },
+            })
+        }
+    }
+
+    for (migration_number, the_fn) in migration_functions.into_iter() {
+        if Some(migration_number) > after {
+            cmds.push(Cmd::Fn {
+                id: migration_number,
+                r#fn: the_fn,
+            })
+        }
+    }
+
+    cmds.sort_by_key(|k| k.id());
+
+    Ok(cmds)
 }
