@@ -51,25 +51,34 @@ where
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum ApplyMigrationError {}
+pub enum ApplyMigrationError {
+    #[error("failed to apply migration: {0}")]
+    FailedToApplyMigration(diesel::result::Error),
+    #[error("failed to apply migration: {0}")]
+    FailedToRecordMigration(diesel::result::Error),
+}
 
 fn apply_sql_migration(
-    _conn: &mut ft_sdk::Connection,
-    _id: i32,
-    _sql: &str,
+    conn: &mut ft_sdk::Connection,
+    id: i32,
+    sql: &str,
 ) -> Result<(), ApplyMigrationError> {
-    todo!()
+    diesel::dsl::sql_query(sql)
+        .execute(conn)
+        .map_err(ApplyMigrationError::FailedToApplyMigration)?;
+    mark_migration_applied(conn, id).map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
 fn apply_fn_migration<T>(
-    _conn: &mut ft_sdk::Connection,
-    _id: i32,
-    _fn: T,
+    conn: &mut ft_sdk::Connection,
+    id: i32,
+    r#fn: T,
 ) -> Result<(), ApplyMigrationError>
 where
     T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 {
-    todo!()
+    r#fn(conn).map_err(ApplyMigrationError::FailedToApplyMigration)?;
+    mark_migration_applied(conn, id).map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
 table! {
@@ -78,6 +87,16 @@ table! {
         migration_number -> Integer,
         applied_on -> Timestamptz,
     }
+}
+
+pub fn mark_migration_applied(
+    conn: &mut ft_sdk::Connection,
+    id: i32,
+) -> Result<(), diesel::result::Error> {
+    diesel::insert_into(fastn_migration::table)
+        .values(fastn_migration::migration_number.eq(id))
+        .execute(conn)
+        .map(|_| ())
 }
 
 fn create_migration_table(conn: &mut ft_sdk::Connection) -> Result<(), diesel::result::Error> {
