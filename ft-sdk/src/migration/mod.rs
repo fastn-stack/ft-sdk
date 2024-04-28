@@ -65,8 +65,9 @@ fn apply_sql_migration(
     sql: &str,
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), ApplyMigrationError> {
-    diesel::dsl::sql_query(sql)
-        .execute(conn)
+    use diesel::connection::SimpleConnection;
+
+    conn.batch_execute(sql)
         .map_err(ApplyMigrationError::FailedToApplyMigration)?;
     mark_migration_applied(conn, id, name, now)
         .map_err(ApplyMigrationError::FailedToRecordMigration)
