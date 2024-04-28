@@ -3,8 +3,6 @@ use diesel::deserialize::FromSql;
 use diesel::serialize::{IsNull, Output, ToSql};
 use diesel::{deserialize, serialize, sql_types};
 
-// Note: sql_types::Jsonb is actually defined in diesel::pg, but we are using it
-// for Sqlite as well. This is a hack to make it work.
 impl sql_types::HasSqlType<sql_types::Json> for Sqlite {
     fn metadata(_lookup: &mut Self::MetadataLookup) -> Self::TypeMetadata {
         ft_sys_shared::SqliteType::Text
