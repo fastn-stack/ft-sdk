@@ -15,6 +15,8 @@ pub enum MigrationError {
     InvalidMigration(#[from] InvalidMigrationError),
     #[error("Invalid migration numbers: {0} < {1}, migration deleted?")]
     InvalidMigrationNumbers(i32, i32),
+    #[error("apply migration error: {0}")]
+    ApplyMigration(#[from] ApplyMigrationError),
 }
 
 pub fn migrate<T>(
@@ -32,28 +34,42 @@ where
     let latest_applied_migration_number = find_latest_applied_migration_number(conn)
         .map_err(MigrationError::CanNotFindLatestAppliedMigrationNumber)?;
 
-    // find the latest migration number from the migration files
-    let latest_migration_number =
-        find_latest_migration_number(&migration_sqls, &migration_functions)?;
+    let migrations = sort_migrations(
+        migration_sqls,
+        migration_functions,
+        latest_applied_migration_number,
+    )?;
 
-    #[allow(clippy::comparison_chain)]
-    if latest_migration_number == latest_applied_migration_number {
-        ft_sdk::println!("No new migrations to apply");
-    } else if latest_migration_number > latest_applied_migration_number {
-        apply_migrations(
-            conn,
-            &migration_sqls,
-            &migration_functions,
-            latest_applied_migration_number,
-        )?;
-    } else {
-        return Err(MigrationError::InvalidMigrationNumbers(
-            latest_migration_number.unwrap(),
-            latest_applied_migration_number.unwrap(),
-        ));
+    for migration in migrations {
+        match migration {
+            Cmd::Sql { id, sql } => apply_sql_migration(conn, id, sql.as_str())?,
+            Cmd::Fn { id, r#fn } => apply_fn_migration(conn, id, r#fn)?,
+        }
     }
 
     Ok(())
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ApplyMigrationError {}
+
+fn apply_sql_migration(
+    _conn: &mut ft_sdk::Connection,
+    _id: i32,
+    _sql: &str,
+) -> Result<(), ApplyMigrationError> {
+    todo!()
+}
+
+fn apply_fn_migration<T>(
+    _conn: &mut ft_sdk::Connection,
+    _id: i32,
+    _fn: T,
+) -> Result<(), ApplyMigrationError>
+where
+    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
+{
+    todo!()
 }
 
 table! {
@@ -93,66 +109,6 @@ pub enum InvalidMigrationError {
     InvalidSqlFileContentNotUtf8(i32, std::string::FromUtf8Error),
     #[error("SQL file is not integer: {0:?}")]
     SqlFileIsNotInteger(#[from] std::num::ParseIntError),
-}
-
-fn find_latest_migration_number<T>(
-    migration_sqls: &include_dir::Dir,
-    migration_functions: &std::collections::HashMap<i32, T>,
-) -> Result<Option<i32>, InvalidMigrationError>
-where
-    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
-{
-    let mut latest_migration_number = None;
-
-    for file in migration_sqls.files() {
-        if file.path().extension() != Some(std::ffi::OsStr::new("sql")) {
-            continue;
-        }
-
-        let file_stem = file.path().file_stem().unwrap();
-        let file_stem = match file_stem.to_str() {
-            Some(v) => v,
-            None => {
-                return Err(InvalidMigrationError::InvalidSqlFileNameNotUtf8(
-                    file_stem.into(),
-                ))
-            }
-        };
-
-        let migration_number = file_stem.parse()?;
-
-        if migration_functions.contains_key(&migration_number) {
-            return Err(InvalidMigrationError::DuplicateMigration(migration_number));
-        }
-
-        let migration_number = Some(migration_number);
-
-        if migration_number > latest_migration_number {
-            latest_migration_number = migration_number;
-        }
-    }
-
-    for migration_number in migration_functions.keys() {
-        let migration_number = Some(*migration_number);
-
-        if migration_number > latest_migration_number {
-            latest_migration_number = migration_number;
-        }
-    }
-
-    Ok(latest_migration_number)
-}
-
-fn apply_migrations<T>(
-    _conn: &mut ft_sdk::Connection,
-    _migration_sqls: &include_dir::Dir,
-    _migration_functions: &std::collections::HashMap<i32, T>,
-    _latest_applied_migration_number: Option<i32>,
-) -> Result<(), MigrationError>
-where
-    T: FnOnce(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
-{
-    todo!()
 }
 
 enum Cmd<T> {
