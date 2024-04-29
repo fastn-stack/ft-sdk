@@ -25,6 +25,7 @@ pub type FnMigration = (
 
 pub fn migrate(
     conn: &mut ft_sdk::Connection,
+    app_name: &str,
     migration_sqls: include_dir::Dir,
     migration_functions: Vec<FnMigration>,
     now: &chrono::DateTime<chrono::Utc>,
@@ -33,7 +34,7 @@ pub fn migrate(
     create_migration_table(conn).map_err(MigrationError::CanNotCreateMigrationTable)?;
 
     // find the latest applied migration number from the table
-    let latest_applied_migration_number = find_latest_applied_migration_number(conn)
+    let latest_applied_migration_number = find_latest_applied_migration_number(conn, app_name)
         .map_err(MigrationError::CanNotFindLatestAppliedMigrationNumber)?;
 
     let migrations = sort_migrations(
@@ -45,9 +46,9 @@ pub fn migrate(
     for migration in migrations {
         match migration {
             Cmd::Sql { id, name, sql } => {
-                apply_sql_migration(conn, id, name.as_str(), sql.as_str(), now)?
+                apply_sql_migration(conn, app_name, id, name.as_str(), sql.as_str(), now)?
             }
-            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, id, name, r#fn, now)?,
+            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, app_name, id, name, r#fn, now)?,
         }
     }
 
@@ -64,6 +65,7 @@ pub enum ApplyMigrationError {
 
 fn apply_sql_migration(
     conn: &mut ft_sdk::Connection,
+    app_name: &str,
     id: i32,
     name: &str,
     sql: &str,
@@ -71,25 +73,27 @@ fn apply_sql_migration(
 ) -> Result<(), ApplyMigrationError> {
     diesel::connection::SimpleConnection::batch_execute(conn, sql)
         .map_err(ApplyMigrationError::FailedToApplyMigration)?;
-    mark_migration_applied(conn, id, name, now)
+    mark_migration_applied(conn, app_name, id, name, now)
         .map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
 fn apply_fn_migration(
     conn: &mut ft_sdk::Connection,
+    app_name: &str,
     id: i32,
     name: &str,
     r#fn: fn(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), ApplyMigrationError> {
     r#fn(conn).map_err(ApplyMigrationError::FailedToApplyMigration)?;
-    mark_migration_applied(conn, id, name, now)
+    mark_migration_applied(conn, app_name, id, name, now)
         .map_err(ApplyMigrationError::FailedToRecordMigration)
 }
 
 table! {
     fastn_migration {
         id -> Integer,
+        app_name -> Text,
         migration_number -> Integer,
         migration_name -> Text,
         applied_on -> Timestamptz,
@@ -98,15 +102,18 @@ table! {
 
 pub fn mark_migration_applied(
     conn: &mut ft_sdk::Connection,
+    app_name: &str,
     id: i32,
     name: &str,
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), diesel::result::Error> {
     diesel::insert_into(fastn_migration::table)
         .values((
+            fastn_migration::app_name.eq(app_name),
             fastn_migration::migration_number.eq(id),
             fastn_migration::migration_name.eq(name),
             fastn_migration::applied_on.eq(now),
+            // fastn_migration::time_taken.eq(time_take),
         ))
         .execute(conn)
         .map(|_| ())
@@ -122,9 +129,11 @@ fn create_migration_table(conn: &mut ft_sdk::Connection) -> Result<(), diesel::r
 
 fn find_latest_applied_migration_number(
     conn: &mut ft_sdk::Connection,
+    app_name: &str,
 ) -> Result<Option<i32>, diesel::result::Error> {
     fastn_migration::table
         .select(fastn_migration::migration_number)
+        .filter(fastn_migration::app_name.eq(app_name))
         .order(fastn_migration::migration_number.desc())
         .first(conn)
         .optional()
@@ -183,7 +192,7 @@ fn sort_migrations(
             None => {
                 return Err(InvalidMigrationError::InvalidSqlFileNameNotUtf8(
                     file_stem.into(),
-                ))
+                ));
             }
         };
 
@@ -199,7 +208,7 @@ fn sort_migrations(
                         return Err(InvalidMigrationError::InvalidSqlFileContentNotUtf8(
                             migration_number,
                             e,
-                        ))
+                        ));
                     }
                 },
             })

@@ -30,14 +30,11 @@ chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = { version = "2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
 include_dir = "0.7"
-#rusqlite = { package = "libsql-rusqlite", version = "0.30", default-features = false, features = [
-#    "libsql-experimental",
-#    "column_decltype",
-#    "load_extension",
-#    "modern_sqlite",
-#    "functions",
-#    "limits",
-#] }
+
+[workspace.dependencies.rusqlite]
+version = "0.31"
+default-features = false
+
 
 [workspace.dependencies.serde_sqlite_jsonb]
 # we are using our own fork as the original crate does not compile again wasm

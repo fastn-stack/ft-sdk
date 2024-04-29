@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 29th Apr 2024
+
+### ft-sys-shared: `0.1.1-alpha.2`
+
+- Added `impl rusqlite::ToSql for SqliteRawValue`
+
 ## 27th Apr 2024
 
 ### ft-sys-shared: `0.1.1-alpha.1`
