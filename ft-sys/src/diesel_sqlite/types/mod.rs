@@ -1,4 +1,5 @@
 pub mod date_time;
+mod json;
 mod jsonb;
 
 use super::{Sqlite, SqliteValue};

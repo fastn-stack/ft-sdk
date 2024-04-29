@@ -3,6 +3,7 @@
 //! line tool to use help developers build FifthTry Apps or when self-hosting
 //! FifthTry Apps.
 #![forbid(unsafe_code)]
+#![deny(unused_extern_crates)]
 
 extern crate self as ft_sdk;
 
@@ -10,9 +11,15 @@ pub mod auth;
 pub mod auth_provider;
 mod cookie;
 mod crypto;
+pub mod email;
 mod in_;
 mod json_body;
 mod layout;
+#[cfg(all(
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
+))]
+mod migration;
 mod query;
 pub mod utils;
 
@@ -27,6 +34,11 @@ pub use ft_sys::{env, http, println, UserData};
 pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
+#[cfg(all(
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
+))]
+pub use migration::migrate;
 pub use query::{Query, QueryExt};
 
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]

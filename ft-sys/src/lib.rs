@@ -1,6 +1,7 @@
 //! This crate is part of [ft-sdk](https://docs.rs/ft-sdk/) and provides the
 //! system-level functionality. This crate should not be used directly, and
 //! `ft-sdk` should be used.
+#![deny(unused_extern_crates)]
 
 extern crate self as ft_sys;
 

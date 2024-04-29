@@ -29,6 +29,7 @@ thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = { version = "2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
+include_dir = "0.7"
 #rusqlite = { package = "libsql-rusqlite", version = "0.30", default-features = false, features = [
 #    "libsql-experimental",
 #    "column_decltype",
