@@ -10,11 +10,12 @@ homepage.workspace = true
 
 
 [features]
-rusqlite = []
+rusqlite = ["dep:rusqlite"]
 
 [dependencies]
 http.workspace = true
 bytes.workspace = true
 serde.workspace = true
 thiserror.workspace = true
-#rusqlite = { workspace = true, optional = true }
+rusqlite = { workspace = true, optional = true }
+chrono.workspace = true
