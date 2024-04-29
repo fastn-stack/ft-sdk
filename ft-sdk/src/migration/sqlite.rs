@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS fastn_user
     id       INTEGER PRIMARY KEY,
     name     TEXT NULL,
     username TEXT NULL,
-    data     TEXT -- this stores ft_sdk::auth::UserData
+    data     BLOB -- this stores ft_sdk::auth::UserData
 ) STRICT;
 
 "#;
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS fastn_session
 (
     id   INTEGER PRIMARY KEY,
     uid  INTEGER NULL,
-    data TEXT, -- this is the session data only
+    data BLOB, -- this is the session data only
 
     CONSTRAINT fk_fastn_user
         FOREIGN KEY (uid)
