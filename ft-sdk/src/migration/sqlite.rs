@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS
     app_name         TEXT NOT NULL,
     migration_number INTEGER NOT NULL UNIQUE,
     migration_name   TEXT NOT NULL,
-    applied_on       INTEGER NOT NULL
+    applied_on       INTEGER NOT NULL,
+    time_taken       INTEGER NOT NULL -- time in nanoseconds
 ) STRICT;
 
 "#;

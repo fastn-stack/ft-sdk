@@ -56,6 +56,12 @@ impl From<i64> for SqliteRawValue {
     }
 }
 
+impl From<u64> for SqliteRawValue {
+    fn from(i: u64) -> Self {
+        SqliteRawValue::Integer(i as i64)
+    }
+}
+
 impl TryFrom<&SqliteRawValue> for i64 {
     type Error = String;
     fn try_from(v: &SqliteRawValue) -> Result<Self, Self::Error> {
@@ -178,7 +184,6 @@ impl<'a> TryFrom<&'a SqliteRawValue> for bool {
         }
     }
 }
-
 
 #[cfg(feature = "rusqlite")]
 impl rusqlite::ToSql for SqliteRawValue {

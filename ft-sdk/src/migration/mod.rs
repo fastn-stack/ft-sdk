@@ -97,6 +97,7 @@ table! {
         migration_number -> Integer,
         migration_name -> Text,
         applied_on -> Timestamptz,
+        time_taken -> Integer,
     }
 }
 
@@ -107,13 +108,14 @@ pub fn mark_migration_applied(
     name: &str,
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), diesel::result::Error> {
+    let time_taken = 0u64;
     diesel::insert_into(fastn_migration::table)
         .values((
             fastn_migration::app_name.eq(app_name),
             fastn_migration::migration_number.eq(id),
             fastn_migration::migration_name.eq(name),
             fastn_migration::applied_on.eq(now),
-            // fastn_migration::time_taken.eq(time_take),
+            fastn_migration::time_taken.eq(time_taken),
         ))
         .execute(conn)
         .map(|_| ())

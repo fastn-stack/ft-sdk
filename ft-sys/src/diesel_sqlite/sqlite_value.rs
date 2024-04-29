@@ -14,6 +14,17 @@ impl<'a> SqliteValue<'a> {
         }
     }
 
+    pub(crate) fn u64(&self) -> diesel::deserialize::Result<u64> {
+        match self.raw_value {
+            ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i as u64),
+            _ => Err(format!(
+                "Unexpected type, expected u64 found {:?}",
+                self.raw_value.kind()
+            )
+            .into()),
+        }
+    }
+
     pub(crate) fn i64(&self) -> diesel::deserialize::Result<i64> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i),

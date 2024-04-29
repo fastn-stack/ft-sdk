@@ -20,13 +20,13 @@ impl ToSql<sql_types::Integer, Sqlite> for i32 {
     }
 }
 
-impl FromSql<sql_types::Integer, Sqlite> for i64 {
+impl FromSql<sql_types::Integer, Sqlite> for u64 {
     fn from_sql(value: SqliteValue) -> deserialize::Result<Self> {
-        value.i64()
+        value.u64()
     }
 }
 
-impl ToSql<sql_types::Integer, Sqlite> for i64 {
+impl ToSql<sql_types::Integer, Sqlite> for u64 {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> serialize::Result {
         out.set_value(*self);
         Ok(IsNull::No)
