@@ -35,6 +35,13 @@ impl SqliteRawValue {
             SqliteRawValue::Blob(_) => SqliteType::Blob,
         }
     }
+
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            SqliteRawValue::Text(s) => Some(s),
+            _ => None,
+        }
+    }
 }
 
 impl From<i32> for SqliteRawValue {
@@ -46,6 +53,16 @@ impl From<i32> for SqliteRawValue {
 impl From<i64> for SqliteRawValue {
     fn from(i: i64) -> Self {
         SqliteRawValue::Integer(i)
+    }
+}
+
+impl TryFrom<&SqliteRawValue> for i64 {
+    type Error = String;
+    fn try_from(v: &SqliteRawValue) -> Result<Self, Self::Error> {
+        match v {
+            SqliteRawValue::Integer(i) => Ok(*i),
+            _ => Err("not an integer".to_string()),
+        }
     }
 }
 
@@ -73,9 +90,30 @@ impl<'a> From<&'a str> for SqliteRawValue {
     }
 }
 
+impl<'a> TryFrom<&'a SqliteRawValue> for &'a str {
+    type Error = String;
+    fn try_from(v: &'a SqliteRawValue) -> Result<Self, Self::Error> {
+        match v {
+            SqliteRawValue::Text(s) => Ok(s),
+            _ => Err("unknown value".to_string()),
+        }
+    }
+}
+
 impl From<String> for SqliteRawValue {
     fn from(s: String) -> Self {
         SqliteRawValue::Text(s)
+    }
+}
+
+impl TryFrom<&SqliteRawValue> for String {
+    type Error = String;
+
+    fn try_from(v: &SqliteRawValue) -> Result<Self, Self::Error> {
+        match v {
+            SqliteRawValue::Text(s) => Ok(s.clone()),
+            _ => Err("unknown value".to_string()),
+        }
     }
 }
 
@@ -85,15 +123,65 @@ impl From<Vec<u8>> for SqliteRawValue {
     }
 }
 
+impl TryFrom<&SqliteRawValue> for Vec<u8> {
+    type Error = String;
+
+    fn try_from(v: &SqliteRawValue) -> Result<Self, Self::Error> {
+        match v {
+            SqliteRawValue::Blob(b) => Ok(b.clone()),
+            _ => Err("not a blob".to_string()),
+        }
+    }
+}
+
 impl<'a> From<&'a [u8]> for SqliteRawValue {
     fn from(b: &'a [u8]) -> Self {
         SqliteRawValue::Blob(b.to_vec())
     }
 }
 
-/*
+impl From<&chrono::DateTime<chrono::Utc>> for SqliteRawValue {
+    fn from(d: &chrono::DateTime<chrono::Utc>) -> Self {
+        SqliteRawValue::Integer(d.timestamp_nanos_opt().unwrap())
+    }
+}
+
+impl From<&mut chrono::DateTime<chrono::Utc>> for SqliteRawValue {
+    fn from(d: &mut chrono::DateTime<chrono::Utc>) -> Self {
+        SqliteRawValue::Integer(d.timestamp_nanos_opt().unwrap())
+    }
+}
+
+impl From<chrono::DateTime<chrono::Utc>> for SqliteRawValue {
+    fn from(d: chrono::DateTime<chrono::Utc>) -> Self {
+        SqliteRawValue::Integer(d.timestamp_nanos_opt().unwrap())
+    }
+}
+
+impl<'a> TryFrom<&'a SqliteRawValue> for chrono::DateTime<chrono::Utc> {
+    type Error = String;
+    fn try_from(v: &'a SqliteRawValue) -> Result<Self, Self::Error> {
+        match v {
+            SqliteRawValue::Integer(i) => Ok(chrono::DateTime::from_timestamp_nanos(*i)),
+            _ => Err("unknown value".to_string()),
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a SqliteRawValue> for bool {
+    type Error = String;
+    fn try_from(v: &'a SqliteRawValue) -> Result<Self, Self::Error> {
+        match v {
+            SqliteRawValue::Integer(0) => Ok(false),
+            SqliteRawValue::Integer(1) => Ok(true),
+            _ => Err("unknown value".to_string()),
+        }
+    }
+}
+
+
 #[cfg(feature = "rusqlite")]
-impl rusqlite::types::ToSql for SqliteRawValue {
+impl rusqlite::ToSql for SqliteRawValue {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
         match self {
             SqliteRawValue::Null => Ok(rusqlite::types::ToSqlOutput::Owned(
@@ -114,4 +202,3 @@ impl rusqlite::types::ToSql for SqliteRawValue {
         }
     }
 }
-*/
