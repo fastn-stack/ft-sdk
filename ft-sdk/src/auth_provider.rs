@@ -135,14 +135,58 @@ fn create_empty_user(
 }
 
 /// persist the user in session
+///
+/// `identity`: Eg for GitHub, it could be the user id. This is stored in the cookie so can be
+/// retrieved without a db call to show a user identifiable information.
 fn login(
     conn: &mut ft_sdk::Connection,
+    cookie_store: &mut std::collections::HashMap<String, String>,
     user_id: &ft_sdk::UserId,
     provider_id: &str,
     identity: &str,
-) -> Result<(), AuthError> {
-    // copy data of user into session
-    todo!();
+) -> Result<(), LoginError> {
+    use db::fastn_session;
+    use diesel::prelude::*;
+
+    let now = chrono::Utc::now();
+
+    let data = serde_json::json!({
+        "provider_id": provider_id,
+        "identity": identity,
+    });
+
+    // TODO: store client information, like user agent, ip addr?
+    let query = diesel::insert_into(fastn_session::table)
+        .values((
+            fastn_session::uid.eq(user_id.0),
+            fastn_session::data.eq(data),
+            fastn_session::created_at.eq(now),
+            fastn_session::updated_at.eq(now),
+        ))
+        .returning(fastn_session::id);
+
+    ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
+
+    let id: i64 = query.get_result(conn)?;
+
+    let session_str = serde_json::to_string(&serde_json::json!({
+        "id": id,
+        "provider_id": provider_id,
+        "identity": identity,
+    }))?;
+
+    cookie_store.insert("session".to_string(), session_str);
+
+    Ok(())
+}
+
+#[derive(thiserror::Error, Debug)]
+enum LoginError {
+    #[error("db error: {0}")]
+    DatabaseError(#[from] diesel::result::Error),
+
+    #[error("json error: {0}")]
+    JsonError(#[from] serde_json::Error),
 }
 
 /// Normalise and save user details
@@ -186,6 +230,8 @@ fn modify_user(
         _ => None,
     });
 
+    // TODO: check if name already exists in db. Don't throw error if name
+    // is already provided
     if name.is_none() {
         return Err(AuthError::NameNotProvided);
     }
