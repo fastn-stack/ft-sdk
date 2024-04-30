@@ -1,5 +1,5 @@
 #[derive(Clone)]
-pub struct UserId(pub String);
+pub struct UserId(pub i64);
 
 /// Any provider can provide any of this information about currently logged-in user,
 /// which is stored against the user in the database. The provider who drops in the

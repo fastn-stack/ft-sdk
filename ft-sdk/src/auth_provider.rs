@@ -140,20 +140,20 @@ fn modify_user(
     }
 
     let affected = conn.transaction(|c| {
-        let mut old_data = db::user::table
-            .filter(db::user::id.eq(&id.0))
-            .select(db::user::data)
+        let mut old_data = db::fastn_user::table
+            .filter(db::fastn_user::id.eq(&id.0))
+            .select(db::fastn_user::data)
             .first::<serde_json::Value>(c)?;
 
         let new_data = get_new_user_data(provider_id, data, &mut old_data)
             .map(user_data_to_json)
             .unwrap(); // TODO: handle errors
 
-        let query = diesel::insert_into(db::user::table)
-            .values(db::user::name.eq(name.unwrap()))
-            .on_conflict(db::user::id)
+        let query = diesel::insert_into(db::fastn_user::table)
+            .values(db::fastn_user::name.eq(name.unwrap()))
+            .on_conflict(db::fastn_user::id)
             .do_update()
-            .set(db::user::data.eq(new_data));
+            .set(db::fastn_user::data.eq(new_data));
 
         ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
 
@@ -487,9 +487,10 @@ mod db {
     diesel::table! {
         use diesel::sql_types::*;
 
-        fastn.user (id) {
-            id -> Text,
-            name -> Text,
+        fastn_user (id) {
+            id -> Int8,
+            name -> Nullable<Text>,
+            username -> Nullable<Text>,
             data -> Jsonb,
             created_at -> Timestamptz,
             updated_at -> Timestamptz,
@@ -499,10 +500,11 @@ mod db {
     diesel::table! {
         use diesel::sql_types::*;
 
-        fastn.session (key) {
-            key -> Text,
+        fastn_session (id) {
+            id -> Int8,
+            uid -> Nullable<Int8>,
             data -> Jsonb,
-            expires_at -> Timestamptz,
+            updated_at -> Timestamptz,
             created_at -> Timestamptz,
         }
     }

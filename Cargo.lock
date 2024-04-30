@@ -137,7 +137,6 @@ version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
 
-
 [[package]]
 name = "fallible-iterator"
 version = "0.3.0"
@@ -153,6 +152,12 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 [[package]]
 name = "fifthtry-serde_sqlite_jsonb"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da69e00a6abe54a103acd8edf2f500f14a60a2923a63625de345ac473bedb00f"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "fnv"
@@ -178,8 +183,8 @@ dependencies = [
  "diesel",
  "ft-sys",
  "http",
- "pretty_assertions",
  "include_dir",
+ "pretty_assertions",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -203,7 +208,7 @@ dependencies = [
 
 [[package]]
 name = "ft-sys-shared"
-version = "0.1.1-alpha.1"
+version = "0.1.1-alpha.2"
 dependencies = [
  "bytes",
  "chrono",
@@ -344,6 +349,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
+name = "pkg-config"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
+
+[[package]]
 name = "pretty_assertions"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -352,12 +363,6 @@ dependencies = [
  "diff",
  "yansi",
 ]
-
-[[package]]
-name = "pkg-config"
-version = "0.3.30"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
 name = "proc-macro2"
