@@ -71,10 +71,38 @@ pub enum AuthError {
 /// returns `true` if there's a [UserData::VerifiedEmail] for the provided email
 ///
 /// this makes a db call to check if the email is already verified.
-pub fn check_email(_email: &str) -> bool {
-    // `UserData::VerifiedEmail` from any provider is also stored under the
-    // "email" provider, so we only check the email provider in db
-    todo!()
+pub fn check_email(
+    conn: &mut ft_sdk::Connection,
+    _email: &str,
+) -> Result<bool, diesel::result::Error> {
+    use db::fastn_user;
+    use diesel::dsl::{count, sql};
+    use diesel::prelude::*;
+    use diesel::sql_types::{Bool, Text};
+
+    #[cfg(not(feature = "postgres"))]
+    let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' LIKE '%\"")
+        .bind::<Text, _>(_email)
+        .sql("\"%'");
+
+    #[cfg(feature = "postgres")]
+    let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' ? '")
+        .bind::<Text, _>(_email)
+        .sql("'");
+
+    let query = fastn_user::table
+        .select(count(fastn_user::id))
+        .filter(filter);
+
+    #[cfg(not(feature = "postgres"))]
+    ft_sdk::utils::dbg_query::<_, ft_sys::Sqlite>(&query);
+
+    #[cfg(feature = "postgres")]
+    ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
+
+    let count: i64 = query.get_result(conn)?;
+
+    Ok(count > 0)
 }
 
 fn create_empty_user(conn: &mut ft_sdk::Connection) -> Result<ft_sdk::UserId, AuthError> {
