@@ -1,6 +1,3 @@
-// TODO: impl login
-// TODO: add create table guards for fastn.user and fastn.session
-//
 //! ft_sdk::auth_provider module is only available when the feature "auth-provider" is enabled.
 //! This feature should only be enabled for the auth provider service. Eg email, email-username,
 //! GitHub, Google, etc. Applications that need user data should not enable this feature, and
@@ -32,9 +29,7 @@
 /// caller can request the user to log in again with the required scopes.
 pub struct Scope(pub String);
 
-/// This function logs the user in with given provider name and provider id.
-/// If the user is already logged in, and the provider id is different, this id would be added as
-/// alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
+/// update user data
 pub fn authenticate(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
@@ -46,10 +41,11 @@ pub fn authenticate(
     // For the same provider_id, if identity changes, we will only keep the latest identity.
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
+    user_id: Option<ft_sdk::auth::UserId>,
     // TODO:
     // _token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::UserId, AuthError> {
-    let user_id = if let Some(id) = ft_sdk::auth::user_id() {
+    let user_id = if let Some(id) = user_id {
         id
     } else {
         create_empty_user(conn)?
@@ -105,6 +101,73 @@ pub fn check_email(
     Ok(count > 0)
 }
 
+pub fn get_user_data_by_email(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    email: &str,
+) -> Result<Vec<ft_sdk::auth::UserData>, UserDataError> {
+    use db::fastn_user;
+    use diesel::dsl::sql;
+    use diesel::prelude::*;
+    use diesel::sql_types::{Bool, Text};
+
+    #[cfg(feature = "postgres")]
+    let check_verified_emails = sql::<Bool>("data->'")
+        .bind::<Text, _>(provider_id)
+        .sql("'->'data'->'verified_emails' ? '")
+        .bind::<Text, _>(email)
+        .sql("'");
+
+    #[cfg(not(feature = "postgres"))]
+    let check_verified_emails = sql::<Bool>("data->'")
+        .bind::<Text, _>(provider_id)
+        .sql("'->'data'->'verified_emails' LIKE '%\"")
+        .bind::<Text, _>(email)
+        .sql("\"%'");
+
+    #[cfg(feature = "postgres")]
+    let check_emails = sql::<Bool>("data->'")
+        .bind::<Text, _>(provider_id)
+        .sql("'->'data'->'emails' ? '")
+        .bind::<Text, _>(email)
+        .sql("'");
+
+    #[cfg(not(feature = "postgres"))]
+    let check_emails = sql::<Bool>("data->'")
+        .bind::<Text, _>(provider_id)
+        .sql("'->'data'->'emails' LIKE '%\"")
+        .bind::<Text, _>(email)
+        .sql("\"%'");
+
+    let query = fastn_user::table
+        .select(fastn_user::data)
+        .filter(check_verified_emails)
+        .or_filter(check_emails);
+
+    #[cfg(feature = "postgres")]
+    ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
+
+    #[cfg(not(feature = "postgres"))]
+    ft_sdk::utils::dbg_query::<_, ft_sys::Sqlite>(&query);
+
+    let data: serde_json::Value = query.first(conn)?;
+
+    let data = user_data_from_json(data);
+
+    match data.get(provider_id).cloned() {
+        Some(v) => Ok(v),
+        None => Err(UserDataError::NoDataFound),
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum UserDataError {
+    #[error("no data found for the provider")]
+    NoDataFound,
+    #[error("db error: {0:?}")]
+    DatabaseError(#[from] diesel::result::Error),
+}
+
 fn create_empty_user(
     conn: &mut ft_sdk::Connection,
 ) -> Result<ft_sdk::UserId, diesel::result::Error> {
@@ -138,13 +201,17 @@ fn create_empty_user(
 ///
 /// `identity`: Eg for GitHub, it could be the user id. This is stored in the cookie so can be
 /// retrieved without a db call to show a user identifiable information.
-fn login(
+pub fn login(
     conn: &mut ft_sdk::Connection,
     cookie_store: &mut std::collections::HashMap<String, String>,
     user_id: &ft_sdk::UserId,
     provider_id: &str,
     identity: &str,
 ) -> Result<(), LoginError> {
+    // TODO:
+    // move this comment to fn docs when this is done
+    // If the user is already logged in, and the provider id is different, this id would be added as
+    // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
     use db::fastn_session;
     use diesel::prelude::*;
 
@@ -181,7 +248,7 @@ fn login(
 }
 
 #[derive(thiserror::Error, Debug)]
-enum LoginError {
+pub enum LoginError {
     #[error("db error: {0}")]
     DatabaseError(#[from] diesel::result::Error),
 
@@ -576,9 +643,9 @@ fn user_data_from_json(
 /// just that provider id. All information provided by this provider id will be removed from
 /// an old account and added to this account. All sessions logged in via this provider id
 /// will be logged out.
-fn split_account(_provider_id: &str) -> ft_sdk::UserId {
-    todo!()
-}
+// fn split_account(_provider_id: &str) -> ft_sdk::UserId {
+//     todo!()
+// }
 
 mod db {
     diesel::table! {

@@ -12,7 +12,7 @@ pub enum MailError {
 /// * `subject` - email subject
 /// * `body` - email body
 /// * `mkind` - mail kind, used for logical logging purposes
-pub async fn queue_email(
+pub fn queue_email(
     to: (&str, &str),
     subject: &str,
     conn: &mut ft_sdk::Connection,
