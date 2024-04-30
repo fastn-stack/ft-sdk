@@ -52,12 +52,10 @@ pub fn authenticate(
     let user_id = if let Some(id) = ft_sdk::auth::user_id() {
         id
     } else {
-        create_empty_user()?
+        create_empty_user(conn)?
     };
 
     modify_user(&user_id, conn, provider_id, identity, data)?;
-
-    login(conn, &user_id, provider_id, identity)?;
 
     Ok(user_id)
 }
@@ -79,7 +77,7 @@ pub fn check_email(_email: &str) -> bool {
     todo!()
 }
 
-fn create_empty_user() -> Result<ft_sdk::UserId, AuthError> {
+fn create_empty_user(conn: &mut ft_sdk::Connection) -> Result<ft_sdk::UserId, AuthError> {
     todo!()
 }
 
