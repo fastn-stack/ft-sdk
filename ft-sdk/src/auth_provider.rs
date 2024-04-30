@@ -105,8 +105,33 @@ pub fn check_email(
     Ok(count > 0)
 }
 
-fn create_empty_user(conn: &mut ft_sdk::Connection) -> Result<ft_sdk::UserId, AuthError> {
-    todo!()
+fn create_empty_user(
+    conn: &mut ft_sdk::Connection,
+) -> Result<ft_sdk::UserId, diesel::result::Error> {
+    use db::fastn_user;
+    use diesel::prelude::*;
+
+    let now = chrono::Utc::now();
+
+    let data = serde_json::json!({
+        "email": {
+            "data": {
+                "emails": [],
+                "verified_emails": [],
+            },
+        },
+    });
+
+    let id = diesel::insert_into(fastn_user::table)
+        .values((
+            fastn_user::created_at.eq(now),
+            fastn_user::updated_at.eq(now),
+            fastn_user::data.eq(data),
+        ))
+        .returning(fastn_user::id)
+        .get_result(conn)?;
+
+    Ok(ft_sdk::UserId(id))
 }
 
 /// persist the user in session
