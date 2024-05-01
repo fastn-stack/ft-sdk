@@ -105,7 +105,7 @@ pub fn get_user_data_by_email(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
     email: &str,
-) -> Result<Vec<ft_sdk::auth::UserData>, UserDataError> {
+) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
     use db::fastn_user;
     use diesel::dsl::sql;
     use diesel::prelude::*;
@@ -140,7 +140,7 @@ pub fn get_user_data_by_email(
         .sql("\"%'");
 
     let query = fastn_user::table
-        .select(fastn_user::data)
+        .select((fastn_user::id, fastn_user::data))
         .filter(check_verified_emails)
         .or_filter(check_emails);
 
@@ -150,12 +150,12 @@ pub fn get_user_data_by_email(
     #[cfg(not(feature = "postgres"))]
     ft_sdk::utils::dbg_query::<_, ft_sys::Sqlite>(&query);
 
-    let data: serde_json::Value = query.first(conn)?;
+    let (user_id, data): (i64, serde_json::Value) = query.first(conn)?;
 
     let data = user_data_from_json(data);
 
     match data.get(provider_id).cloned() {
-        Some(v) => Ok(v),
+        Some(v) => Ok((ft_sdk::auth::UserId(user_id), v)),
         None => Err(UserDataError::NoDataFound),
     }
 }
