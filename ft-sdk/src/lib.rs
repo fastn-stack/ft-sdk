@@ -206,7 +206,7 @@ mod test {
         ];
 
         for c in cookies {
-            in_.set_cookies.borrow_mut().push(c.into());
+            in_.add_cookie(c);
         }
 
         let res = super::json_response(&t, Some(&in_));
