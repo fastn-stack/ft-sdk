@@ -115,10 +115,112 @@ macro_rules! server_error {
 }
 
 /// Create a http response with given JSON.
-pub fn json_response<T: serde::Serialize>(t: T) -> ::http::Response<bytes::Bytes> {
-    ::http::Response::builder()
+///
+/// if `in_` is provided, any `in_.set_cookies` will be added to the response.
+pub fn json_response<T: serde::Serialize>(
+    t: T,
+    in_: Option<&ft_sdk::In>,
+) -> ::http::Response<bytes::Bytes> {
+    let mut resp = ::http::Response::builder()
         .status(::http::StatusCode::OK)
-        .header("Content-Type", "application/json")
+        .header(::http::header::CONTENT_TYPE, "application/json");
+
+    // set cookies
+    // TODO: add cookie crate and change set_cookies hashmap to have Cookie value
+    // also wanna support signed cookies
+
+    let all_cookies = in_.map(|i| {
+        i.set_cookies
+            .borrow()
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<String>>()
+            .join(";")
+    });
+
+    if all_cookies.is_some() {
+        resp = resp.header(::http::header::SET_COOKIE, all_cookies.unwrap());
+    }
+
+    let resp = resp
         .body(bytes::Bytes::from(serde_json::to_vec(&t).unwrap()))
-        .unwrap()
+        .unwrap();
+
+    resp
+}
+
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+    use std::cell::RefCell;
+
+    #[test]
+    fn test_json_response_with_no_cookie() {
+        let t = serde_json::json!({"name": "John"});
+
+        // not using In::from_request() as it requires a wasm env
+        let in_ = ft_sdk::In {
+            ud: None,
+            req: http::Request::default(),
+            now: chrono::Utc::now(),
+            set_cookies: RefCell::new(Vec::new()),
+            form_errors: Default::default(),
+        };
+
+        let res = super::json_response(&t, Some(&in_));
+
+        assert_eq!(
+            res.body(),
+            &bytes::Bytes::from(serde_json::to_vec(&t).unwrap())
+        );
+
+        assert_eq!(in_.set_cookies.borrow().len(), 0);
+    }
+
+    #[test]
+    fn test_json_response_with_cookies() {
+        let t = serde_json::json!({"name": "John"});
+
+        // not using In::from_request() as it requires a wasm env
+        let in_ = ft_sdk::In {
+            ud: None,
+            req: http::Request::default(),
+            now: chrono::Utc::now(),
+            set_cookies: RefCell::new(Vec::new()),
+            form_errors: Default::default(),
+        };
+
+        let cookies = vec![
+            cookie::Cookie::build(("test", "test_value"))
+                .path("/")
+                .http_only(true)
+                .same_site(cookie::SameSite::Lax),
+            cookie::Cookie::build(("test2", "test_value2"))
+                .path("/")
+                .http_only(true)
+                .same_site(cookie::SameSite::Lax),
+            cookie::Cookie::build(("test2", "new_value"))
+                .path("/")
+                .http_only(true)
+                .same_site(cookie::SameSite::Lax),
+        ];
+
+        for c in cookies {
+            in_.set_cookies.borrow_mut().push(c.into());
+        }
+
+        let res = super::json_response(&t, Some(&in_));
+
+        let cookie_str = res.headers().get("set-cookie").unwrap();
+
+        // the browser should set only the last value of the cookie
+        assert_eq!(
+            cookie_str,
+            "test=test_value; HttpOnly; SameSite=Lax; Path=/;\
+            test2=test_value2; HttpOnly; SameSite=Lax; Path=/;\
+            test2=new_value; HttpOnly; SameSite=Lax; Path=/"
+        );
+
+        assert_eq!(in_.set_cookies.borrow().len(), 3);
+    }
 }
