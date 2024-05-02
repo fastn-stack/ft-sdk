@@ -8,9 +8,15 @@
 extern crate self as ft_sdk;
 
 mod auth;
-mod cookie;
 mod crypto;
+
+pub mod cookie_ext;
+pub use cookie_ext::CookieExt;
+
 pub mod email;
+
+pub use cookie;
+
 mod in_;
 mod json_body;
 mod layout;
@@ -21,7 +27,6 @@ mod layout;
 mod migration;
 mod query;
 
-pub use cookie::CookieExt;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
