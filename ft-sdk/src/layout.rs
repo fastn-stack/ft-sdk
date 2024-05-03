@@ -46,11 +46,11 @@ pub trait Layout {
         Self: Sized,
     {
         let in_ = ft_sdk::In::from_request(r)?;
-        let mut l = Self::from_in(in_, RequestType::Page)?;
+        let mut l = Self::from_in(in_.clone(), RequestType::Page)?;
         let p = P::page(&mut l)?;
         let vj = serde_json::to_value(&p).unwrap();
         let oj = l.json(vj)?;
-        Ok(ft_sdk::json_response(oj))
+        Ok(ft_sdk::json_response(oj, Some(&in_)))
     }
 
     fn page<P>(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes>
@@ -82,20 +82,22 @@ pub trait Layout {
         Self: Sized,
     {
         let in_ = ft_sdk::In::from_request(r)?;
-        let mut l = Self::from_in(in_, RequestType::Action)?;
+        let mut l = Self::from_in(in_.clone(), RequestType::Action)?;
         let a = A::validate(&mut l)?;
         let o = a.action(&mut l)?;
-        Ok(a2r(o))
+        Ok(a2r(o, &in_))
     }
 
     fn json(&mut self, o: serde_json::Value) -> Result<serde_json::Value, Self::Error>;
     fn render_error(e: Self::Error) -> http::Response<bytes::Bytes>;
 }
 
-fn a2r(r: ActionOutput) -> http::Response<bytes::Bytes> {
-    ft_sdk::json_response(match r {
+fn a2r(r: ActionOutput, in_: &ft_sdk::In) -> http::Response<bytes::Bytes> {
+    let data = match r {
         ActionOutput::Reload => serde_json::json!({"reload": true}),
         ActionOutput::Redirect(redirect) => serde_json::json!({"redirect": redirect }),
         ActionOutput::Data(data) => serde_json::json!({"data": data}),
-    })
+    };
+
+    ft_sdk::json_response(data, Some(in_))
 }
