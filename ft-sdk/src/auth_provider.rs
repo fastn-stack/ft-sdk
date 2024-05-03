@@ -69,7 +69,7 @@ pub enum AuthError {
 /// this makes a db call to check if the email is already verified.
 pub fn check_email(
     conn: &mut ft_sdk::Connection,
-    _email: &str,
+    email: &str,
 ) -> Result<bool, diesel::result::Error> {
     use db::fastn_user;
     use diesel::dsl::{count, sql};
@@ -77,13 +77,12 @@ pub fn check_email(
     use diesel::sql_types::{Bool, Text};
 
     #[cfg(not(feature = "postgres"))]
-    let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' LIKE '%\"")
-        .bind::<Text, _>(_email)
-        .sql("\"%'");
+    let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' LIKE ")
+        .bind::<Text, _>(format!("'%{}%'", email));
 
     #[cfg(feature = "postgres")]
     let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' ? '")
-        .bind::<Text, _>(_email)
+        .bind::<Text, _>(email)
         .sql("'");
 
     let query = fastn_user::table
@@ -203,7 +202,7 @@ fn create_empty_user(
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
-    cookie_store: &mut std::collections::HashMap<String, String>,
+    in_: ft_sdk::In,
     user_id: &ft_sdk::UserId,
     provider_id: &str,
     identity: &str,
@@ -242,7 +241,9 @@ pub fn login(
         "identity": identity,
     }))?;
 
-    cookie_store.insert("session".to_string(), session_str);
+    let session_cookie = ft_sdk::Cookie::new("session", &session_str);
+
+    in_.add_cookie(session_cookie);
 
     Ok(())
 }

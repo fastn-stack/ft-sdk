@@ -29,7 +29,6 @@ mod query;
 pub mod utils;
 
 pub use auth::UserId;
-pub use cookie::CookieExt;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 
 #[cfg(feature = "postgres")]
