@@ -28,7 +28,6 @@ bytes.workspace = true
 serde_urlencoded.workspace = true
 diesel = { workspace = true, optional = true }
 include_dir.workspace = true
-cookie.workspace = true
 
 [dev-dependencies]
 pretty_assertions = "1"

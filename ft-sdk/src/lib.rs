@@ -10,12 +10,10 @@ extern crate self as ft_sdk;
 mod auth;
 mod crypto;
 
-pub mod cookie_ext;
-pub use cookie_ext::CookieExt;
+pub mod cookie;
+pub use cookie::{Cookie, CookieExt};
 
 pub mod email;
-
-pub use cookie;
 
 mod in_;
 mod json_body;
@@ -133,7 +131,7 @@ pub fn json_response<T: serde::Serialize>(
         i.set_cookies
             .borrow()
             .iter()
-            .map(ToString::to_string)
+            .map(|c| c.to_string_strict())
             .collect::<Vec<String>>()
             .join(";")
     });
@@ -153,6 +151,7 @@ pub fn json_response<T: serde::Serialize>(
 mod test {
     use pretty_assertions::assert_eq;
     use std::cell::RefCell;
+    use std::rc::Rc;
 
     #[test]
     fn test_json_response_with_no_cookie() {
@@ -163,7 +162,7 @@ mod test {
             ud: None,
             req: http::Request::default(),
             now: chrono::Utc::now(),
-            set_cookies: RefCell::new(Vec::new()),
+            set_cookies: Rc::new(RefCell::new(Vec::new())),
             form_errors: Default::default(),
         };
 
@@ -186,28 +185,11 @@ mod test {
             ud: None,
             req: http::Request::default(),
             now: chrono::Utc::now(),
-            set_cookies: RefCell::new(Vec::new()),
+            set_cookies: Rc::new(RefCell::new(Vec::new())),
             form_errors: Default::default(),
         };
 
-        let cookies = vec![
-            cookie::Cookie::build(("test", "test_value"))
-                .path("/")
-                .http_only(true)
-                .same_site(cookie::SameSite::Lax),
-            cookie::Cookie::build(("test2", "test_value2"))
-                .path("/")
-                .http_only(true)
-                .same_site(cookie::SameSite::Lax),
-            cookie::Cookie::build(("test2", "new_value"))
-                .path("/")
-                .http_only(true)
-                .same_site(cookie::SameSite::Lax),
-        ];
-
-        for c in cookies {
-            in_.add_cookie(c);
-        }
+        set_test_cookies(in_.clone());
 
         let res = super::json_response(&t, Some(&in_));
 
@@ -216,11 +198,25 @@ mod test {
         // the browser should set only the last value of the cookie
         assert_eq!(
             cookie_str,
-            "test=test_value; HttpOnly; SameSite=Lax; Path=/;\
-            test2=test_value2; HttpOnly; SameSite=Lax; Path=/;\
-            test2=new_value; HttpOnly; SameSite=Lax; Path=/"
+            "test=test_value; Secure; HttpOnly; SameSite=Strict;\
+            test2=test_value2; Secure; HttpOnly; SameSite=Strict;\
+            test2=new_value; Secure; HttpOnly; SameSite=Strict"
         );
 
         assert_eq!(in_.set_cookies.borrow().len(), 3);
+    }
+
+    fn set_test_cookies(in_: ft_sdk::In) {
+        use ft_sdk::Cookie;
+
+        let cookies = vec![
+            Cookie::new("test", "test_value"),
+            Cookie::new("test2", "test_value2"),
+            Cookie::new("test2", "new_value"),
+        ];
+
+        for c in cookies {
+            in_.add_cookie(c);
+        }
     }
 }
