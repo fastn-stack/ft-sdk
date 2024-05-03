@@ -2,7 +2,7 @@ pub trait Page<L, E>: serde::Serialize
 where
     E: std::fmt::Debug + From<ft_sdk::Error>,
 {
-    fn page(in_: &ft_sdk::In, c: &mut L) -> Result<Self, E>
+    fn page(c: &mut L) -> Result<Self, E>
     where
         Self: Sized;
 }
@@ -11,10 +11,10 @@ pub trait Action<L, E>
 where
     E: std::fmt::Debug + From<ft_sdk::Error>,
 {
-    fn validate(in_: &ft_sdk::In, c: &mut L) -> Result<Self, E>
+    fn validate(c: &mut L) -> Result<Self, E>
     where
         Self: Sized;
-    fn action(&self, in_: &ft_sdk::In, c: &mut L) -> Result<ActionOutput, E>
+    fn action(&self, c: &mut L) -> Result<ActionOutput, E>
     where
         Self: Sized;
 }
@@ -36,7 +36,7 @@ pub enum RequestType {
 pub trait Layout {
     type Error: std::fmt::Debug + From<ft_sdk::Error>;
 
-    fn from_in(in_: &ft_sdk::In, ty: RequestType) -> Result<Self, Self::Error>
+    fn from_in(in_: ft_sdk::In, ty: RequestType) -> Result<Self, Self::Error>
     where
         Self: Sized;
 
@@ -46,8 +46,8 @@ pub trait Layout {
         Self: Sized,
     {
         let in_ = ft_sdk::In::from_request(r)?;
-        let mut l = Self::from_in(&in_, RequestType::Page)?;
-        let p = P::page(&in_, &mut l)?;
+        let mut l = Self::from_in(in_.clone(), RequestType::Page)?;
+        let p = P::page(&mut l)?;
         let vj = serde_json::to_value(&p).unwrap();
         let oj = l.json(vj)?;
         Ok(ft_sdk::json_response(oj, Some(&in_)))
@@ -82,9 +82,9 @@ pub trait Layout {
         Self: Sized,
     {
         let in_ = ft_sdk::In::from_request(r)?;
-        let mut l = Self::from_in(&in_, RequestType::Action)?;
-        let a = A::validate(&in_, &mut l)?;
-        let o = a.action(&in_, &mut l)?;
+        let mut l = Self::from_in(in_.clone(), RequestType::Action)?;
+        let a = A::validate(&mut l)?;
+        let o = a.action(&mut l)?;
         Ok(a2r(o, &in_))
     }
 
