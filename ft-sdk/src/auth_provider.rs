@@ -173,7 +173,7 @@ fn create_empty_user(
     use db::fastn_user;
     use diesel::prelude::*;
 
-    let now = chrono::Utc::now();
+    let now = ft_sys::env::now();
 
     let data = serde_json::json!({
         "email": {
@@ -214,7 +214,7 @@ pub fn login(
     use db::fastn_session;
     use diesel::prelude::*;
 
-    let now = chrono::Utc::now();
+    let now = ft_sys::env::now();
 
     let data = serde_json::json!({
         "provider_id": provider_id,
