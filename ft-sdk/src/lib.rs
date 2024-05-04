@@ -7,13 +7,16 @@
 
 extern crate self as ft_sdk;
 
-mod auth;
+pub mod auth;
+pub mod auth_provider;
+mod rng;
+
 mod crypto;
 
 pub mod cookie;
 pub use cookie::{Cookie, CookieExt};
 
-pub mod email;
+mod email;
 
 mod in_;
 mod json_body;
@@ -24,8 +27,13 @@ mod layout;
 ))]
 mod migration;
 mod query;
+pub mod utils;
 
+pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
+pub use email::{send_email, EmailError};
+pub use rng::Rng;
+
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
@@ -49,6 +57,18 @@ pub type Connection = ft_sys::SqliteConnection;
 
 #[cfg(feature = "postgres-default")]
 pub type Connection = ft_sys::PgConnection;
+
+pub fn default_connection() -> Result<Connection, Error> {
+    #[cfg(feature = "sqlite")]
+    {
+        default_sqlite()
+    }
+
+    #[cfg(feature = "postgres")]
+    {
+        default_pg()
+    }
+}
 
 /// Get a connection to the default postgres database.
 #[cfg(feature = "postgres")]

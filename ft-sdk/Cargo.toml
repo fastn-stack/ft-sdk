@@ -8,7 +8,6 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
-
 [features]
 default = ["sqlite-default", "migration"]
 postgres-default = ["ft-sys/postgres-default", "postgres"]
@@ -16,6 +15,7 @@ postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 migration = [] # only if either sqlite-default or postgres-default is activated
+auth-providers = []
 
 [dependencies]
 ft-sys = { path = "../ft-sys", version = "0.1.2", default-features = false }
@@ -28,6 +28,7 @@ bytes.workspace = true
 serde_urlencoded.workspace = true
 diesel = { workspace = true, optional = true }
 include_dir.workspace = true
+rand_core.workspace = true
 
 [dev-dependencies]
 pretty_assertions = "1"

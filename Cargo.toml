@@ -4,7 +4,7 @@ members = [
     "ft-sys",
     "ft-sys-shared",
 ]
-exclude = ["sample-sqlite", "sample-pg", "foo"]
+exclude = ["examples"]
 resolver = "2"
 
 [workspace.package]
@@ -30,6 +30,7 @@ chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = { version = "2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
 include_dir = "0.7"
+rand_core = "0.6"
 
 [workspace.dependencies.rusqlite]
 version = "0.31"

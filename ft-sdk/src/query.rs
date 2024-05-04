@@ -9,7 +9,7 @@ impl Query {
     ///
     /// ```
     /// use ft_sdk::QueryExt;
-    /// let req = http::Request::default();
+    /// let req: http::Request<bytes::Bytes> = Default::default();
     /// let name: &str = req.query().get("name").unwrap_or("John");
     /// ```
     pub fn get(&self, key: &str) -> Option<&str> {
@@ -26,7 +26,7 @@ impl Query {
 ///
 /// ```
 /// use ft_sdk::QueryExt;
-/// let req = http::Request::default();
+/// let req: http::Request<bytes::Bytes> = Default::default();
 /// let query: ft_sdk::Query = req.query();
 /// ```
 pub trait QueryExt {
