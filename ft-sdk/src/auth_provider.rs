@@ -60,12 +60,14 @@ pub enum AuthError {
     NameNotProvided,
 }
 
-/// returns `true` if there's a [UserData::VerifiedEmail] for the provided email
+/// returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
 ///
-/// this makes a db call to check if the email is already verified.
-pub fn check_email(
+/// We check across data from all providers if `provider` is `None`, else we only check
+/// the data from the provider.
+pub fn check_if_verified_email_exists(
     conn: &mut ft_sdk::Connection,
     email: &str,
+    _provider: Option<&str>,
 ) -> Result<bool, diesel::result::Error> {
     use db::fastn_user;
     use diesel::dsl::{count, sql};
