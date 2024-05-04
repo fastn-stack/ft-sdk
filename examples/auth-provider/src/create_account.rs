@@ -15,13 +15,24 @@ impl CreateAccount {
         ]
     }
 
-    fn validate_strong_password(_password: &str) -> bool {
-        // TODO:
+    fn validate_strong_password(
+        password: &str,
+        errors: &mut std::collections::HashMap<String, String>,
+    ) -> bool {
+        if password == "weak" {
+            errors.insert("password".to_string(), "password is too weak".to_string());
+        }
         true
     }
 
-    fn validate_email(_email: &str) -> bool {
-        // TODO:
+    fn validate_email(
+        conn: &mut ft_sdk::Connection,
+        email: &str,
+        errors: &mut std::collections::HashMap<String, String>,
+    ) -> bool {
+        if ft_sdk::auth_provider::check_if_verified_email_exists(conn, email, None).unwrap() {
+            errors.insert("email".to_string(), "email already exists".to_string());
+        }
         true
     }
 }
@@ -33,25 +44,12 @@ impl ft_sdk::Action<crate::Auth, <crate::Auth as ft_sdk::Layout>::Error> for Cre
     {
         use ft_sdk::JsonBodyExt;
 
-        // TODO: this is too many lines to read two values, we should add some helpers in ft-sdk
-        //       to read upto n sized tuples
-        // TODO: this can be done with a macro, maybe our version of validator crate in ft-sdk?
         let (email, password): (String, String) = c.in_.req.required2("email", "password")?;
 
         let mut errors = std::collections::HashMap::new();
 
-        if !CreateAccount::validate_email(&email) {
-            errors.insert("email".to_string(), "invalid email format".to_string());
-        }
-
-        if CreateAccount::validate_strong_password(&password) {
-            errors.insert("password".to_string(), "password is too weak".to_string());
-        }
-
-        if ft_sdk::auth_provider::check_if_verified_email_exists(&mut c.conn, &email, None).unwrap()
-        {
-            errors.insert("email".to_string(), "email already exists".to_string());
-        }
+        Self::validate_email(&mut c.conn, &email, &mut errors);
+        Self::validate_strong_password(&password, &mut errors);
 
         if !errors.is_empty() {
             return Err(errors);
