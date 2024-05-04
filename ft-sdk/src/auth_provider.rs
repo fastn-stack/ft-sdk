@@ -207,7 +207,6 @@ fn create_new_user(
 
     let user_id: i64 = query.get_result(conn)?;
 
-
     Ok(ft_sdk::auth::UserId(user_id))
 }
 
@@ -327,7 +326,6 @@ fn modify_user(
 
         let new_data = get_new_user_data(provider_id, data, &mut old_data).map(user_data_to_json);
 
-
         let new_data = new_data.unwrap();
 
         let query = diesel::insert_into(db::fastn_user::table)
@@ -347,22 +345,21 @@ fn modify_user(
 }
 
 /// update existing user's data (`old_data`) with the provided `data`
-fn get_new_user_data<'a>(
+fn get_new_user_data(
     provider_id: &str,
     data: Vec<ft_sdk::auth::UserData>,
-    old_data: &'a mut serde_json::Value,
+    old_data: &mut serde_json::Value,
 ) -> Result<std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>, ()> {
     let mut new_data = std::collections::HashMap::new();
 
     // If the provider provides UserData::VerifiedEmail, then we also add the
     // data against "email" provider.
     for d in &data {
-        match d {
-            ft_sdk::auth::UserData::VerifiedEmail(email) => new_data
+        if let ft_sdk::auth::UserData::VerifiedEmail(email) = d {
+            new_data
                 .entry("email".to_string())
                 .or_insert(Vec::<ft_sdk::auth::UserData>::new())
-                .push(ft_sdk::auth::UserData::VerifiedEmail(email.clone())),
-            _ => {}
+                .push(ft_sdk::auth::UserData::VerifiedEmail(email.clone()))
         }
     }
 
@@ -375,7 +372,7 @@ fn get_new_user_data<'a>(
             let updated_data = d.clone().into_iter().filter(|d| match d {
                 ft_sdk::auth::UserData::Email(email) => {
                     // check if the email is verified in new_data
-                    !new_data
+                    new_data
                         .get(k.as_str())
                         .and_then(|d| {
                             d.iter().find(|nd| match nd {
@@ -383,7 +380,7 @@ fn get_new_user_data<'a>(
                                 _ => false,
                             })
                         })
-                        .is_some()
+                        .is_none()
                 }
                 _ => true,
             });

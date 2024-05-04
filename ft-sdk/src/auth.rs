@@ -28,9 +28,9 @@ pub enum UserData {
 }
 
 pub struct ProviderUserData {
-    ud: UserData,
-    user_visible_identity: String,
-    provider: String,
+    pub ud: UserData,
+    pub user_visible_identity: String,
+    pub provider: String,
 }
 
 /// Get the currently logged-in user's userid. returns `None` if the user is not logged in.
