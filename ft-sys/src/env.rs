@@ -1,6 +1,7 @@
 //! Functions to interact with the environment.
 
 extern "C" {
+    #[cfg(target_family = "wasm")]
     fn env_print(ptr: i32, len: i32);
     fn env_now() -> i32;
     fn env_ud() -> i32;
@@ -9,9 +10,16 @@ extern "C" {
 }
 
 #[doc(hidden)]
+#[cfg(target_family = "wasm")]
 pub fn print_it(s: String) {
     let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(s);
     unsafe { env_print(ptr, len) }
+}
+
+#[doc(hidden)]
+#[cfg(not(target_family = "wasm"))]
+pub fn print_it(s: String) {
+    println!("{s}");
 }
 
 /// Print some data to the server log.
