@@ -64,10 +64,7 @@ pub fn default_pg() -> Result<PgConnection, Error> {
 pub fn default_sqlite() -> Result<SqliteConnection, Error> {
     use diesel::Connection;
     let db = ft_sys::env::var("DB_FILE".to_string());
-    let db_url = match db {
-        Some(v) => v,
-        None => "default".to_string(),
-    };
+    let db_url = db.unwrap_or_else(|| "default".to_string());
 
     Ok(SqliteConnection::establish(db_url.as_str())?)
 }
@@ -140,11 +137,8 @@ pub fn json_response<T: serde::Serialize>(
         resp = resp.header(::http::header::SET_COOKIE, all_cookies.unwrap());
     }
 
-    let resp = resp
-        .body(bytes::Bytes::from(serde_json::to_vec(&t).unwrap()))
-        .unwrap();
-
-    resp
+    resp.body(bytes::Bytes::from(serde_json::to_vec(&t).unwrap()))
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -191,7 +185,7 @@ mod test {
 
         set_test_cookies(in_.clone());
 
-        let res = super::json_response(&t, Some(&in_));
+        let res = super::json_response(t, Some(&in_));
 
         let cookie_str = res.headers().get("set-cookie").unwrap();
 

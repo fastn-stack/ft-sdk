@@ -58,20 +58,15 @@ pub trait Layout {
         P: Page<Self, Self::Error> + serde::Serialize,
         Self: Sized,
     {
-        match Self::_page::<P>(r) {
-            Ok(r) => r,
-            Err(e) => Self::render_error(e),
-        }
+        Self::_page::<P>(r).unwrap_or_else(|e| Self::render_error(e))
     }
+
     fn action<A>(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes>
     where
         A: Action<Self, Self::Error>,
         Self: Sized,
     {
-        match Self::_action::<A>(r) {
-            Ok(r) => r,
-            Err(e) => Self::render_error(e),
-        }
+        Self::_action::<A>(r).unwrap_or_else(|e| Self::render_error(e))
     }
 
     fn _action<A>(

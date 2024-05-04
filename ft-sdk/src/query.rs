@@ -8,7 +8,8 @@ impl Query {
     /// # Examples
     ///
     /// ```
-    /// let req: http::Request<bytes::Bytes> = ...;
+    /// use ft_sdk::QueryExt;
+    /// let req = http::Request::default();
     /// let name: &str = req.query().get("name").unwrap_or("John");
     /// ```
     pub fn get(&self, key: &str) -> Option<&str> {
@@ -24,8 +25,9 @@ impl Query {
 /// # Examples
 ///
 /// ```
-/// let req: http::Request<bytes::Bytes> = ...;
-/// let query: Query = req.query();
+/// use ft_sdk::QueryExt;
+/// let req = http::Request::default();
+/// let query: ft_sdk::Query = req.query();
 /// ```
 pub trait QueryExt {
     /// parse query variables from `http::Request`

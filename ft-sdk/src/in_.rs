@@ -39,29 +39,27 @@ impl In {
     ///    ud: None,
     ///    req: http::Request::default(),
     ///    now: chrono::Utc::now(),
-    ///    set_cookies: std::rc::Rc::new(std::cell::RefCell::new(Vec::new())),
-    ///    form_errors: std::collections::HashMap::new(),
+    ///    set_cookies: Default::default(),
+    ///    form_errors: Default::default(),
     /// };
     ///
     /// let res = in_.add_cookie(
     ///     Cookie::new("name", "value")
-    /// )
+    /// );
     /// ```
     ///
     /// Send a removal cookie:
     /// ```
-    /// use cookie::Cookie;
-    ///
     /// let in_ = ft_sdk::In {
     ///    ud: None,
     ///    req: http::Request::default(),
     ///    now: chrono::Utc::now(),
-    ///    set_cookies: std::cell::RefCell::new(Vec::new()),
-    ///    form_errors: std::collections::HashMap::new(),
+    ///    set_cookies: Default::default(),
+    ///    form_errors: Default::default(),
     /// };
     ///
     /// // the name, and path match the cookie created in the previous example
-    /// let mut cookie = Cookie::new("name", "value-does-not-matter");
+    /// let mut cookie = ft_sdk::Cookie::new("name", "value-does-not-matter");
     /// cookie.set_max_age(0);
     ///
     /// let res = in_.add_cookie(cookie);
