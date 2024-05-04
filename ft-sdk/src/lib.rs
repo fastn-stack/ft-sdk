@@ -9,6 +9,7 @@ extern crate self as ft_sdk;
 
 pub mod auth;
 pub mod auth_provider;
+mod rng;
 
 mod crypto;
 
@@ -30,6 +31,7 @@ pub mod utils;
 
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
+pub use rng::Rng;
 
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
