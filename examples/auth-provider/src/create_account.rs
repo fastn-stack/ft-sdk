@@ -104,10 +104,11 @@ impl ft_sdk::Action<crate::Auth, String> for CreateAccount {
 
         if let Err(e) = ft_sdk::send_email(
             (&self.name, &self.email),
-            "Confirm you account",
+            // TODO: need a way to get some site config data, site name, site logo etc
+            "Account Created",
             &mut c.conn,
-            &CreateAccount::confirm_account_html(&self.name, &conf_link),
-            "auth_confirm_account",
+            "welcome to super awesome site!",
+            "welcome-mail",
         ) {
             ft_sdk::println!("auth.wasm: failed to queue email: {:?}", e);
         }
@@ -117,7 +118,8 @@ impl ft_sdk::Action<crate::Auth, String> for CreateAccount {
         resp_json.insert("message".to_string(), "account created".into());
         resp_json.insert("success".to_string(), true.into());
 
-        Ok(ft_sdk::ActionOutput::Data(resp_json))
+        // TODO: get next argument
+        Ok(ft_sdk::ActionOutput::Redirect("/".to_string()))
     }
 }
 
