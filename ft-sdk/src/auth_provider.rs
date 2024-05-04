@@ -46,12 +46,10 @@ pub fn authenticate(
     // _token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::UserId, AuthError> {
     let user_id = if let Some(id) = user_id {
-        id
+        modify_user(&id, conn, provider_id, identity, data)?
     } else {
-        create_empty_user(conn)?
+        create_new_user(conn, provider_id, identity, data)?
     };
-
-    modify_user(&user_id, conn, provider_id, identity, data)?;
 
     Ok(user_id)
 }
@@ -167,33 +165,50 @@ pub enum UserDataError {
     DatabaseError(#[from] diesel::result::Error),
 }
 
-fn create_empty_user(
+fn create_new_user(
     conn: &mut ft_sdk::Connection,
-) -> Result<ft_sdk::UserId, diesel::result::Error> {
-    use db::fastn_user;
+    provider_id: &str,
+    identity: &str,
+    data: Vec<ft_sdk::auth::UserData>,
+) -> Result<ft_sdk::UserId, AuthError> {
     use diesel::prelude::*;
 
+    let mut data = data;
     let now = ft_sys::env::now();
 
-    let data = serde_json::json!({
-        "email": {
-            "data": {
-                "emails": [],
-                "verified_emails": [],
-            },
-        },
+    data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
+
+    // find name
+    let name = data.iter().find_map(|d| match d {
+        ft_sdk::auth::UserData::Name(name) => Some(name.clone()),
+        _ => None,
     });
 
-    let id = diesel::insert_into(fastn_user::table)
-        .values((
-            fastn_user::created_at.eq(now),
-            fastn_user::updated_at.eq(now),
-            fastn_user::data.eq(data),
-        ))
-        .returning(fastn_user::id)
-        .get_result(conn)?;
+    // TODO: check if name already exists in db. Don't throw error if name
+    // is already provided
+    if name.is_none() {
+        return Err(AuthError::NameNotProvided);
+    }
 
-    Ok(ft_sdk::UserId(id))
+    let mut data_with_provider = std::collections::HashMap::new();
+
+    data_with_provider.insert(provider_id.to_string(), data);
+
+    let data_json = user_data_to_json(data_with_provider);
+
+    let query = diesel::insert_into(db::fastn_user::table)
+        .values((
+            db::fastn_user::name.eq(name.unwrap()),
+            db::fastn_user::data.eq(data_json),
+            db::fastn_user::created_at.eq(now),
+            db::fastn_user::updated_at.eq(now),
+        ))
+        .returning(db::fastn_user::id);
+
+    let user_id: i64 = query.get_result(conn)?;
+
+
+    Ok(ft_sdk::auth::UserId(user_id))
 }
 
 /// persist the user in session
@@ -286,7 +301,7 @@ fn modify_user(
     data: Vec<ft_sdk::auth::UserData>,
     // TODO:
     // token: Option<serde_json::Value>,
-) -> Result<(), AuthError> {
+) -> Result<ft_sdk::auth::UserId, AuthError> {
     use diesel::prelude::*;
 
     let mut data = data;
@@ -310,9 +325,10 @@ fn modify_user(
             .select(db::fastn_user::data)
             .first::<serde_json::Value>(c)?;
 
-        let new_data = get_new_user_data(provider_id, data, &mut old_data)
-            .map(user_data_to_json)
-            .unwrap(); // TODO: handle errors
+        let new_data = get_new_user_data(provider_id, data, &mut old_data).map(user_data_to_json);
+
+
+        let new_data = new_data.unwrap();
 
         let query = diesel::insert_into(db::fastn_user::table)
             .values(db::fastn_user::name.eq(name.unwrap()))
@@ -327,7 +343,7 @@ fn modify_user(
 
     ft_sdk::println!("modified {} user(s)", affected);
 
-    Ok(())
+    Ok(id.clone())
 }
 
 /// update existing user's data (`old_data`) with the provided `data`
