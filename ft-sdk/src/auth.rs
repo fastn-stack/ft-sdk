@@ -27,9 +27,41 @@ pub enum UserData {
     },
 }
 
+impl UserData {
+    pub fn kind(&self) -> UserDataKind {
+        match self {
+            UserData::VerifiedEmail(_) => UserDataKind::VerifiedEmail,
+            UserData::Username(_) => UserDataKind::Username,
+            UserData::Name(_) => UserDataKind::Name,
+            UserData::FirstName(_) => UserDataKind::FirstName,
+            UserData::LastName(_) => UserDataKind::LastName,
+            UserData::Email(_) => UserDataKind::Email,
+            UserData::Age(_) => UserDataKind::Age,
+            UserData::Phone(_) => UserDataKind::Phone,
+            UserData::ProfilePicture(_) => UserDataKind::ProfilePicture,
+            UserData::Identity(_) => UserDataKind::Identity,
+            UserData::Custom { key, .. } => UserDataKind::Custom { key: key.clone() },
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum UserDataKind {
+    VerifiedEmail,
+    Username,
+    Name,
+    FirstName,
+    LastName,
+    Email,
+    Age,
+    Phone,
+    ProfilePicture,
+    Identity,
+    Custom { key: String },
+}
+
 pub struct ProviderUserData {
     pub ud: UserData,
-    pub user_visible_identity: String,
     pub provider: String,
 }
 

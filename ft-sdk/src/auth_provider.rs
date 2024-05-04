@@ -42,13 +42,11 @@ pub fn authenticate(
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
     user_id: Option<ft_sdk::auth::UserId>,
-    // TODO:
-    // _token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::UserId, AuthError> {
     let user_id = if let Some(id) = user_id {
         modify_user(&id, conn, provider_id, identity, data)?
     } else {
-        create_new_user(conn, provider_id, identity, data)?
+        create_user(conn, provider_id, identity, data)?
     };
 
     Ok(user_id)
@@ -165,7 +163,7 @@ pub enum UserDataError {
     DatabaseError(#[from] diesel::result::Error),
 }
 
-fn create_new_user(
+fn create_user(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
     identity: &str,
