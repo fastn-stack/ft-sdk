@@ -1,5 +1,5 @@
 #[derive(Debug, thiserror::Error)]
-pub enum MailError {
+pub enum EmailError {
     #[error("error enqueueing email: {0}")]
     EnqueueError(String),
 }
@@ -12,14 +12,14 @@ pub enum MailError {
 /// * `subject` - email subject
 /// * `body` - email body
 /// * `mkind` - mail kind, used for logical logging purposes
-pub fn queue_email(
+pub fn send_email(
     to: (&str, &str),
     subject: &str,
     conn: &mut ft_sdk::Connection,
     // TODO: add support for text emails
     html_body: &str,
     mkind: &str,
-) -> Result<(), MailError> {
+) -> Result<(), EmailError> {
     use diesel::prelude::*;
 
     let now = chrono::Utc::now();
@@ -38,7 +38,7 @@ pub fn queue_email(
             fastn_email_queue::status.eq("PENDING"),
         ))
         .execute(conn)
-        .map_err(|e| MailError::EnqueueError(e.to_string()))?;
+        .map_err(|e| EmailError::EnqueueError(e.to_string()))?;
 
     ft_sdk::println!(
         "email_queue_request_sucess: {} request registered",

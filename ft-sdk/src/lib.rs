@@ -16,7 +16,7 @@ mod crypto;
 pub mod cookie;
 pub use cookie::{Cookie, CookieExt};
 
-pub mod email;
+mod email;
 
 mod in_;
 mod json_body;
@@ -31,6 +31,7 @@ pub mod utils;
 
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
+pub use email::{send_email, EmailError};
 pub use rng::Rng;
 
 #[cfg(feature = "postgres")]

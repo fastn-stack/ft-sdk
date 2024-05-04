@@ -37,6 +37,8 @@ impl ft_sdk::Action<crate::Auth, String> for CreateAccount {
 
         let body = c.in_.req.json_body().map_err(ToString::to_string)?;
 
+        // TODO: this is too many lines to read two values, we should add some helpers in ft-sdk
+        //       to read upto n sized tuples
         // TODO: this can be done with a macro, maybe our version of validator crate in ft-sdk?
         let email = get_required_json_field(&body, "email");
         let password = get_required_json_field(&body, "password");
@@ -95,13 +97,12 @@ impl ft_sdk::Action<crate::Auth, String> for CreateAccount {
         )
         .map_err(ToString::to_string)?;
 
+        // TODO: not fond of create_user not logging user in. There is no use case yet for
+        //       create user which is not followed right after by logging in, so create_user
+        //       should also log user in.
         ft_sdk::auth_provider::login(&mut c.conn, c.in_.clone(), &user_id, "email", &self.name)?;
 
-        let conf_link = self
-            .create_conf_path(&mut c.conn, user_id)
-            .map_err(ToString::to_string)?;
-
-        if let Err(e) = ft_sdk::email::queue_email(
+        if let Err(e) = ft_sdk::send_email(
             (&self.name, &self.email),
             "Confirm you account",
             &mut c.conn,
