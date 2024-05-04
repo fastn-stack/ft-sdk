@@ -29,29 +29,6 @@
 /// caller can request the user to log in again with the required scopes.
 pub struct Scope(pub String);
 
-/// update user data
-pub fn authenticate(
-    conn: &mut ft_sdk::Connection,
-    provider_id: &str,
-    // GitHub may use username as Identity, as user can understand their username, but have never
-    // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
-    // show some identity against each, and we will use this identity. Identity is mandatory. It
-    // will be stored as UserData::Identity.
-    //
-    // For the same provider_id, if identity changes, we will only keep the latest identity.
-    identity: &str,
-    data: Vec<ft_sdk::auth::UserData>,
-    user_id: Option<ft_sdk::auth::UserId>,
-) -> Result<ft_sdk::UserId, AuthError> {
-    let user_id = if let Some(id) = user_id {
-        modify_user(&id, conn, provider_id, identity, data)?
-    } else {
-        create_user(conn, provider_id, identity, data)?
-    };
-
-    Ok(user_id)
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum AuthError {
     #[error("diesel error: {0}")]
@@ -165,9 +142,16 @@ pub enum UserDataError {
     DatabaseError(#[from] diesel::result::Error),
 }
 
-fn create_user(
+pub fn create_user(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
+
+    // GitHub may use username as Identity, as user can understand their username, but have never
+    // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
+    // show some identity against each, and we will use this identity. Identity is mandatory. It
+    // will be stored as UserData::Identity.
+    //
+    // For the same provider_id, if identity changes, we will only keep the latest identity.
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
 ) -> Result<ft_sdk::UserId, AuthError> {
@@ -212,7 +196,7 @@ fn create_user(
 
 /// persist the user in session
 ///
-/// `identity`: Eg for GitHub, it could be the user id. This is stored in the cookie so can be
+/// `identity`: Eg for GitHub, it could be the username. This is stored in the cookie so can be
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
@@ -292,7 +276,7 @@ pub enum LoginError {
 ///
 /// Each provider can also drop in a token that can be used to call APIs that require
 /// a token. The token is stored against session, and is deleted when the user logs out.
-fn modify_user(
+fn update_user(
     id: &ft_sdk::UserId,
     conn: &mut ft_sdk::Connection,
     provider_id: &str,

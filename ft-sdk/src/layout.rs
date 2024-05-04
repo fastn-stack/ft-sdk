@@ -83,7 +83,12 @@ pub trait Layout {
         Ok(a2r(o, &in_))
     }
 
-    fn json(&mut self, o: serde_json::Value) -> Result<serde_json::Value, Self::Error>;
+    fn json(&mut self, page: serde_json::Value) -> Result<serde_json::Value, Self::Error> {
+        Ok(serde_json::json!({
+            "page": page,
+        }))
+    }
+
     fn render_error(e: Self::Error) -> http::Response<bytes::Bytes>;
 }
 
