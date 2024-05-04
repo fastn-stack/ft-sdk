@@ -4,7 +4,7 @@ pub struct Auth {
 }
 
 impl ft_sdk::Layout for Auth {
-    type Error = String;
+    type Error = std::collections::HashMap<String, String>;
 
     fn from_in(in_: ft_sdk::In, _ty: ft_sdk::RequestType) -> Result<Self, Self::Error> {
         Ok(Self {

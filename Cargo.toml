@@ -1,5 +1,5 @@
 [workspace]
-members = [
+members = [ "examples/hello-world",
     "ft-sdk",
     "ft-sys",
     "ft-sys-shared",

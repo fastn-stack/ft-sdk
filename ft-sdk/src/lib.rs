@@ -103,6 +103,14 @@ pub enum Error {
     DieselConnection(#[from] diesel::result::ConnectionError),
 }
 
+impl From<ft_sdk::Error> for std::collections::HashMap<String, String> {
+    fn from(e: ft_sdk::Error) -> Self {
+        let mut map = std::collections::HashMap::new();
+        map.insert("error".to_string(), e.to_string());
+        map
+    }
+}
+
 /// Create a page not found response.
 #[macro_export]
 macro_rules! not_found {

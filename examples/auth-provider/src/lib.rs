@@ -19,10 +19,22 @@ pub fn route(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
     match Into::<Route>::into(r.uri().path()) {
         Route::CreateAccount => Auth::action::<create_account::CreateAccount>(r),
         Route::Login => todo!(),
+        Route::NotFound => todo!(),
     }
 }
 
 pub(crate) enum Route {
     Login,
     CreateAccount,
+    NotFound,
+}
+
+impl From<&str> for Route {
+    fn from(s: &str) -> Self {
+        match s {
+            "/login/" => Self::Login,
+            "/create-account/" => Self::CreateAccount,
+            _ => Self::NotFound,
+        }
+    }
 }
