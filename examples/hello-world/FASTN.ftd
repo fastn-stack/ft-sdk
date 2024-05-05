@@ -2,3 +2,6 @@
 
 -- fastn.package: hello-world
 
+-- fastn.url-mappings:
+
+/wasm/* -> wasm+proxy://hello_world.wasm/*

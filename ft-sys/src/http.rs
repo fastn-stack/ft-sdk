@@ -19,9 +19,7 @@ pub fn current_request() -> http::Request<bytes::Bytes> {
     extern "C" {
         fn http_get_request() -> i32;
     }
-    ft_sys::println!("current_request");
     let ptr = unsafe { http_get_request() };
-    ft_sys::println!("current_request: {ptr}");
     let r: ft_sys_shared::Request = ft_sys::memory::json_from_ptr(ptr);
     r.into()
 }
@@ -37,7 +35,6 @@ pub fn send_response(r: http::Response<bytes::Bytes>) {
     let (ptr, len) = ft_sys::memory::json_ptr(r);
     unsafe { http_send_response(ptr, len) }
 }
-
 
 /// doc_id: auth.fifthtry.site/create-account
 pub fn send_ftd(_doc_id: &str) {

@@ -241,6 +241,12 @@ dependencies = [
 [[package]]
 name = "hello-world"
 version = "0.1.0"
+dependencies = [
+ "bytes",
+ "ft-sdk",
+ "http",
+ "serde",
+]
 
 [[package]]
 name = "http"

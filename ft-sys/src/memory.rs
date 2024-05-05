@@ -108,9 +108,7 @@ pub fn json_ptr(d: impl serde::Serialize) -> (i32, i32) {
 }
 
 pub fn json_from_ptr<T: serde::de::DeserializeOwned>(ptr: i32) -> T {
-    ft_sys::println!("json_from_ptr");
     let bytes = bytes_from_ptr(ptr);
-    ft_sys::println!("json_from_ptr: {}", String::from_utf8_lossy(&bytes));
     match serde_json::from_slice(&bytes) {
         Ok(v) => v,
         Err(e) => {

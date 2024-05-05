@@ -8,4 +8,11 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+ft-sdk = { version = "0.1", path = "../../ft-sdk" }
+http = "1"
+bytes = "1"
+serde = { version = "1", features = ["derive"] }

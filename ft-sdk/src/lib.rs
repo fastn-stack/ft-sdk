@@ -8,6 +8,7 @@
 extern crate self as ft_sdk;
 
 pub mod auth;
+#[cfg(feature = "auth-provider")]
 pub mod auth_provider;
 mod rng;
 
