@@ -35,8 +35,3 @@ pub fn send_response(r: http::Response<bytes::Bytes>) {
     let (ptr, len) = ft_sys::memory::json_ptr(r);
     unsafe { http_send_response(ptr, len) }
 }
-
-/// doc_id: auth.fifthtry.site/create-account
-pub fn send_ftd(_doc_id: &str) {
-    // todo
-}
