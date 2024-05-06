@@ -254,7 +254,6 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "diesel",
- "ft-derive",
  "ft-sdk",
  "http",
  "include_dir",
