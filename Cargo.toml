@@ -1,5 +1,10 @@
 [workspace]
-members = [ "examples/hello-world",
+members = [
+    "examples/hello-world",
+    # "examples/sample-pg",
+    # "examples/sample-sqlite",
+    # "examples/auth-provider",
+    "ft-derive",
     "ft-sdk",
     "ft-sys",
     "ft-sys-shared",

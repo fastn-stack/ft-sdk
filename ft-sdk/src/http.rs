@@ -8,6 +8,15 @@ pub enum JsonError {
     Http(#[from] http::Error),
 }
 
+impl From<JsonError> for http::Response<bytes::Bytes> {
+    fn from(e: JsonError) -> Self {
+        ::http::Response::builder()
+            .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
+            .body(format!("json error: {e:?}\n").into())
+            .unwrap()
+    }
+}
+
 pub fn json<T: serde::Serialize>(t: T) -> Result<http::Response<bytes::Bytes>, JsonError> {
     http::Response::builder()
         .status(200)
@@ -16,11 +25,28 @@ pub fn json<T: serde::Serialize>(t: T) -> Result<http::Response<bytes::Bytes>, J
         .map_err(JsonError::Http)
 }
 
-pub fn not_found<T: AsRef<str>>(t: T) -> http::Response<bytes::Bytes> {
-    let t = t.as_ref();
-    println!("not-found: {t}");
-    http::Response::builder()
-        .status(http::StatusCode::NOT_FOUND)
-        .body(format!("not-found: {t}\n").into())
-        .unwrap()
+/// Create a page not found response.
+#[macro_export]
+macro_rules! not_found {
+    ($($t:tt)*) => {{
+        let msg = format!($($t)*);
+        ft_sdk::println!("not-found: {msg}");
+        Err(::http::Response::builder()
+            .status(::http::StatusCode::NOT_FOUND)
+            .body(bytes::Bytes::from(msg + "\n"))
+            .unwrap())
+    }};
+}
+
+/// Create a server error response.
+#[macro_export]
+macro_rules! server_error {
+    ($($t:tt)*) => {{
+        let msg = format!($($t)*);
+        ft_sdk::println!("server-error: {msg}");
+        Err(::http::Response::builder()
+            .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
+            .body(bytes::Bytes::from(msg + "\n"))
+            .unwrap())
+    }};
 }

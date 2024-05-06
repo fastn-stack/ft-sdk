@@ -1,22 +1,22 @@
 use diesel::prelude::*;
 
-#[no_mangle]
-pub extern "C" fn main_ft() {
+#[ft_sdk::handle_http]
+fn handle(
+    req: http::Request<bytes::Bytes>,
+) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
     ft_sdk::migrate_simple(
         "hello-world",
         include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
     )
     .unwrap();
 
-    let req = ft_sdk::http::current_request();
-
-    ft_sdk::http::send_response(match req.uri().path() {
+    match req.uri().path() {
         "/list/" => list(),
         "/add/" => add(&req),
         "/mark-done/" => mark_done(&req),
         "/delete/" => delete(&req),
-        t => ft_sdk::http::not_found(t),
-    })
+        t => ft_sdk::not_found!("unhandled path: {t}"),
+    }
 }
 
 table! {
@@ -35,7 +35,7 @@ struct TodoItem {
     is_done: bool,
 }
 
-fn list() -> http::Response<bytes::Bytes> {
+fn list() -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
     let mut conn = ft_sdk::default_connection().unwrap();
 
     let items: Vec<TodoItem> = todo_item::table
@@ -43,10 +43,12 @@ fn list() -> http::Response<bytes::Bytes> {
         .get_results(&mut conn)
         .unwrap();
 
-    ft_sdk::http::json(items).unwrap()
+    Ok(ft_sdk::http::json(items)?)
 }
 
-fn add(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
+fn add(
+    req: &http::Request<bytes::Bytes>,
+) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
     use ft_sdk::JsonBodyExt;
 
     let text: String = req.required("text").unwrap();
@@ -57,10 +59,12 @@ fn add(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
         .execute(&mut conn)
         .unwrap();
 
-    ft_sdk::http::json("ok").unwrap()
+    Ok(ft_sdk::http::json("ok")?)
 }
 
-fn mark_done(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
+fn mark_done(
+    req: &http::Request<bytes::Bytes>,
+) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
     use ft_sdk::JsonBodyExt;
 
     let (id, done): (i32, bool) = req.required2("id", "done").unwrap();
@@ -71,10 +75,12 @@ fn mark_done(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> 
         .execute(&mut conn)
         .unwrap();
 
-    ft_sdk::http::json("ok").unwrap()
+    Ok(ft_sdk::http::json("ok")?)
 }
 
-fn delete(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
+fn delete(
+    req: &http::Request<bytes::Bytes>,
+) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
     use ft_sdk::JsonBodyExt;
 
     let id: i32 = req.required("id").unwrap();
@@ -83,5 +89,5 @@ fn delete(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
         .execute(&mut conn)
         .unwrap();
 
-    ft_sdk::http::json("ok").unwrap()
+    Ok(ft_sdk::http::json("ok")?)
 }

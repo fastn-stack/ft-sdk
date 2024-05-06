@@ -14,6 +14,7 @@ mod rng;
 mod crypto;
 
 pub mod cookie;
+
 pub use cookie::{Cookie, CookieExt};
 
 mod email;
@@ -35,6 +36,7 @@ pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
 pub use rng::Rng;
 
+pub use ft_derive::handle_http;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
@@ -110,32 +112,6 @@ impl From<ft_sdk::Error> for std::collections::HashMap<String, String> {
         map.insert("error".to_string(), e.to_string());
         map
     }
-}
-
-/// Create a page not found response.
-#[macro_export]
-macro_rules! not_found {
-    ($($t:tt)*) => {{
-        let msg = format!($($t)*);
-        ft_sdk::println!("not-found: {msg}");
-        ::http::Response::builder()
-            .status(::http::StatusCode::NOT_FOUND)
-            .body(bytes::Bytes::from(msg + "\n"))
-            .unwrap()
-    }};
-}
-
-/// Create a server error response.
-#[macro_export]
-macro_rules! server_error {
-    ($($t:tt)*) => {{
-        let msg = format!($($t)*);
-        ft_sdk::println!("server-error: {msg}");
-        ::http::Response::builder()
-            .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
-            .body(bytes::Bytes::from(msg + "\n"))
-            .unwrap()
-    }};
 }
 
 /// Create a http response with given JSON.
