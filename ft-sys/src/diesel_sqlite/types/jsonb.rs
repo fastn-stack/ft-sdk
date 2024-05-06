@@ -13,7 +13,7 @@ impl sql_types::HasSqlType<sql_types::Jsonb> for Sqlite {
 
 impl ToSql<sql_types::Jsonb, Sqlite> for serde_json::Value {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> serialize::Result {
-        let b = serde_sqlite_jsonb::to_vec(self)?;
+        let b = serde_json::to_vec(self)?;
         out.set_value(b);
         Ok(IsNull::No)
     }
@@ -22,7 +22,7 @@ impl ToSql<sql_types::Jsonb, Sqlite> for serde_json::Value {
 impl<'a> SqliteValue<'a> {
     pub(crate) fn jsonb(&self) -> diesel::deserialize::Result<serde_json::Value> {
         match self.raw_value {
-            ft_sys_shared::SqliteRawValue::Blob(i) => Ok(serde_sqlite_jsonb::from_slice(i)?),
+            ft_sys_shared::SqliteRawValue::Blob(i) => Ok(serde_json::from_slice(i)?),
             _ => Err(format!(
                 "Unexpected type, expected Blob, found: {:?}",
                 self.raw_value.kind()
