@@ -151,8 +151,6 @@ pub fn create_user(
         _ => None,
     });
 
-    // TODO: check if name already exists in db. Don't throw error if name
-    // is already provided
     if name.is_none() {
         return Err(AuthError::NameNotProvided);
     }
@@ -268,40 +266,28 @@ pub fn update_user(
     // TODO:
     // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::auth::UserId, AuthError> {
+    use db::fastn_user;
     use diesel::prelude::*;
 
     let mut data = data;
     data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
 
-    // find name
-    let name = data.iter().find_map(|d| match d {
-        ft_sdk::auth::UserData::Name(name) => Some(name.clone()),
-        _ => None,
-    });
-
-    // TODO: check if name already exists in db. Don't throw error if name
-    // is already provided
-    if name.is_none() {
-        return Err(AuthError::NameNotProvided);
-    }
+    let now = ft_sys::env::now();
 
     let affected = conn.transaction(|c| {
-        let mut old_data = db::fastn_user::table
-            .filter(db::fastn_user::id.eq(&id.0))
-            .select(db::fastn_user::data)
+        let mut old_data = fastn_user::table
+            .filter(fastn_user::id.eq(&id.0))
+            .select(fastn_user::data)
             .first::<serde_json::Value>(c)?;
 
         let new_data = get_new_user_data(provider_id, data, &mut old_data).map(user_data_to_json);
 
         let new_data = new_data.unwrap();
 
-        let query = diesel::insert_into(db::fastn_user::table)
-            .values(db::fastn_user::name.eq(name.unwrap()))
-            .on_conflict(db::fastn_user::id)
-            .do_update()
-            .set(db::fastn_user::data.eq(new_data));
-
-        ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
+        let query = diesel::update(fastn_user::table.filter(fastn_user::id.eq(&id.0))).set((
+            db::fastn_user::data.eq(&new_data),
+            db::fastn_user::updated_at.eq(&now),
+        ));
 
         query.execute(c)
     })?;
