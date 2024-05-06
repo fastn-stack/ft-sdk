@@ -12,6 +12,7 @@ pub extern "C" fn main_ft() {
 
     ft_sdk::http::send_response(match req.uri().path() {
         "/list/" => list(),
+        "/add/" => add(&req),
         t => http::Response::builder()
             .status(200)
             .body(format!("page not found: {t}\n").into())
@@ -44,4 +45,18 @@ fn list() -> http::Response<bytes::Bytes> {
         .unwrap();
 
     ft_sdk::http::json(items).unwrap()
+}
+
+fn add(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
+    use ft_sdk::JsonBodyExt;
+
+    let text: String = req.required("text").unwrap();
+    let mut conn = ft_sdk::default_connection().unwrap();
+
+    diesel::insert_into(todo_item::table)
+        .values((todo_item::text.eq(text), todo_item::is_done.eq(false)))
+        .execute(&mut conn)
+        .unwrap();
+
+    ft_sdk::http::json("ok").unwrap()
 }
