@@ -131,12 +131,7 @@ pub fn ud(
 
     let session_cookie = req.cookie(SESSION_KEY)?;
     let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie).ok()?;
-    let session_id = session_cookie
-        .as_object()?
-        .get("id")?
-        .as_number()?
-        .as_i64()?;
-
+    let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
 
     let (user_id, user_data) = conn
         .transaction(|c| {

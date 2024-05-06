@@ -59,7 +59,7 @@ pub(super) const SESSION_TABLE: &str = r#"
 
 CREATE TABLE IF NOT EXISTS fastn_session
 (
-    id   INTEGER PRIMARY KEY,
+    id   TEXT PRIMARY KEY,
     uid  INTEGER NULL,
     data BLOB, -- this is the session data only
     created_at INTEGER NOT NULL,
