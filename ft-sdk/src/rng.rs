@@ -26,14 +26,10 @@ impl rand_core::RngCore for Rng {
     }
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        if dest.len() < 8 {
-            fill_8_bytes(&mut dest[..8].try_into().unwrap());
-        } else {
-            let window = dest.windows(8);
-
-            for w in window {
-                fill_8_bytes(&mut w.try_into().unwrap());
-            }
+        for chunk in dest.chunks_mut(8) {
+            let mut w = [0u8; 8];
+            fill_8_bytes(&mut w);
+            chunk.copy_from_slice(&w);
         }
     }
 
@@ -46,8 +42,8 @@ impl rand_core::RngCore for Rng {
 fn fill_8_bytes(w: &mut [u8; 8]) {
     let val = ft_sdk::env::random().to_be_bytes();
 
-    for (i, byte) in w.iter_mut().enumerate() {
-        *byte = val[i];
+    for (i, byte) in val.iter().enumerate() {
+        w[i] = *byte;
     }
 }
 
