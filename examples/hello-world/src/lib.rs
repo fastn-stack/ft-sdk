@@ -13,6 +13,8 @@ pub extern "C" fn main_ft() {
     ft_sdk::http::send_response(match req.uri().path() {
         "/list/" => list(),
         "/add/" => add(&req),
+        "/mark-done/" => mark_done(&req),
+        "/delete/" => delete(&req),
         t => http::Response::builder()
             .status(200)
             .body(format!("page not found: {t}\n").into())
@@ -55,6 +57,32 @@ fn add(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
 
     diesel::insert_into(todo_item::table)
         .values((todo_item::text.eq(text), todo_item::is_done.eq(false)))
+        .execute(&mut conn)
+        .unwrap();
+
+    ft_sdk::http::json("ok").unwrap()
+}
+
+fn mark_done(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
+    use ft_sdk::JsonBodyExt;
+
+    let (id, done): (i32, bool) = req.required2("id", "done").unwrap();
+    let mut conn = ft_sdk::default_connection().unwrap();
+
+    diesel::update(todo_item::table.find(id))
+        .set(todo_item::is_done.eq(done))
+        .execute(&mut conn)
+        .unwrap();
+
+    ft_sdk::http::json("ok").unwrap()
+}
+
+fn delete(req: &http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes> {
+    use ft_sdk::JsonBodyExt;
+
+    let id: i32 = req.required("id").unwrap();
+    let mut conn = ft_sdk::default_connection().unwrap();
+    diesel::delete(todo_item::table.find(id))
         .execute(&mut conn)
         .unwrap();
 
