@@ -14,10 +14,12 @@ pub struct In {
 
 impl In {
     pub fn from_request(req: http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::Error> {
+        let mut conn = ft_sdk::default_connection()?;
+
         Ok(In {
-            req,
+            req: req.clone(),
             now: ft_sys::now(),
-            ud: ft_sdk::auth::ud(),
+            ud: ft_sdk::auth::ud(&req, &mut conn),
             set_cookies: Rc::new(RefCell::new(Vec::new())),
             form_errors: HashMap::new(),
         })

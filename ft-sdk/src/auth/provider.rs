@@ -237,7 +237,8 @@ pub fn login(
         "identity": identity,
     }))?;
 
-    let session_cookie = ft_sdk::Cookie::new(ft_sdk::auth::SESSION_KEY, &session_str);
+    let mut session_cookie = ft_sdk::Cookie::new(ft_sdk::auth::SESSION_KEY, &session_str);
+    session_cookie.set_path("/");
 
     in_.add_cookie(session_cookie);
 
