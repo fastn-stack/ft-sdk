@@ -76,7 +76,14 @@ impl CookieExt for ::http::Request<bytes::Bytes> {
             .and_then(|v| {
                 v.split(';')
                     .find(|v| v.trim_start().starts_with(name))
-                    .map(|v| v.trim_start().strip_prefix(name).unwrap().trim_start())
+                    .map(|v| {
+                        v.trim_start()
+                            .strip_prefix(name)
+                            .unwrap()
+                            .strip_prefix("=")
+                            .unwrap()
+                            .trim_start()
+                    })
             })
     }
 }
