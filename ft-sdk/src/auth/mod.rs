@@ -106,3 +106,96 @@ pub fn session_providers() -> Vec<String> {
     todo!()
 }
 
+pub fn ud(
+    req: &http::Request<bytes::Bytes>,
+    conn: &mut ft_sdk::Connection,
+) -> Option<ft_sys::UserData> {
+    use db::{fastn_session, fastn_user};
+    use diesel::prelude::*;
+    use ft_sdk::CookieExt;
+
+    let debug_user = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()).map(|v| {
+        let v: Vec<&str> = v.splitn(4, ' ').collect();
+        ft_sys::UserData {
+            id: v[0].parse().unwrap(),
+            identity: v[1].to_string(),
+            name: v.get(3).map(|v| v.to_string()).unwrap_or_default(),
+            email: v.get(2).map(|v| v.to_string()).unwrap_or_default(),
+            verified_email: true,
+        }
+    });
+
+    if debug_user.is_some() {
+        return debug_user;
+    }
+
+    let session_cookie = req.cookie(SESSION_KEY)?;
+    let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie).ok()?;
+    let session_id = session_cookie
+        .as_object()?
+        .get("id")?
+        .as_number()?
+        .as_i64()?;
+
+
+    let (user_id, user_data) = conn
+        .transaction(|c| {
+            let user_id: Option<i64> = fastn_session::table
+                .select(fastn_session::uid)
+                .filter(fastn_session::id.eq(&session_id))
+                .first(c)?;
+
+            if user_id.is_none() {
+                return Err(diesel::result::Error::NotFound);
+            }
+            let user_id = user_id.unwrap();
+
+            let data = fastn_user::table
+                .select(fastn_user::data)
+                .filter(fastn_user::id.eq(&user_id))
+                .first::<serde_json::Value>(c)?;
+
+            Ok((user_id, data))
+        })
+        .ok()?;
+
+    let mut ud = ft_sys::UserData {
+        id: user_id,
+        identity: "".to_string(),
+        name: "".to_string(),
+        email: "".to_string(),
+        verified_email: false,
+    };
+
+    let user_data = ft_sdk::auth::utils::user_data_from_json(user_data);
+
+    construct_user_data_from_provider_data(user_data, &mut ud);
+
+    Some(ud)
+}
+
+/// try to get information from every provider
+/// the last provider encountered with relevant info will be used to fill `ud`
+fn construct_user_data_from_provider_data(
+    user_data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
+    ud: &mut ft_sys::UserData,
+) {
+    user_data.iter().for_each(|(_, pds)| {
+        pds.iter().for_each(|data| match data {
+            UserData::VerifiedEmail(email) => {
+                ud.email = email.clone();
+                ud.verified_email = true;
+            }
+            UserData::Name(name) => {
+                ud.name = name.clone();
+            }
+            UserData::Email(email) => {
+                ud.email = email.clone();
+            }
+            UserData::Identity(identity) => {
+                ud.identity = identity.clone();
+            }
+            _ => {}
+        })
+    });
+}

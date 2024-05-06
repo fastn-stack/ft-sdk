@@ -103,7 +103,7 @@ pub enum DecryptionError {
 #[serde(rename_all = "kebab-case")]
 pub struct UserData {
     pub id: i64,
-    pub username: String,
+    pub identity: String,
     pub name: String,
     pub email: String,
     pub verified_email: bool,
