@@ -74,6 +74,7 @@ pub(crate) fn user_data_from_json(
         .collect()
 }
 
+#[allow(dead_code)]
 pub(crate) fn user_data_to_json(
     data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
 ) -> serde_json::Value {

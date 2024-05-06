@@ -80,7 +80,7 @@ impl CookieExt for ::http::Request<bytes::Bytes> {
                         v.trim_start()
                             .strip_prefix(name)
                             .unwrap()
-                            .strip_prefix("=")
+                            .strip_prefix('=')
                             .unwrap()
                             .trim_start()
                     })

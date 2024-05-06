@@ -17,6 +17,15 @@ pub enum MigrationError {
     ApplyMigration(#[from] ApplyMigrationError),
 }
 
+impl From<MigrationError> for http::Response<bytes::Bytes> {
+    fn from(e: MigrationError) -> Self {
+        ::http::Response::builder()
+            .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
+            .body(format!("migration error: {e:?}\n").into())
+            .unwrap()
+    }
+}
+
 pub type FnMigration = (
     i32,
     &'static str,

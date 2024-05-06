@@ -178,17 +178,17 @@ fn construct_user_data_from_provider_data(
     user_data.iter().for_each(|(_, pds)| {
         pds.iter().for_each(|data| match data {
             UserData::VerifiedEmail(email) => {
-                ud.email = email.clone();
+                ud.email.clone_from(email);
                 ud.verified_email = true;
             }
             UserData::Name(name) => {
-                ud.name = name.clone();
+                ud.name.clone_from(name);
             }
             UserData::Email(email) => {
-                ud.email = email.clone();
+                ud.email.clone_from(email);
             }
             UserData::Identity(identity) => {
-                ud.identity = identity.clone();
+                ud.identity.clone_from(identity);
             }
             _ => {}
         })

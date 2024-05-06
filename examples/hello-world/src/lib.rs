@@ -7,8 +7,7 @@ fn handle(
     ft_sdk::migrate_simple(
         "hello-world",
         include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
-    )
-    .unwrap();
+    )?;
 
     match req.uri().path() {
         "/list/" => list(),
