@@ -51,6 +51,7 @@ pub fn check_if_verified_email_exists(
     use diesel::prelude::*;
     use diesel::sql_types::{Bool, Text};
 
+    // TODO: 'email' should come from `_provider`
     #[cfg(not(feature = "postgres"))]
     let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' LIKE ")
         .bind::<Text, _>(format!("'%{}%'", email));
@@ -81,7 +82,6 @@ pub fn get_user_data_by_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
     use diesel::prelude::*;
-    use diesel::sql_types::Text;
 
     // TODO: don't load all the users, just load the user with the email
     // this is until we figure out why binds are not properly working
