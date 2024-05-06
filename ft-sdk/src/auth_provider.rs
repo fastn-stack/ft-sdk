@@ -276,7 +276,7 @@ pub enum LoginError {
 ///
 /// Each provider can also drop in a token that can be used to call APIs that require
 /// a token. The token is stored against session, and is deleted when the user logs out.
-fn update_user(
+pub fn update_user(
     id: &ft_sdk::UserId,
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
