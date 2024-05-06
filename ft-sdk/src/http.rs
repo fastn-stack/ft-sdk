@@ -1,5 +1,7 @@
 pub use ft_sys::http::*;
 
+pub type Result = std::result::Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>>;
+
 #[derive(Debug, thiserror::Error)]
 pub enum JsonError {
     #[error("serde_json error {0}")]
@@ -17,7 +19,9 @@ impl From<JsonError> for http::Response<bytes::Bytes> {
     }
 }
 
-pub fn json<T: serde::Serialize>(t: T) -> Result<http::Response<bytes::Bytes>, JsonError> {
+pub fn json<T: serde::Serialize>(
+    t: T,
+) -> std::result::Result<http::Response<bytes::Bytes>, JsonError> {
     http::Response::builder()
         .status(200)
         .header("Content-Type", "application/json")

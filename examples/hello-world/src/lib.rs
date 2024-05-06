@@ -1,9 +1,7 @@
 use diesel::prelude::*;
 
 #[ft_sdk::handle_http]
-fn handle(
-    req: http::Request<bytes::Bytes>,
-) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
+fn handle(req: http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
     ft_sdk::migrate_simple(
         "hello-world",
         include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
@@ -14,7 +12,7 @@ fn handle(
         "/add/" => add(&req),
         "/mark-done/" => mark_done(&req),
         "/delete/" => delete(&req),
-        t => ft_sdk::not_found!("unhandled path: {t}"),
+        t => ft_sdk::not_found!("unhandled path: {t}")?,
     }
 }
 
@@ -34,7 +32,7 @@ struct TodoItem {
     is_done: bool,
 }
 
-fn list() -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
+fn list() -> ft_sdk::http::Result {
     let mut conn = ft_sdk::default_connection().unwrap();
 
     let items: Vec<TodoItem> = todo_item::table
@@ -45,9 +43,7 @@ fn list() -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> 
     Ok(ft_sdk::http::json(items)?)
 }
 
-fn add(
-    req: &http::Request<bytes::Bytes>,
-) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
+fn add(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
     let text: String = req.required("text").unwrap();
@@ -61,9 +57,7 @@ fn add(
     Ok(ft_sdk::http::json("ok")?)
 }
 
-fn mark_done(
-    req: &http::Request<bytes::Bytes>,
-) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
+fn mark_done(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
     let (id, done): (i32, bool) = req.required2("id", "done").unwrap();
@@ -77,9 +71,7 @@ fn mark_done(
     Ok(ft_sdk::http::json("ok")?)
 }
 
-fn delete(
-    req: &http::Request<bytes::Bytes>,
-) -> Result<http::Response<bytes::Bytes>, http::Response<bytes::Bytes>> {
+fn delete(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
     let id: i32 = req.required("id").unwrap();
