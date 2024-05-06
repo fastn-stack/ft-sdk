@@ -71,7 +71,13 @@ pub fn check_if_verified_email_exists(
     #[cfg(feature = "postgres")]
     ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
 
-    let count: i64 = query.get_result(conn)?;
+    let count: i64 = match query.get_result(conn) {
+        Ok(count) => count,
+        Err(e) => match e {
+            diesel::result::Error::NotFound => return Ok(false),
+            e => return Err(e),
+        },
+    };
 
     Ok(count > 0)
 }
