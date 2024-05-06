@@ -22,7 +22,7 @@ pub fn send_email(
 ) -> Result<(), EmailError> {
     use diesel::prelude::*;
 
-    let now = chrono::Utc::now();
+    let now = ft_sdk::env::now();
     let (name, email) = to;
 
     let affected = diesel::insert_into(fastn_email_queue::table)
