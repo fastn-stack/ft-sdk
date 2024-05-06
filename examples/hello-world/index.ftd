@@ -1,1 +1,12 @@
+-- import: fastn/processors as pr
+
 -- ftd.text: hello world
+
+-- record todo:
+integer id:
+string text:
+boolean done:
+
+-- todo list todos:
+$processor$: pr.http
+url: /wasm/list/

@@ -86,7 +86,7 @@ pub fn t() -> String {
         .select((ft_user::id, ft_user::username, ft_user::updated_at))
         .order(ft_user::updated_at.desc())
         // execute the query via the provided
-        // async `diesel_async::RunQueryDsl`
+        // async `diesel_async::RunQueryDsl
         .execute(&mut connection)
         .unwrap();
 

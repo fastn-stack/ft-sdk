@@ -243,9 +243,12 @@ name = "hello-world"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "diesel",
  "ft-sdk",
  "http",
+ "include_dir",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -23,6 +23,19 @@ pub type FnMigration = (
     fn(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 );
 
+pub fn migrate_simple(
+    app_name: &str,
+    migration_sqls: include_dir::Dir,
+) -> Result<(), MigrationError> {
+    migrate(
+        &mut ft_sdk::default_sqlite().unwrap(),
+        app_name,
+        migration_sqls,
+        vec![],
+        &ft_sdk::env::now(),
+    )
+}
+
 pub fn migrate(
     conn: &mut ft_sdk::Connection,
     app_name: &str,

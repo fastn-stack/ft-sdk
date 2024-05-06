@@ -19,6 +19,7 @@ pub use cookie::{Cookie, CookieExt};
 
 mod email;
 
+pub mod http;
 mod in_;
 mod json_body;
 mod layout;
@@ -39,7 +40,7 @@ pub use rng::Rng;
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
-pub use ft_sys::{env, http, println, UserData};
+pub use ft_sys::{env, println, UserData};
 pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
@@ -47,7 +48,7 @@ pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub use migration::migrate;
+pub use migration::{migrate, migrate_simple};
 pub use query::{Query, QueryExt};
 
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
