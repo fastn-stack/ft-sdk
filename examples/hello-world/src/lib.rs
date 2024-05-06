@@ -15,10 +15,7 @@ pub extern "C" fn main_ft() {
         "/add/" => add(&req),
         "/mark-done/" => mark_done(&req),
         "/delete/" => delete(&req),
-        t => http::Response::builder()
-            .status(200)
-            .body(format!("page not found: {t}\n").into())
-            .unwrap(),
+        t => ft_sdk::http::not_found(t),
     })
 }
 

@@ -15,3 +15,12 @@ pub fn json<T: serde::Serialize>(t: T) -> Result<http::Response<bytes::Bytes>, J
         .body(serde_json::to_string(&t)?.into())
         .map_err(JsonError::Http)
 }
+
+pub fn not_found<T: AsRef<str>>(t: T) -> http::Response<bytes::Bytes> {
+    let t = t.as_ref();
+    println!("not-found: {t}");
+    http::Response::builder()
+        .status(http::StatusCode::NOT_FOUND)
+        .body(format!("not-found: {t}\n").into())
+        .unwrap()
+}
