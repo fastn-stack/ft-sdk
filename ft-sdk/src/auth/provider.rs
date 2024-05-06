@@ -209,6 +209,7 @@ pub fn login(
     // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
     use diesel::prelude::*;
     use ft_sdk::auth::db::fastn_session;
+    use rand_core::RngCore;
 
     let now = ft_sys::env::now();
 
@@ -217,9 +218,14 @@ pub fn login(
         "identity": identity,
     });
 
+    let mut rand_buf: [u8; 16] = Default::default();
+    ft_sdk::Rng::fill_bytes(&mut ft_sdk::Rng {}, &mut rand_buf);
+    let session_id = uuid::Uuid::new_v8(rand_buf).to_string();
+
     // TODO: store client information, like user agent, ip addr?
     let query = diesel::insert_into(fastn_session::table)
         .values((
+            fastn_session::id.eq(&session_id),
             fastn_session::uid.eq(user_id.0),
             fastn_session::data.eq(data),
             fastn_session::created_at.eq(now),
@@ -229,7 +235,7 @@ pub fn login(
 
     ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
 
-    let id: i64 = query.get_result(conn)?;
+    let id: String = query.get_result(conn)?;
 
     let session_str = serde_json::to_string(&serde_json::json!({
         "id": id,

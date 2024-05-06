@@ -15,7 +15,7 @@ diesel::table! {
     use diesel::sql_types::*;
 
     fastn_session (id) {
-        id -> Int8,
+        id -> Text,
         uid -> Nullable<Int8>,
         data -> Jsonb,
         updated_at -> Timestamptz,
