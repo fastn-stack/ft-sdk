@@ -2,10 +2,7 @@ use diesel::prelude::*;
 
 #[ft_sdk::handle_http]
 fn handle(req: http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
-    ft_sdk::migrate_simple(
-        "hello-world",
-        include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
-    )?;
+    ft_sdk::migrate_simple!("hello-world")?;
 
     match req.uri().path() {
         "/list/" => list(),

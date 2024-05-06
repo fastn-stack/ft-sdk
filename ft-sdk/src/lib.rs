@@ -49,7 +49,7 @@ pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub use migration::{migrate, migrate_simple};
+pub use migration::migrate;
 pub use query::{Query, QueryExt};
 
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
