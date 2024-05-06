@@ -80,56 +80,39 @@ pub fn get_user_data_by_email(
     provider_id: &str,
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    use db::fastn_user;
-    use diesel::dsl::sql;
     use diesel::prelude::*;
-    use diesel::sql_types::{Bool, Text};
+    use diesel::sql_types::Text;
+
+    #[cfg(not(feature = "postgres"))] // sqlite
+    let query_str = "SELECT id, data from fastn_user \
+            WHERE data->?->'data'->'verified_emails' LIKE ? \
+            OR data->?->'data'->'emails' LIKE ?";
 
     #[cfg(feature = "postgres")]
-    let check_verified_emails = sql::<Bool>("data->'")
-        .bind::<Text, _>(provider_id)
-        .sql("'->'data'->'verified_emails' ? '")
-        .bind::<Text, _>(email)
-        .sql("'");
+    let query_str = "SELECT id, data from fastn_user \
+            WHERE data->$1->'data'->'verified_emails' ? $2 \
+            OR data->$3->'data'->'emails' ? $4 LIMIT 1";
 
-    #[cfg(not(feature = "postgres"))]
-    let check_verified_emails = sql::<Bool>("data->'")
-        .bind::<Text, _>(provider_id)
-        .sql("'->'data'->'verified_emails' LIKE '%\"")
-        .bind::<Text, _>(email)
-        .sql("\"%'");
+    let contains_email = format!("%{}%", email);
+    let query = diesel::sql_query(query_str)
+        .bind::<Text, _>(&provider_id)
+        .bind::<Text, _>(&contains_email)
+        .bind::<Text, _>(&provider_id)
+        .bind::<Text, _>(&contains_email);
 
-    #[cfg(feature = "postgres")]
-    let check_emails = sql::<Bool>("data->'")
-        .bind::<Text, _>(provider_id)
-        .sql("'->'data'->'emails' ? '")
-        .bind::<Text, _>(email)
-        .sql("'");
+    #[derive(diesel::deserialize::QueryableByName)]
+    #[diesel(table_name = db::fastn_user)]
+    struct User {
+        id: i64,
+        data: serde_json::Value,
+    }
 
-    #[cfg(not(feature = "postgres"))]
-    let check_emails = sql::<Bool>("data->'")
-        .bind::<Text, _>(provider_id)
-        .sql("'->'data'->'emails' LIKE '%\"")
-        .bind::<Text, _>(email)
-        .sql("\"%'");
+    let user: User = query.get_result(conn)?;
 
-    let query = fastn_user::table
-        .select((fastn_user::id, fastn_user::data))
-        .filter(check_verified_emails)
-        .or_filter(check_emails);
-
-    #[cfg(feature = "postgres")]
-    ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
-
-    #[cfg(not(feature = "postgres"))]
-    ft_sdk::utils::dbg_query::<_, ft_sys::Sqlite>(&query);
-
-    let (user_id, data): (i64, serde_json::Value) = query.first(conn)?;
-
-    let data = user_data_from_json(data);
+    let data = user_data_from_json(user.data);
 
     match data.get(provider_id).cloned() {
-        Some(v) => Ok((ft_sdk::auth::UserId(user_id), v)),
+        Some(v) => Ok((ft_sdk::auth::UserId(user.id), v)),
         None => Err(UserDataError::NoDataFound),
     }
 }
