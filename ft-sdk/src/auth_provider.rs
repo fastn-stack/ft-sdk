@@ -83,36 +83,43 @@ pub fn get_user_data_by_email(
     use diesel::prelude::*;
     use diesel::sql_types::Text;
 
-    #[cfg(not(feature = "postgres"))] // sqlite
-    let query_str = "SELECT id, data from fastn_user \
-            WHERE data->?->'data'->'verified_emails' LIKE ? \
-            OR data->?->'data'->'emails' LIKE ?";
+    // TODO: don't load all the users, just load the user with the email
+    // this is until we figure out why binds are not properly working
+    let query = db::fastn_user::table.select((db::fastn_user::id, db::fastn_user::data));
 
-    #[cfg(feature = "postgres")]
-    let query_str = "SELECT id, data from fastn_user \
-            WHERE data->$1->'data'->'verified_emails' ? $2 \
-            OR data->$3->'data'->'emails' ? $4 LIMIT 1";
+    let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
+        ft_sdk::println!("error: {:?}", e);
+        match e {
+            diesel::result::Error::NotFound => UserDataError::NoDataFound,
+            e => UserDataError::DatabaseError(e),
+        }
+    })?;
 
-    let contains_email = format!("%{}%", email);
-    let query = diesel::sql_query(query_str)
-        .bind::<Text, _>(&provider_id)
-        .bind::<Text, _>(&contains_email)
-        .bind::<Text, _>(&provider_id)
-        .bind::<Text, _>(&contains_email);
+    let user = users.iter().find(|(_, ud)| {
+        let data = user_data_from_json(ud.clone());
+        data.get(provider_id)
+            .and_then(|d| {
+                d.iter().find(|d| match d {
+                    ft_sdk::auth::UserData::Email(e) => e == email,
+                    ft_sdk::auth::UserData::VerifiedEmail(e) => e == email,
+                    _ => false,
+                })
+            })
+            .is_some()
+    });
 
-    #[derive(diesel::deserialize::QueryableByName)]
-    #[diesel(table_name = db::fastn_user)]
-    struct User {
-        id: i64,
-        data: serde_json::Value,
+    if user.is_none() {
+        return Err(UserDataError::NoDataFound);
     }
 
-    let user: User = query.get_result(conn)?;
+    let user = user.unwrap();
 
-    let data = user_data_from_json(user.data);
+    ft_sdk::println!("{:?}", &user);
+
+    let data = user_data_from_json(user.1.clone());
 
     match data.get(provider_id).cloned() {
-        Some(v) => Ok((ft_sdk::auth::UserId(user.id), v)),
+        Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
         None => Err(UserDataError::NoDataFound),
     }
 }
