@@ -1,17 +1,16 @@
 use diesel::prelude::*;
 
 #[ft_sdk::handle_http]
-fn handle(req: http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
-    ft_sdk::migrate_simple!("hello-world")?;
+fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::http::Result {
+    ft_sdk::migrate_simple!("hello-world", &in_, &mut conn)?;
 
-    match req.uri().path() {
-        "/list/" => list()?,
-        "/add/" => add(&req)?,
-        "/mark-done/" => mark_done(&req)?,
-        "/delete/" => delete(&req)?,
-        t => ft_sdk::not_found!("unhandled path: {t}")?,
+    match in_.req.uri().path() {
+        "/list/" => list(&mut conn),
+        "/add/" => add(&in_, &mut conn),
+        "/mark-done/" => mark_done(&in_, &mut conn),
+        "/delete/" => delete(&in_, &mut conn),
+        t => ft_sdk::not_found!("unhandled path: {t}"),
     }
-    .map(Into::into)
 }
 
 table! {
@@ -30,52 +29,47 @@ struct TodoItem {
     is_done: bool,
 }
 
-fn list() -> ft_sdk::http::Result {
-    let mut conn = ft_sdk::default_connection().unwrap();
-
+fn list(conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     let items: Vec<TodoItem> = todo_item::table
         .select(TodoItem::as_select())
-        .get_results(&mut conn)
+        .get_results(conn)
         .unwrap();
 
-    Ok(ft_sdk::http::json(items)?)
+    ft_sdk::http::json(items)
 }
 
-fn add(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
+fn add(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
-    let text: String = req.required("text")?;
-    let mut conn = ft_sdk::default_connection()?;
+    let text: String = in_.req.required("text")?;
 
     diesel::insert_into(todo_item::table)
         .values((todo_item::text.eq(text), todo_item::is_done.eq(false)))
-        .execute(&mut conn)?;
+        .execute(conn)?;
 
-    Ok(ft_sdk::ActionOutput::Reload)
+    ft_sdk::http::reload()
 }
 
-fn mark_done(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
+fn mark_done(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
-    let (id, done): (i32, bool) = req.required2("id", "done").unwrap();
-    let mut conn = ft_sdk::default_connection().unwrap();
+    let (id, done): (i32, bool) = in_.req.required2("id", "done").unwrap();
 
     diesel::update(todo_item::table.find(id))
         .set(todo_item::is_done.eq(done))
-        .execute(&mut conn)
+        .execute(conn)
         .unwrap();
 
-    Ok(ft_sdk::http::json("ok")?)
+    ft_sdk::http::reload()
 }
 
-fn delete(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
+fn delete(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
-    let id: i32 = req.required("id").unwrap();
-    let mut conn = ft_sdk::default_connection().unwrap();
+    let id: i32 = in_.req.required("id").unwrap();
     diesel::delete(todo_item::table.find(id))
-        .execute(&mut conn)
+        .execute(conn)
         .unwrap();
 
-    Ok(ft_sdk::http::json("ok")?)
+    ft_sdk::http::reload()
 }

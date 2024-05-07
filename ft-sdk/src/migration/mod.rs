@@ -17,12 +17,14 @@ pub enum MigrationError {
     ApplyMigration(#[from] ApplyMigrationError),
 }
 
-impl From<MigrationError> for http::Response<bytes::Bytes> {
+impl From<MigrationError> for ft_sdk::http::Error {
     fn from(e: MigrationError) -> Self {
-        ::http::Response::builder()
-            .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
-            .body(format!("migration error: {e:?}\n").into())
-            .unwrap()
+        ft_sdk::http::Error::Response(
+            ::http::Response::builder()
+                .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
+                .body(format!("migration error: {e:?}\n").into())
+                .unwrap(),
+        )
     }
 }
 
@@ -34,15 +36,24 @@ pub type FnMigration = (
 
 #[macro_export]
 macro_rules! migrate_simple {
-    ($app_name:expr) => {{
-        $crate::migrate(
-            &mut ft_sdk::default_sqlite().unwrap(),
+    ($app_name:expr, $in_:expr, $conn:expr) => {{
+        $crate::migrate_simple_(
+            $conn,
             $app_name,
             include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
-            vec![],
-            &ft_sdk::env::now(),
+            &$in_.now,
         )
     }};
+}
+
+#[doc(hidden)]
+pub fn migrate_simple_(
+    conn: &mut ft_sdk::Connection,
+    app_name: &str,
+    migration_sqls: include_dir::Dir,
+    now: &chrono::DateTime<chrono::Utc>,
+) -> Result<(), ft_sdk::http::Error> {
+    migrate(conn, app_name, migration_sqls, vec![], now).map_err(Into::into)
 }
 
 pub fn migrate(

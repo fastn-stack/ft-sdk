@@ -14,12 +14,26 @@ pub fn handle_http(
     let expanded = quote::quote! {
         #[no_mangle]
         pub extern "C" fn main_ft() {
+            let mut conn = match ft_sdk::default_connection() {
+                Ok(conn) => conn,
+                Err(e) => {
+                    ft_sdk::println!("cant get default connection: {:?}", e);
+                    return ft_sdk::http::send_response(::ft_sdk::server_error!("cant get default connection: {e:?}"));
+                }
+            };
             let req = ft_sdk::http::current_request();
-            let resp = match #fn_name(req) {
-                Ok(resp) => resp,
+            let in_ = match ft_sdk::In::from_request(req, &mut conn) {
+                Ok(in_) => in_,
+                Err(e) => {
+                    ft_sdk::println!("cant create In object: {:?}", e);
+                    return ft_sdk::http::send_response(::ft_sdk::server_error!("cant create In object: {e:?}"));
+                }
+            };
+            let resp = match #fn_name(in_, conn) {
+                Ok(resp) => resp.into(),
                 Err(e) => {
                     ft_sdk::println!("Error: {:?}", e);
-                    e
+                    e.into()
                 }
             };
             ft_sdk::http::send_response(resp);
@@ -31,6 +45,6 @@ pub fn handle_http(
         }
     };
 
-    // println!("{}", expanded.to_string());
+    println!("{expanded}");
     proc_macro::TokenStream::from(expanded)
 }

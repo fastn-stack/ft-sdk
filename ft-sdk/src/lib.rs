@@ -49,8 +49,11 @@ pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub use migration::migrate;
+pub use migration::{migrate, migrate_simple_};
 pub use query::{Query, QueryExt};
+
+pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
+pub type FormError = std::collections::HashMap<String, String>;
 
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
 compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");

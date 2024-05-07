@@ -179,7 +179,6 @@ impl<'a> TryFrom<&'a SqliteRawValue> for bool {
     }
 }
 
-
 #[cfg(feature = "rusqlite")]
 impl rusqlite::ToSql for SqliteRawValue {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {

@@ -23,10 +23,8 @@ where
 pub enum ActionOutput {
     Reload,
     Redirect(String),
-    Data(FrontendData),
+    Data(ft_sdk::FrontendData),
 }
-
-pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
 
 pub enum RequestType {
     Page,
@@ -45,7 +43,8 @@ pub trait Layout {
         P: Page<Self, Self::Error> + serde::Serialize,
         Self: Sized,
     {
-        let in_ = ft_sdk::In::from_request(r)?;
+        let mut conn = ft_sdk::default_connection()?;
+        let in_ = ft_sdk::In::from_request(r, &mut conn)?;
         let mut l = Self::from_in(in_.clone(), RequestType::Page)?;
         let p = P::page(&mut l)?;
         let vj = serde_json::to_value(&p).unwrap();
@@ -76,7 +75,8 @@ pub trait Layout {
         A: Action<Self, Self::Error>,
         Self: Sized,
     {
-        let in_ = ft_sdk::In::from_request(r)?;
+        let mut conn = ft_sdk::default_connection()?;
+        let in_ = ft_sdk::In::from_request(r, &mut conn)?;
         let mut l = Self::from_in(in_.clone(), RequestType::Action)?;
         let a = A::validate(&mut l)?;
         let o = a.action(&mut l)?;

@@ -13,13 +13,14 @@ pub struct In {
 }
 
 impl In {
-    pub fn from_request(req: http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::Error> {
-        let mut conn = ft_sdk::default_connection()?;
-
+    pub fn from_request(
+        req: http::Request<bytes::Bytes>,
+        conn: &mut ft_sdk::Connection,
+    ) -> Result<Self, ft_sdk::Error> {
         Ok(In {
             req: req.clone(),
             now: ft_sys::now(),
-            ud: ft_sdk::auth::ud(&req, &mut conn),
+            ud: ft_sdk::auth::ud(&req, conn),
             set_cookies: Rc::new(RefCell::new(Vec::new())),
             form_errors: HashMap::new(),
         })
