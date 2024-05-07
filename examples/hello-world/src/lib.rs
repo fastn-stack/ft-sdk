@@ -5,12 +5,13 @@ fn handle(req: http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
     ft_sdk::migrate_simple!("hello-world")?;
 
     match req.uri().path() {
-        "/list/" => list(),
-        "/add/" => add(&req),
-        "/mark-done/" => mark_done(&req),
-        "/delete/" => delete(&req),
+        "/list/" => list()?,
+        "/add/" => add(&req)?,
+        "/mark-done/" => mark_done(&req)?,
+        "/delete/" => delete(&req)?,
         t => ft_sdk::not_found!("unhandled path: {t}")?,
     }
+    .map(Into::into)
 }
 
 table! {
@@ -43,15 +44,14 @@ fn list() -> ft_sdk::http::Result {
 fn add(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
-    let text: String = req.required("text").unwrap();
-    let mut conn = ft_sdk::default_connection().unwrap();
+    let text: String = req.required("text")?;
+    let mut conn = ft_sdk::default_connection()?;
 
     diesel::insert_into(todo_item::table)
         .values((todo_item::text.eq(text), todo_item::is_done.eq(false)))
-        .execute(&mut conn)
-        .unwrap();
+        .execute(&mut conn)?;
 
-    Ok(ft_sdk::http::json("ok")?)
+    Ok(ft_sdk::ActionOutput::Reload)
 }
 
 fn mark_done(req: &http::Request<bytes::Bytes>) -> ft_sdk::http::Result {
