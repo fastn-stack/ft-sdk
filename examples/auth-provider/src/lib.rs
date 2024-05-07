@@ -27,24 +27,12 @@ fn create_account(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::htt
         PROVIDER_ID,
         email.as_str(),
         to_provider_data(email.as_str(), password.as_str()),
-    )
-    .unwrap();
+    )?;
 
     // TODO: not fond of create_user not logging user in. There is no use case yet for
     //       create user which is not followed right after by logging in, so create_user
     //       should also log user in.
-    ft_sdk::auth::provider::login(conn, in_.clone(), &user_id, PROVIDER_ID, &email).unwrap();
-
-    if let Err(e) = ft_sdk::send_email(
-        (&email, &email),
-        // TODO: need a way to get some site config data, site name, site logo etc
-        "Account Created",
-        conn,
-        "welcome to super awesome site!",
-        "welcome-mail",
-    ) {
-        ft_sdk::println!("auth.wasm: failed to queue email: {:?}", e);
-    }
+    ft_sdk::auth::provider::login(conn, in_.clone(), &user_id, PROVIDER_ID, &email)?;
 
     // TODO: get next argument
     ft_sdk::http::redirect("/")

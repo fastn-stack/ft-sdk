@@ -39,6 +39,12 @@ pub enum AuthError {
     NameNotProvided,
 }
 
+impl From<AuthError> for ft_sdk::http::Error {
+    fn from(e: AuthError) -> Self {
+        ft_sdk::http::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
+    }
+}
+
 /// returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
 ///
 /// We check across data from all providers if `provider` is `None`, else we only check
@@ -258,6 +264,13 @@ pub enum LoginError {
 
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
+}
+
+// TODO: make this a derive
+impl From<LoginError> for ft_sdk::http::Error {
+    fn from(e: LoginError) -> Self {
+        ft_sdk::http::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
+    }
 }
 
 /// Normalise and save user details
