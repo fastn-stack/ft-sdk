@@ -29,6 +29,9 @@ struct TodoItem {
     is_done: bool,
 }
 
+/// list() returns list of todos.
+///
+/// this view should be called from ftd file using http processor
 fn list(conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     let items: Vec<TodoItem> = todo_item::table
         .select(TodoItem::as_select())
@@ -38,6 +41,10 @@ fn list(conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     ft_sdk::http::json(items)
 }
 
+/// add a new item
+///
+/// this should be called from ftd.http() method from frontend. it tells ftd.js
+/// to reload the page after adding the item
 fn add(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
@@ -50,6 +57,10 @@ fn add(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result 
     ft_sdk::http::reload()
 }
 
+/// mark an item as done
+///
+/// this should be called from ftd.http() method from frontend. it tells ftd.js
+/// to reload the page after updating the item
 fn mark_done(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
@@ -63,6 +74,10 @@ fn mark_done(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::R
     ft_sdk::http::reload()
 }
 
+/// delete an item
+///
+/// this should be called from ftd.http() method from frontend. it tells ftd.js
+/// to reload the page after deleting the item
 fn delete(in_: &ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
     use ft_sdk::JsonBodyExt;
 
