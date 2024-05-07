@@ -55,6 +55,19 @@ CREATE TABLE IF NOT EXISTS fastn_user
 
 "#;
 
+// This is the old table schema
+// CREATE TABLE IF NOT EXISTS fastn_user
+// (
+// "id"              integer PRIMARY KEY AUTOINCREMENT,
+// "username"        text NOT NULL UNIQUE,
+// "password"        text NOT NULL,
+// "email"           text NOT NULL,
+// "verified_email"  bool DEFAULT false NOT NULL,
+// "name"            text NOT NULL,
+// "created_at"      datetime NOT NULL,
+// "updated_at"      datetime NOT NULL
+// );
+
 pub(super) const SESSION_TABLE: &str = r#"
 
 CREATE TABLE IF NOT EXISTS fastn_session
