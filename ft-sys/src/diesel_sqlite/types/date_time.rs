@@ -69,6 +69,15 @@ impl FromSql<diesel::sql_types::Timestamptz, Sqlite> for chrono::DateTime<chrono
                         chrono::Utc,
                     ));
                 }
+
+                // 2024-03-19 12:28:11.698379+05:30
+                if let Ok(v) = chrono::NaiveDateTime::parse_from_str(t, "%F %T%.6f%:z") {
+                    return Ok(chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(
+                        v,
+                        chrono::Utc,
+                    ));
+                }
+
                 Err(format!("Invalid datetime string: {:?}", t).into())
             }
             _ => Err(format!(
