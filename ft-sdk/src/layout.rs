@@ -1,103 +1,54 @@
-pub trait Page<L, E>: serde::Serialize
-where
-    E: std::fmt::Debug + From<ft_sdk::Error>,
-{
-    fn page(c: &mut L) -> Result<Self, E>
+pub trait Page<L>: serde::Serialize {
+    fn page(c: &mut L, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
     where
         Self: Sized;
 }
 
-pub trait Action<L, E>
-where
-    E: std::fmt::Debug + From<ft_sdk::Error>,
-{
-    fn validate(c: &mut L) -> Result<Self, E>
+pub trait Action<L> {
+    fn validate(c: &mut L, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
     where
         Self: Sized;
-    fn action(&self, c: &mut L) -> Result<ActionOutput, E>
+    fn action(
+        &self,
+        c: &mut L,
+        conn: &mut ft_sdk::Connection,
+    ) -> Result<ft_sdk::http::Output, ft_sdk::http::Error>
     where
         Self: Sized;
-}
-
-#[derive(Debug)]
-pub enum ActionOutput {
-    Reload,
-    Redirect(String),
-    Data(ft_sdk::FrontendData),
-}
-
-pub enum RequestType {
-    Page,
-    Action,
 }
 
 pub trait Layout {
-    type Error: std::fmt::Debug + From<ft_sdk::Error>;
-
-    fn from_in(in_: ft_sdk::In, ty: RequestType) -> Result<Self, Self::Error>
+    fn from_in(in_: ft_sdk::In, conn: &ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
     where
         Self: Sized;
 
-    fn _page<P>(r: http::Request<bytes::Bytes>) -> Result<http::Response<bytes::Bytes>, Self::Error>
+    fn page<P>(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result
     where
-        P: Page<Self, Self::Error> + serde::Serialize,
+        P: Page<Self> + serde::Serialize,
         Self: Sized,
     {
-        let mut conn = ft_sdk::default_connection()?;
-        let in_ = ft_sdk::In::from_request(r, &mut conn)?;
-        let mut l = Self::from_in(in_.clone(), RequestType::Page)?;
-        let p = P::page(&mut l)?;
-        let vj = serde_json::to_value(&p).unwrap();
-        let oj = l.json(vj)?;
-        Ok(ft_sdk::json_response(oj, Some(&in_)))
+        let mut l = Self::from_in(in_.clone(), conn)?;
+        let p = P::page(&mut l, conn)?;
+        l.json(p)
     }
 
-    fn page<P>(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes>
+    fn action<A>(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result
     where
-        P: Page<Self, Self::Error> + serde::Serialize,
+        A: Action<Self>,
         Self: Sized,
     {
-        Self::_page::<P>(r).unwrap_or_else(|e| Self::render_error(e))
+        let mut l = Self::from_in(in_.clone(), conn)?;
+        let a = A::validate(&mut l, conn)?;
+        a.action(&mut l, conn)
     }
 
-    fn action<A>(r: http::Request<bytes::Bytes>) -> http::Response<bytes::Bytes>
+    fn json<P>(&mut self, page: P) -> ft_sdk::http::Result
     where
-        A: Action<Self, Self::Error>,
+        P: Page<Self> + serde::Serialize,
         Self: Sized,
     {
-        Self::_action::<A>(r).unwrap_or_else(|e| Self::render_error(e))
-    }
-
-    fn _action<A>(
-        r: http::Request<bytes::Bytes>,
-    ) -> Result<http::Response<bytes::Bytes>, Self::Error>
-    where
-        A: Action<Self, Self::Error>,
-        Self: Sized,
-    {
-        let mut conn = ft_sdk::default_connection()?;
-        let in_ = ft_sdk::In::from_request(r, &mut conn)?;
-        let mut l = Self::from_in(in_.clone(), RequestType::Action)?;
-        let a = A::validate(&mut l)?;
-        let o = a.action(&mut l)?;
-        Ok(a2r(o, &in_))
-    }
-
-    fn json(&mut self, page: serde_json::Value) -> Result<serde_json::Value, Self::Error> {
-        Ok(serde_json::json!({
+        ft_sdk::http::json(serde_json::json!({
             "page": page,
         }))
     }
-
-    fn render_error(e: Self::Error) -> http::Response<bytes::Bytes>;
-}
-
-fn a2r(r: ActionOutput, in_: &ft_sdk::In) -> http::Response<bytes::Bytes> {
-    let data = match r {
-        ActionOutput::Reload => serde_json::json!({"reload": true}),
-        ActionOutput::Redirect(redirect) => serde_json::json!({"redirect": redirect }),
-        ActionOutput::Data(data) => serde_json::json!({"data": data}),
-    };
-
-    ft_sdk::json_response(data, Some(in_))
 }

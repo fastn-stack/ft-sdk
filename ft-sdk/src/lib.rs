@@ -44,7 +44,7 @@ pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, println, UserData};
 pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
-pub use layout::{Action, ActionOutput, Layout, Page, RequestType};
+pub use layout::{Action, Layout, Page};
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
