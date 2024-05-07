@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ft-sdk = { path = "../../ft-sdk", features = ["auth-providers"] }
+ft-sdk = { path = "../../ft-sdk", features = ["auth-provider"] }
 http = "1"
 bytes = "1"
 serde_json = "1"

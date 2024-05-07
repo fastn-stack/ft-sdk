@@ -77,6 +77,10 @@ pub fn reload() -> Result {
     Ok(Output::Reload)
 }
 
+pub fn redirect(url: &str) -> Result {
+    Ok(Output::Redirect(url.to_string()))
+}
+
 fn json_<T: serde::Serialize>(t: T) -> http::Response<bytes::Bytes> {
     let d = match serde_json::to_string(&t) {
         Ok(d) => d,

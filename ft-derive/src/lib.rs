@@ -45,6 +45,6 @@ pub fn handle_http(
         }
     };
 
-    println!("{expanded}");
+    // println!("{expanded}");
     proc_macro::TokenStream::from(expanded)
 }
