@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS fastn_user
 
 "#;
 
+// Todo: We need to use this table for migration from prod postgresql
 // This is the old table schema
 // CREATE TABLE IF NOT EXISTS fastn_user
 // (
