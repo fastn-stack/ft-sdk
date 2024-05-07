@@ -77,8 +77,8 @@ pub fn reload() -> Result {
     Ok(Output::Reload)
 }
 
-pub fn redirect(url: &str) -> Result {
-    Ok(Output::Redirect(url.to_string()))
+pub fn redirect<S: AsRef<str>>(url: S) -> Result {
+    Ok(Output::Redirect(url.as_ref().to_string()))
 }
 
 fn json_<T: serde::Serialize>(t: T) -> http::Response<bytes::Bytes> {
