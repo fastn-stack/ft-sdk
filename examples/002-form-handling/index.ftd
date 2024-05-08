@@ -1,0 +1,34 @@
+-- import: fastn/processors as pr
+
+-- ftd.text: this is in ftd file
+-- ftd.text: $message
+
+-- string message:
+$processor$: pr.http
+url: /wasm/hello-world/
+
+
+
+
+
+
+-- string $username: *$ftd.empty
+
+-- ftd.text-input:
+placeholder: enter username
+$on-input$: $ftd.set-string($a = $username, v = $VALUE)
+
+-- ftd.text: $username
+
+-- ftd.text: check username
+$on-click$: check-username(u=$username)
+
+-- void check-username(u):
+string u:
+
+ftd.http(
+    "/wasm/check-username/",
+    "hello-world",
+    "POST",
+    ("username", u),
+)

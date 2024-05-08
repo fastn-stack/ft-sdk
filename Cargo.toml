@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "examples/001-hello-world",
+    "examples/002-form-handling",
     # "examples/sample-pg",
     # "examples/sample-sqlite",
     "examples/auth-provider",
