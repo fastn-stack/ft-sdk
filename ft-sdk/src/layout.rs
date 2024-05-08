@@ -18,7 +18,7 @@ pub trait Action<L> {
 }
 
 pub trait Layout {
-    fn from_in(in_: ft_sdk::In, conn: &ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
+    fn from_in(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
     where
         Self: Sized;
 

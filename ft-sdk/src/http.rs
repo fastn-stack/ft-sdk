@@ -20,6 +20,12 @@ impl From<Output> for http::Response<bytes::Bytes> {
     }
 }
 
+pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> Result {
+    let mut errors = ft_sdk::FormError::new();
+    errors.insert(k.as_ref().to_string(), e.as_ref().to_string());
+    Err(Error::Form(errors))
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("serde_json error {0}")]
