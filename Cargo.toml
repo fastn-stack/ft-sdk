@@ -2,6 +2,7 @@
 members = [
     "examples/001-hello-world",
     "examples/002-form-handling",
+    "examples/hello-world-diesel",
     # "examples/sample-pg",
     # "examples/sample-sqlite",
     "examples/auth-provider",

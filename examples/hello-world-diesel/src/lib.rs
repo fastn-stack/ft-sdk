@@ -9,7 +9,7 @@ fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::http::Result
         "/add/" => add(&in_, &mut conn),
         "/mark-done/" => mark_done(&in_, &mut conn),
         "/delete/" => delete(&in_, &mut conn),
-        t => ft_sdk::not_found!("unhandled path: {t}"),
+        t => Err(ft_sdk::not_found!("unhandled path: {t}")),
     }
 }
 

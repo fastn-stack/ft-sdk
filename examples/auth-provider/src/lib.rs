@@ -5,7 +5,7 @@ const HASHED_PASSWORD: &str = "hashed-password";
 fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::http::Result {
     match in_.req.uri().path() {
         "/create-account/" => create_account(in_, &mut conn),
-        t => ft_sdk::not_found!("unhandled path: {t}"),
+        t => Err(ft_sdk::not_found!("unhandled path: {t}")),
     }
 }
 

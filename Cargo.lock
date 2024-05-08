@@ -279,6 +279,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "hello-world-diesel"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "diesel",
+ "ft-sdk",
+ "http",
+ "include_dir",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "http"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
