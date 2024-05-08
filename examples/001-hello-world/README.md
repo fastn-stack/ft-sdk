@@ -37,6 +37,6 @@ You can use the `build.sh` script to build the wasm file and copy it to the curr
 sh build.sh
 ```
 
-# Restart the server
+# Restart the server if you modify `FASTN.ftd`
 
-Every time you rebuild the wasm file, you need to restart the server to see the changes.
+Every time you modify `FASTN.ftd` file, you need to restart the server to see the changes.
