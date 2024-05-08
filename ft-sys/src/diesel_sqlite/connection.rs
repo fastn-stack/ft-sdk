@@ -5,7 +5,6 @@ pub struct SqliteConnection {
 
 impl diesel::connection::SimpleConnection for SqliteConnection {
     fn batch_execute(&mut self, query: &str) -> diesel::QueryResult<()> {
-        ft_sys::println!("sqlite batch execute: {query}");
         let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(query.to_string());
         let ptr = unsafe { sqlite_batch_execute(ptr, len) };
         let res: Result<(), ft_sys_shared::DbError> = ft_sys::memory::json_from_ptr(ptr);
@@ -45,9 +44,7 @@ impl diesel::connection::LoadConnection for SqliteConnection {
             fn sqlite_query(conn: i32, ptr: i32, len: i32) -> i32;
         }
 
-        ft_sys::println!("load");
         let q = source_to_query(source)?;
-        ft_sys::println!("q: {q:?}");
         let (ptr, len) = ft_sys::memory::json_ptr(q);
         let ptr = unsafe { sqlite_query(self.conn, ptr, len) };
         let cursor: Result<ft_sys::diesel_sqlite::Cursor, ft_sys_shared::DbError> =
@@ -84,7 +81,6 @@ impl diesel::connection::Connection for SqliteConnection {
     where
         T: diesel::query_builder::QueryFragment<Self::Backend> + diesel::query_builder::QueryId,
     {
-        ft_sys::println!("execute returning count");
         let q = source_to_query(source)?;
         let (ptr, len) = ft_sys::memory::json_ptr(q);
 
