@@ -111,14 +111,14 @@ macro_rules! not_found {
 }
 
 #[doc(hidden)]
-pub fn not_found_(msg: String) -> Result {
+pub fn not_found_(msg: String) -> Error {
     ft_sdk::println!("not-found: {msg}");
-    Err(Error::Response(
+    Error::Response(
         http::Response::builder()
             .status(http::StatusCode::NOT_FOUND)
             .body(bytes::Bytes::from(msg))
             .unwrap(),
-    ))
+    )
 }
 
 /// Create a server error response.
