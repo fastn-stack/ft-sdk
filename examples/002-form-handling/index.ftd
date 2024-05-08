@@ -5,6 +5,7 @@
 -- ftd.string-field $username: username
 $value: admin
 
+
 -- ftd.text-input:
 placeholder: enter username
 value: $username.value
@@ -16,7 +17,7 @@ color: red
 if: { username.error != NULL }
 
 -- ftd.text: create account
-$on-click$: create-account($u=$username)
+$on-click$: create-account($u = $username)
 
 
 
