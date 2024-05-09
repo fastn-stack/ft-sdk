@@ -36,3 +36,9 @@ pub type Connection = SqliteConnection;
 pub type Connection = PgConnection;
 
 pub use env::now;
+
+#[derive(Debug, thiserror::Error)]
+pub enum ConnectionError {
+    #[error("generic error {0}")]
+    Generic(String),
+}

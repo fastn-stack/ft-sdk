@@ -33,7 +33,7 @@ pub use ft_derive::handle_http;
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
-pub use ft_sys::{env, println, UserData};
+pub use ft_sys::{env, println, ConnectionError, UserData};
 pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, Layout, Page};
@@ -58,7 +58,7 @@ pub type Connection = SqliteConnection;
 pub type Connection = PgConnection;
 
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
-pub fn default_connection() -> Result<Connection, diesel::result::ConnectionError> {
+pub fn default_connection() -> Result<Connection, ConnectionError> {
     #[cfg(feature = "sqlite")]
     {
         default_sqlite()
@@ -72,21 +72,19 @@ pub fn default_connection() -> Result<Connection, diesel::result::ConnectionErro
 
 /// Get a connection to the default postgres database.
 #[cfg(feature = "postgres")]
-pub fn default_pg() -> Result<PgConnection, diesel::result::ConnectionError> {
-    use diesel::Connection;
-    Ok(PgConnection::establish("default")?)
+pub fn default_pg() -> Result<PgConnection, ConnectionError> {
+    Ok(PgConnection::connect("default")?)
 }
 
 /// Get a connection to the default sqlite database.
 ///
 /// Most FifthTry Apps should use this function to get the default connection.
 #[cfg(feature = "sqlite")]
-pub fn default_sqlite() -> Result<SqliteConnection, diesel::result::ConnectionError> {
-    use diesel::Connection;
+pub fn default_sqlite() -> Result<SqliteConnection, ConnectionError> {
     let db = ft_sys::env::var("DB_FILE".to_string());
     let db_url = db.unwrap_or_else(|| "default".to_string());
 
-    SqliteConnection::establish(db_url.as_str())
+    SqliteConnection::connect(db_url.as_str())
 }
 
 /// Create a http response with given JSON.

@@ -23,6 +23,7 @@ http.workspace = true
 bytes.workspace = true
 ft-sys-shared = { path = "../ft-sys-shared", version = "0.1.1-alpha.1" }
 chrono.workspace = true
+thiserror.workspace = true
 serde_sqlite_jsonb = { workspace = true, optional = true }
 
 

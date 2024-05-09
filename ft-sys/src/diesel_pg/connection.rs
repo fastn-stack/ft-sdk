@@ -1,7 +1,25 @@
+use crate::SqliteConnection;
+
 pub struct PgConnection {
     conn: i32,
     metadata_cache: diesel::pg::PgMetadataCache,
     transaction_manager: diesel::connection::AnsiTransactionManager,
+}
+
+impl PgConnection {
+    pub fn connect(url: &str) -> Result<Self, ft_sys::ConnectionError> {
+        extern "C" {
+            // TODO: handle error
+            fn pg_connect(ptr: i32, len: i32) -> i32;
+        }
+
+        let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(url.to_string());
+        Ok(PgConnection {
+            conn: unsafe { pg_connect(ptr, len) },
+            metadata_cache: diesel::pg::PgMetadataCache::new(),
+            transaction_manager: Default::default(),
+        })
+    }
 }
 
 impl diesel::connection::SimpleConnection for PgConnection {
@@ -35,7 +53,6 @@ struct Query {
 }
 
 extern "C" {
-    fn pg_connect(ptr: i32, len: i32) -> i32;
     fn pg_query(conn: i32, ptr: i32, len: i32) -> i32;
     fn pg_execute(conn: i32, ptr: i32, len: i32) -> i32;
     fn pg_batch_execute(conn: i32, ptr: i32, len: i32) -> i32;
@@ -117,12 +134,7 @@ impl diesel::connection::Connection for PgConnection {
     type TransactionManager = diesel::connection::AnsiTransactionManager;
 
     fn establish(url: &str) -> diesel::ConnectionResult<Self> {
-        let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(url.to_string());
-        Ok(PgConnection {
-            conn: unsafe { pg_connect(ptr, len) },
-            metadata_cache: diesel::pg::PgMetadataCache::new(),
-            transaction_manager: Default::default(),
-        })
+        Ok(PgConnection::connect(url).unwrap())
     }
 
     fn execute_returning_count<T>(&mut self, source: &T) -> diesel::QueryResult<usize>

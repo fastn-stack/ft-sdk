@@ -3,6 +3,21 @@ pub struct SqliteConnection {
     transaction_manager: diesel::connection::AnsiTransactionManager,
 }
 
+impl SqliteConnection {
+    pub fn connect(url: &str) -> Result<Self, ft_sys::ConnectionError> {
+        extern "C" {
+            // TODO: handle error
+            fn sqlite_connect(ptr: i32, len: i32) -> i32;
+        }
+
+        let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(url.to_string());
+        Ok(SqliteConnection {
+            conn: unsafe { sqlite_connect(ptr, len) },
+            transaction_manager: Default::default(),
+        })
+    }
+}
+
 impl diesel::connection::SimpleConnection for SqliteConnection {
     fn batch_execute(&mut self, query: &str) -> diesel::QueryResult<()> {
         let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(query.to_string());
@@ -66,15 +81,8 @@ impl diesel::connection::Connection for SqliteConnection {
     type TransactionManager = diesel::connection::AnsiTransactionManager;
 
     fn establish(url: &str) -> diesel::ConnectionResult<Self> {
-        extern "C" {
-            fn sqlite_connect(ptr: i32, len: i32) -> i32;
-        }
-
-        let (ptr, len) = ft_sys::memory::string_to_bytes_ptr(url.to_string());
-        Ok(SqliteConnection {
-            conn: unsafe { sqlite_connect(ptr, len) },
-            transaction_manager: Default::default(),
-        })
+        // TODO: handle error
+        Ok(SqliteConnection::connect(url).unwrap())
     }
 
     fn execute_returning_count<T>(&mut self, source: &T) -> diesel::QueryResult<usize>
