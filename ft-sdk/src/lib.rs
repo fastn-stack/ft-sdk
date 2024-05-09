@@ -8,17 +8,9 @@
 extern crate self as ft_sdk;
 
 pub mod auth;
-
-mod rng;
-
-mod crypto;
-
 pub mod cookie;
-
-pub use cookie::{Cookie, CookieExt};
-
+mod crypto;
 mod email;
-
 pub mod http;
 mod in_;
 mod json_body;
@@ -29,13 +21,13 @@ mod layout;
 ))]
 mod migration;
 mod query;
+mod rng;
 pub mod utils;
+pub use cookie::{Cookie, CookieExt};
 
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use rng::Rng;
-
 pub use ft_derive::handle_http;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
@@ -51,6 +43,7 @@ pub use layout::{Action, Layout, Page};
 ))]
 pub use migration::{migrate, migrate_simple_};
 pub use query::{Query, QueryExt};
+pub use rng::Rng;
 
 pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
 pub type FormError = std::collections::HashMap<String, String>;
@@ -59,12 +52,13 @@ pub type FormError = std::collections::HashMap<String, String>;
 compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
 
 #[cfg(feature = "sqlite-default")]
-pub type Connection = ft_sys::SqliteConnection;
+pub type Connection = SqliteConnection;
 
 #[cfg(feature = "postgres-default")]
-pub type Connection = ft_sys::PgConnection;
+pub type Connection = PgConnection;
 
-pub fn default_connection() -> Result<Connection, Error> {
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+pub fn default_connection() -> Result<Connection, diesel::result::ConnectionError> {
     #[cfg(feature = "sqlite")]
     {
         default_sqlite()
@@ -78,7 +72,7 @@ pub fn default_connection() -> Result<Connection, Error> {
 
 /// Get a connection to the default postgres database.
 #[cfg(feature = "postgres")]
-pub fn default_pg() -> Result<PgConnection, Error> {
+pub fn default_pg() -> Result<PgConnection, diesel::result::ConnectionError> {
     use diesel::Connection;
     Ok(PgConnection::establish("default")?)
 }
@@ -87,34 +81,12 @@ pub fn default_pg() -> Result<PgConnection, Error> {
 ///
 /// Most FifthTry Apps should use this function to get the default connection.
 #[cfg(feature = "sqlite")]
-pub fn default_sqlite() -> Result<SqliteConnection, Error> {
+pub fn default_sqlite() -> Result<SqliteConnection, diesel::result::ConnectionError> {
     use diesel::Connection;
     let db = ft_sys::env::var("DB_FILE".to_string());
     let db_url = db.unwrap_or_else(|| "default".to_string());
 
-    Ok(SqliteConnection::establish(db_url.as_str())?)
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("serde_json error {0}")]
-    Serde(#[from] serde_json::Error),
-
-    #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("diesel error {0}")]
-    Diesel(#[from] diesel::result::Error),
-
-    #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("diesel connection error {0}")]
-    DieselConnection(#[from] diesel::result::ConnectionError),
-}
-
-impl From<ft_sdk::Error> for std::collections::HashMap<String, String> {
-    fn from(e: ft_sdk::Error) -> Self {
-        let mut map = std::collections::HashMap::new();
-        map.insert("error".to_string(), e.to_string());
-        map
-    }
+    SqliteConnection::establish(db_url.as_str())
 }
 
 /// Create a http response with given JSON.
