@@ -57,7 +57,7 @@ pub type Connection = SqliteConnection;
 #[cfg(feature = "postgres-default")]
 pub type Connection = PgConnection;
 
-#[cfg(any(feature = "sqlite", feature = "postgres"))]
+#[cfg(any(feature = "sqlite-default", feature = "postgres-default"))]
 pub fn default_connection() -> Result<Connection, ConnectionError> {
     #[cfg(feature = "sqlite")]
     {
