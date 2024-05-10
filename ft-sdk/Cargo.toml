@@ -9,13 +9,14 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["sqlite-default", "migration"]
+default = ["sqlite-default", "migration", "field-extractors"]
 postgres-default = ["ft-sys/postgres-default", "postgres"]
 postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 migration = [] # only if either sqlite-default or postgres-default is activated
 auth-provider = ["uuid"]
+field-extractors = []
 
 [dependencies]
 ft-sys = { path = "../ft-sys", version = "0.1.2", default-features = false }

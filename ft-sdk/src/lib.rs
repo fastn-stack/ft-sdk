@@ -4,8 +4,8 @@
 //! FifthTry Apps.
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
-#![feature(adt_const_params)]
-#![allow(incomplete_features)]
+#![cfg_attr(feature = "field-extractors", feature(adt_const_params))]
+#![cfg_attr(feature = "field-extractors", allow(incomplete_features))]
 
 extern crate self as ft_sdk;
 
@@ -13,7 +13,7 @@ pub mod auth;
 pub mod cookie;
 mod crypto;
 mod email;
-mod from_request;
+pub mod from_request;
 pub mod http;
 mod in_;
 mod json_body;
@@ -32,7 +32,9 @@ pub use cookie::{Cookie, CookieExt};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use from_request::{FieldError, FromRequest, Path, Required};
+#[cfg(feature = "field-extractors")]
+pub use from_request::Required;
+pub use from_request::{FieldError, FromRequest, Path};
 pub use ft_derive::handle_http;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
