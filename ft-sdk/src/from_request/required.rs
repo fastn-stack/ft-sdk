@@ -47,6 +47,14 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display
 }
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display + PartialEq>
+    std::ops::DerefMut for Required<KEY, T>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display + PartialEq>
     ft_sdk::FromRequest for Required<KEY, T>
 {
     fn from_request(_req: http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::http::Error> {
