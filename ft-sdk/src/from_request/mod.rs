@@ -20,13 +20,12 @@ pub trait FromRequest: Sized {
 }
 
 #[allow(dead_code)]
-#[cfg(feature = "field-extractors")]
-pub fn foo(path: Path, username: Required<"username">) -> ft_sdk::http::Result {
+pub fn foo(path: ft_sdk::Path, username: ft_sdk::Required<"username">) -> ft_sdk::http::Result {
     println!("params: {path}, {username}");
 
     if username == "admin" {
         Err(username.error("admin is not allowed"))?;
     }
 
-    todo!()
+    ft_sdk::json().with_cookie(k, v).with_header(k2, v2)
 }
