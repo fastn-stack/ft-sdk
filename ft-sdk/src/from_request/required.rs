@@ -57,7 +57,7 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display + PartialEq>
     ft_sdk::FromRequest for Required<KEY, T>
 {
-    fn from_request(_req: http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::http::Error> {
+    fn from_request(_req: &http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::http::Error> {
         todo!()
     }
 }

@@ -2,6 +2,7 @@
 mod cookie;
 mod field_error;
 mod form;
+mod handler;
 mod json;
 mod path;
 #[cfg(feature = "field-extractors")]
@@ -15,7 +16,7 @@ pub use path::Path;
 pub use {cookie::Cookie, query::Query, required::Required};
 
 pub trait FromRequest: Sized {
-    fn from_request(req: http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::http::Error>;
+    fn from_request(req: &http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::http::Error>;
 }
 
 #[allow(dead_code)]
