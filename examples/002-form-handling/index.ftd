@@ -21,7 +21,7 @@ $on-click$: create-account($u = $username)
 -- void create-account(u):
 ftd.string-field $u:
 
-ftd.http_post("/wasm/create-account/", u)
+ftd.submit_form("/wasm/create-account/", u)
 
 
 

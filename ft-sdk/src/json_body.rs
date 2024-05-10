@@ -18,8 +18,14 @@ impl JsonBody {
         field: &str,
         errors: &mut ft_sdk::FormError,
     ) -> Result<T, ()> {
-        match self.field(field) {
-            Ok(Some(v)) => Ok(v),
+        match self.field::<serde_json::Value>(field) {
+            Ok(Some(serde_json::Value::String(s))) if s.is_empty() => {
+                errors.insert(field.to_string(), "required".to_string());
+                Err(())
+            }
+            Ok(Some(v)) => serde_json::from_value(v).map_err(|e| {
+                errors.insert(field.to_string(), e.to_string());
+            }),
             Ok(None) => {
                 errors.insert(field.to_string(), "required".to_string());
                 Err(())
