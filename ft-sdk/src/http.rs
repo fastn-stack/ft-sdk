@@ -21,6 +21,112 @@ impl From<Output> for http::Response<bytes::Bytes> {
     }
 }
 
+pub trait IntoCookie {
+    fn into_cookie(self) -> String;
+}
+
+impl<K: AsRef<str>, V: AsRef<str>> IntoCookie for (K, V) {
+    fn into_cookie(self) -> String {
+        let (k, v) = self;
+        format!(
+            "{}={}; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000",
+            k.as_ref(),
+            v.as_ref()
+        )
+    }
+}
+
+impl Output {
+    pub fn with_cookie<C: IntoCookie>(self, c: C) -> Self {
+        let mut r: http::Response<bytes::Bytes> = self.into();
+        let cookie: http::HeaderValue = c.into_cookie().parse().unwrap();
+
+        match r.headers_mut().entry(http::header::SET_COOKIE) {
+            http::header::Entry::Vacant(entry) => {
+                entry.insert(cookie);
+            }
+            http::header::Entry::Occupied(mut entry) => {
+                entry.append(cookie);
+            }
+        };
+
+        Output::Http(r)
+    }
+
+    pub fn with_header<K: http::header::IntoHeaderName>(
+        self,
+        key: K,
+        value: http::HeaderValue,
+    ) -> Self {
+        let mut r: http::Response<bytes::Bytes> = self.into();
+        r.headers_mut().insert(key, value);
+        Output::Http(r)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn header() {
+        let r: http::Response<bytes::Bytes> = super::Output::Reload
+            .with_header(
+                http::header::CONTENT_TYPE,
+                http::HeaderValue::from_static("text/html"),
+            )
+            .into();
+
+        assert_eq!(
+            r.headers().get(http::header::CONTENT_TYPE),
+            Some(&http::HeaderValue::from_static("text/html"))
+        );
+
+        let r: http::Response<bytes::Bytes> = super::Output::Reload
+            .with_header("content-type", http::HeaderValue::from_static("text/html"))
+            .into();
+
+        assert_eq!(
+            r.headers().get(http::header::CONTENT_TYPE),
+            Some(&http::HeaderValue::from_static("text/html"))
+        );
+    }
+
+    #[test]
+    fn cookie() {
+        let r: http::Response<bytes::Bytes> =
+            super::Output::Reload.with_cookie(("name", "value")).into();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+        assert_eq!(iter.next(), None);
+
+        let r: http::Response<bytes::Bytes> = super::Output::Reload
+            .with_cookie(("name", "value"))
+            .with_cookie(("n2", "v2"))
+            .into();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "n2=v2; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+    }
+}
+
 pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> Error {
     let mut errors = ft_sdk::FormError::new();
     errors.insert(k.as_ref().to_string(), e.as_ref().to_string());
