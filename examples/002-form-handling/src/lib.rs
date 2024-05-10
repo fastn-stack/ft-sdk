@@ -1,29 +1,17 @@
-// ft_sdk::db!(
-//     create_todos = "
-//         create table if not exists todos (
-//             id integer primary key,
-//             content text not null,
-//             created_at integer not null default(unixepoch())
-//         );",
-//     insert_todo = "insert into todos (content) values (?)",
-//     todos = "select * from todos order by created_at desc limit 30"
-// );
-
 #[derive(ft_sdk::Migration)]
 // by default only returns migrations in migrations folder, to change migration
 // folder also add #[migration_folder = "path/to/migrations"].
-// if you want to
+// if you want to also pass functions, then manually implement the trait instead
+// of using the derive macro
 struct Migration {
     pub conn: ft_sdk::Connection,
 }
-
-ft_sdk::fastn_functions!();
 
 // #[ft_sdk::data]
 // #[ft_sdk::processor]
 #[ft_sdk::form]
 fn create_username(
-    Migration(conn): Migration,
+    conn: Migration,
     site_id: ft_sdk::HiddenField<String>,
     username: ft_sdk::RequiredField<"foo", ft_sdk::NonEmptyString>,
     password: ft_sdk::OptionalField<i32>,
@@ -36,14 +24,13 @@ fn create_username(
         ));
     }
 
-    let mut errors = ft_sdk::http::Errors::new();
-
-    errors.add_global_error("you do not have permission to do this");
-
+    let mut errors = vec![];
+    errors.push(ft_sdk::global_error(
+        "you do not have permission to do this",
+    ));
     if username.value() == "admin" {
         errors.push(username.error("admin account is already take"));
     }
-
     return errors.into();
 
     ft_sdk::http::redirect("/foo/")

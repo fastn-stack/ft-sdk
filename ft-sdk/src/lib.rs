@@ -32,7 +32,7 @@ pub use cookie::{Cookie, CookieExt};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use from_request::{FieldError, FromRequest, Path, RequiredString};
+pub use from_request::{FieldError, FromRequest, Path, Required};
 pub use ft_derive::handle_http;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
