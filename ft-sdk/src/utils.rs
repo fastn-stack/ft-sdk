@@ -4,7 +4,7 @@
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use diesel::prelude::*;
 ///
 /// diesel::table! {

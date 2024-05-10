@@ -27,5 +27,6 @@ pub fn foo(path: ft_sdk::Path, username: ft_sdk::Required<"username">) -> ft_sdk
         Err(username.error("admin is not allowed"))?;
     }
 
-    ft_sdk::json().with_cookie(k, v).with_header(k2, v2)
+    // ft_sdk::json().with_cookie(k, v).with_header(k2, v2)
+    todo!()
 }
