@@ -29,13 +29,14 @@ pub fn handle_http(
                     return ft_sdk::http::send_response(::ft_sdk::server_error!("cant create In object: {e:?}"));
                 }
             };
-            let resp = match #fn_name(in_, conn) {
+            let resp = match #fn_name(&mut ctx, conn) {
                 Ok(resp) => resp.into(),
                 Err(e) => {
                     ft_sdk::println!("Error: {:?}", e);
                     e.into()
                 }
             };
+            resp.append_cookies(ctx);
             ft_sdk::http::send_response(resp);
         }
 

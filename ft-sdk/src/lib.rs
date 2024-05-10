@@ -5,6 +5,7 @@
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
 #![feature(adt_const_params)]
+#![allow(incomplete_features)]
 
 extern crate self as ft_sdk;
 
@@ -12,7 +13,7 @@ pub mod auth;
 pub mod cookie;
 mod crypto;
 mod email;
-pub mod from_request;
+mod from_request;
 pub mod http;
 mod in_;
 mod json_body;
@@ -31,6 +32,7 @@ pub use cookie::{Cookie, CookieExt};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
+pub use from_request::{FieldError, FromRequest, Path, RequiredString};
 pub use ft_derive::handle_http;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
