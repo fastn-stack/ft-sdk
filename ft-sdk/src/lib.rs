@@ -4,6 +4,7 @@
 //! FifthTry Apps.
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
+#![feature(adt_const_params)]
 
 extern crate self as ft_sdk;
 
@@ -11,6 +12,7 @@ pub mod auth;
 pub mod cookie;
 mod crypto;
 mod email;
+pub mod from_request;
 pub mod http;
 mod in_;
 mod json_body;
@@ -23,6 +25,7 @@ mod migration;
 mod query;
 mod rng;
 pub mod utils;
+
 pub use cookie::{Cookie, CookieExt};
 
 pub use auth::UserId;
