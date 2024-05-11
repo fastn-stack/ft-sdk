@@ -47,6 +47,12 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> std::ops::DerefMut
     }
 }
 
+// We need `'static` here so that we can use the `std::any::TypeId::of()`. I read this thread
+// to understand what it means: https://www.reddit.com/r/learnrust/comments/12fpu7m/what_does_static_mean_in_a_trait/
+// types like i32, Vec<i32>, String as `'static`, but not say `&'a str`. We are using
+// serde::de::DeserializeOwned as a trait, which feels is also "owned" and hence `'static`, so
+// adding 'static here does not limit the types that can be used with this trait (beyond what
+// serde::de::DeserializeOwned already limits).
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::FromRequest
     for Required<KEY, T>
 {

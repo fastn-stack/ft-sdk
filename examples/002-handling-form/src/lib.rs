@@ -12,7 +12,6 @@ fn create_username(
     if username == "admin" {
         return Err(username.error("admin is not allowed").into());
     }
-    // return errors.into();
-    //
+
     ft_sdk::form::redirect("/foo/")
 }
