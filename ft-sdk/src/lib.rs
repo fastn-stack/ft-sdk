@@ -15,6 +15,7 @@ mod crypto;
 mod email;
 mod error;
 pub mod from_request;
+pub mod handler;
 pub mod http;
 mod in_;
 mod json_body;

@@ -11,9 +11,6 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
         syn::Ident::new(format!("{}__endpoint", fn_name).as_str(), fn_name.span());
     let return_type: syn::Type =
         syn::parse_str(format!("ft_sdk::{kind}::Result").as_str()).unwrap();
-    let handler: syn::Path = syn::parse_str(format!("ft_sdk::{kind}::handle").as_str()).unwrap();
-
-    // ensure sig.output is same as return_type
 
     match sig.output {
         syn::ReturnType::Default => {
@@ -35,7 +32,7 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
     let expanded = quote::quote! {
         #[no_mangle]
         pub extern "C" fn #fn_name_endpoint() {
-            #handler(#fn_name)
+            ft_sdk::handler::handle(#fn_name)
         }
 
         #(#attrs)*
