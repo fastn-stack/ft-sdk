@@ -12,6 +12,7 @@ extern crate self as ft_sdk;
 pub mod auth;
 pub mod cookie;
 mod crypto;
+mod data;
 mod email;
 mod error;
 pub mod form;
@@ -22,8 +23,8 @@ mod in_;
 mod json_body;
 mod layout;
 #[cfg(all(
-    feature = "migration",
-    any(feature = "postgres-default", feature = "sqlite-default")
+feature = "migration",
+any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 mod migration;
 pub mod processor;
@@ -50,8 +51,8 @@ pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, Layout, Page};
 #[cfg(all(
-    feature = "migration",
-    any(feature = "postgres-default", feature = "sqlite-default")
+feature = "migration",
+any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 pub use migration::{migrate, migrate_simple_};
 pub use query::{Query, QueryExt};

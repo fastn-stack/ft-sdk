@@ -178,15 +178,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
-name = "form-handling"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "ft-sdk",
- "http",
-]
-
-[[package]]
 name = "form_urlencoded"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -249,6 +240,15 @@ dependencies = [
  "rusqlite",
  "serde",
  "thiserror",
+]
+
+[[package]]
+name = "handling-form"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "ft-sdk",
+ "http",
 ]
 
 [[package]]
