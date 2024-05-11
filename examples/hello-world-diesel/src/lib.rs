@@ -1,5 +1,14 @@
 use diesel::prelude::*;
 
+#[derive(ft_sdk::Migration)]
+// by default only returns migrations in migrations folder, to change migration
+// folder also add #[migration_folder = "path/to/migrations"].
+// if you want to also pass functions, then manually implement the trait instead
+// of using the derive macro
+struct Migration {
+    pub conn: ft_sdk::Connection,
+}
+
 #[ft_sdk::handle_http]
 fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::http::Result {
     ft_sdk::migrate_simple!("hello-world", &in_, &mut conn)?;
