@@ -41,7 +41,9 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> ft_sdk::FromReques
             .into()),
             serde_json::Value::Object(map) => {
                 if let Some(value) = map.get(KEY) {
-                    Ok(serde_json::from_value(value.clone()).map(Some).map(Optional)?)
+                    Ok(serde_json::from_value(value.clone())
+                        .map(Some)
+                        .map(Optional)?)
                 } else {
                     Ok(Optional(None))
                 }
