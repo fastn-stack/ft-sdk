@@ -1,10 +1,9 @@
 #[ft_sdk::form]
 fn create_username(
     site_id: ft_sdk::Hidden<String>,
-    username: ft_sdk::Required<"foo", ft_sdk::NonEmptyString>,
-    password: ft_sdk::OptionalField<i32>,
+    username: ft_sdk::Required<"foo">,
+    age: ft_sdk::Optional<"age", i32>,
 ) -> ft_sdk::http::ActionResult {
-    use ft_sdk::JsonBodyExt;
     if username.is_empty() {
         return Err(ft_sdk::http::single_error(
             "username",
