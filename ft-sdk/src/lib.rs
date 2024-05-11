@@ -23,6 +23,7 @@ mod layout;
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 mod migration;
+pub mod processor;
 mod query;
 mod rng;
 pub mod utils;
@@ -35,7 +36,7 @@ pub use email::{send_email, EmailError};
 #[cfg(feature = "field-extractors")]
 pub use from_request::Required;
 pub use from_request::{FieldError, FromRequest, Path};
-pub use ft_derive::handle_http;
+pub use ft_derive::processor;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
