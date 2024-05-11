@@ -4,6 +4,7 @@ mod field_error;
 mod form;
 mod json;
 mod mountpoint;
+mod optional;
 mod path;
 #[cfg(feature = "field-extractors")]
 mod query;
@@ -14,7 +15,7 @@ pub use field_error::FieldError;
 pub use mountpoint::Mountpoint;
 pub use path::Path;
 #[cfg(feature = "field-extractors")]
-pub use {cookie::Cookie, query::Query, required::Required};
+pub use {cookie::Cookie, optional::Optional, query::Query, required::Required};
 
 pub trait FromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;
