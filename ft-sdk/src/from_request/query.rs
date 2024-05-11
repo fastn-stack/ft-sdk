@@ -21,7 +21,7 @@ impl<const KEY: &'static str> std::ops::Deref for Query<KEY> {
 }
 
 impl<const KEY: &'static str> ft_sdk::FromRequest for Query<KEY> {
-    fn from_request(_req: &http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::http::Error> {
+    fn from_request(_req: &http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::Error> {
         todo!()
     }
 }

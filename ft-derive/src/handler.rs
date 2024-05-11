@@ -31,26 +31,6 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
         }
     };
 
-    // if let sig.output {
-    //     return [
-    //         proc_macro::TokenTree::Ident(proc_macro::Ident::new(
-    //             "compile_error",
-    //             proc_macro::Span::mixed_site(),
-    //         )),
-    //         proc_macro::TokenTree::Punct(proc_macro::Punct::new('!', proc_macro::Spacing::Alone)),
-    //         proc_macro::TokenTree::Group(proc_macro::Group::new(
-    //             proc_macro::Delimiter::Parenthesis,
-    //             [proc_macro::TokenTree::Literal(proc_macro::Literal::string(
-    //                 "Some error message here!",
-    //             ))]
-    //             .into_iter()
-    //             .collect(),
-    //         )),
-    //     ]
-    //     .into_iter()
-    //     .collect();
-    // }
-
     let expanded = quote::quote! {
         #[no_mangle]
         pub extern "C" fn #fn_name_endpoint() {

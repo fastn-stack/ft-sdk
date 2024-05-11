@@ -17,9 +17,9 @@ pub enum MigrationError {
     ApplyMigration(#[from] ApplyMigrationError),
 }
 
-impl From<MigrationError> for ft_sdk::http::Error {
+impl From<MigrationError> for ft_sdk::Error {
     fn from(e: MigrationError) -> Self {
-        ft_sdk::http::Error::Response(
+        ft_sdk::Error::Response(
             ::http::Response::builder()
                 .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
                 .body(format!("migration error: {e:?}\n").into())
@@ -52,7 +52,7 @@ pub fn migrate_simple_(
     app_name: &str,
     migration_sqls: include_dir::Dir,
     now: &chrono::DateTime<chrono::Utc>,
-) -> Result<(), ft_sdk::http::Error> {
+) -> Result<(), ft_sdk::Error> {
     migrate(conn, app_name, migration_sqls, vec![], now).map_err(Into::into)
 }
 
