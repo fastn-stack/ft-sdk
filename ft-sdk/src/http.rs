@@ -44,6 +44,19 @@ impl<K: AsRef<str>, V: AsRef<str>> IntoCookie for (K, V) {
     }
 }
 
+impl<K: AsRef<str>, V: AsRef<str>> IntoCookie for (K, V, i32) {
+    fn into_cookie(self) -> http::HeaderValue {
+        let (k, v, max_age) = self;
+        format!(
+            "{}={}; Secure; HttpOnly; SameSite=Strict; Max-Age={max_age}",
+            k.as_ref(),
+            v.as_ref()
+        )
+        .parse()
+        .unwrap()
+    }
+}
+
 impl Output {
     pub fn with_cookie<C: IntoCookie>(self, c: C) -> Self {
         let mut r: http::Response<bytes::Bytes> = self.into();
@@ -109,6 +122,20 @@ mod test {
             iter.next(),
             Some(&http::HeaderValue::from_static(
                 "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+        assert_eq!(iter.next(), None);
+
+        let r: http::Response<bytes::Bytes> = super::Output::Reload
+            .with_cookie(("name", "value", 200))
+            .into();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=200"
             ))
         );
         assert_eq!(iter.next(), None);
@@ -210,8 +237,8 @@ pub enum JsonError {
 
 impl From<JsonError> for http::Response<bytes::Bytes> {
     fn from(e: JsonError) -> Self {
-        ::http::Response::builder()
-            .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
+        http::Response::builder()
+            .status(http::StatusCode::INTERNAL_SERVER_ERROR)
             .body(format!("json error: {e:?}\n").into())
             .unwrap()
     }
