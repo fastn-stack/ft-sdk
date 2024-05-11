@@ -34,7 +34,7 @@ pub use cookie::{Cookie, CookieExt};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use error::Error;
+pub use error::{single_error, Error};
 #[cfg(feature = "field-extractors")]
 pub use from_request::Required;
 pub use from_request::{FieldError, FromRequest, Path};
