@@ -1,19 +1,7 @@
-#[derive(ft_sdk::Migration)]
-// by default only returns migrations in migrations folder, to change migration
-// folder also add #[migration_folder = "path/to/migrations"].
-// if you want to also pass functions, then manually implement the trait instead
-// of using the derive macro
-struct Migration {
-    pub conn: ft_sdk::Connection,
-}
-
-// #[ft_sdk::data]
-// #[ft_sdk::processor]
 #[ft_sdk::form]
 fn create_username(
-    conn: Migration,
-    site_id: ft_sdk::HiddenField<String>,
-    username: ft_sdk::RequiredField<"foo", ft_sdk::NonEmptyString>,
+    site_id: ft_sdk::Hidden<String>,
+    username: ft_sdk::Required<"foo", ft_sdk::NonEmptyString>,
     password: ft_sdk::OptionalField<i32>,
 ) -> ft_sdk::http::ActionResult {
     use ft_sdk::JsonBodyExt;

@@ -15,7 +15,7 @@
 pub struct Mountpoint(pub String);
 
 impl ft_sdk::FromRequest for Mountpoint {
-    fn from_request(req: &http::Request<bytes::Bytes>) -> Result<Mountpoint, ft_sdk::Error> {
+    fn from_request(req: &http::Request<serde_json::Value>) -> Result<Mountpoint, ft_sdk::Error> {
         // we are unwrapping because this header must always be present.
         Ok(Self(
             req.headers()
