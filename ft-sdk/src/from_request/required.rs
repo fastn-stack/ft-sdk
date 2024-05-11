@@ -47,6 +47,31 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> std::ops::DerefMut
     }
 }
 
+impl<const KEY: &'static str> ft_sdk::FromRequest for Required<KEY, String> {
+    fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
+        match req.body() {
+            serde_json::Value::Null => Err(ft_sdk::FieldError {
+                field: KEY,
+                error: "body is Null, expected Object".to_string(),
+            }
+            .into()),
+            serde_json::Value::Object(map) => match map.get(KEY) {
+                Some(serde_json::Value::String(s)) if !s.is_empty() => Ok(Required(s.to_string())),
+                _ => Err(ft_sdk::FieldError {
+                    field: KEY,
+                    error: "missing field".to_string(),
+                }
+                .into()),
+            },
+            _ => Err(ft_sdk::FieldError {
+                field: KEY,
+                error: "body is not json object".to_string(),
+            }
+            .into()),
+        }
+    }
+}
+
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned> ft_sdk::FromRequest
     for Required<KEY, T>
 {
