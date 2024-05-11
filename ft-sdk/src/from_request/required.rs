@@ -54,7 +54,7 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> ft_sdk::FromReques
         match req.body() {
             serde_json::Value::Null => Err(ft_sdk::FieldError {
                 field: KEY,
-                error: "missing field".to_string(),
+                error: "body is Null, expected Object".to_string(),
             }
             .into()),
             serde_json::Value::Object(map) => {
