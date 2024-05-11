@@ -11,6 +11,7 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
         syn::Ident::new(format!("{}__endpoint", fn_name).as_str(), fn_name.span());
     let return_type: syn::Type =
         syn::parse_str(format!("ft_sdk::{kind}::Result").as_str()).unwrap();
+    let handler: syn::Path = syn::parse_str(format!("ft_sdk::{kind}::handle").as_str()).unwrap();
 
     // ensure sig.output is same as return_type
 
@@ -34,15 +35,7 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
     let expanded = quote::quote! {
         #[no_mangle]
         pub extern "C" fn #fn_name_endpoint() {
-            let resp = match #fn_name(in_, conn) {
-                Ok(resp) => resp.into(),
-                Err(e) => {
-                    ft_sdk::println!("Error: {:?}", e);
-                    e.into()
-                }
-            };
-            // resp.append_cookies(ctx);
-            ft_sdk::http::send_response(resp);
+            #handler(#fn_name)
         }
 
         #(#attrs)*
@@ -51,7 +44,7 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
         }
     };
 
-    // println!("{expanded}");
+    println!("{expanded}");
     proc_macro::TokenStream::from(expanded)
 }
 
