@@ -16,9 +16,19 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
 
     match sig.output {
         syn::ReturnType::Default => {
-            return w2(format!("The return type must be ft_sdk::{kind}::Result").as_str())
+            return warning(format!("The return type must be ft_sdk::{kind}::Result").as_str())
         }
-        _ => todo!(),
+        syn::ReturnType::Type(_, ref ty) => {
+            if ty.as_ref() != &return_type {
+                return warning(
+                    format!(
+                        "The return type must be ft_sdk::{kind}::Result, not {}.",
+                        proc_macro::TokenStream::from(quote::quote! { #ty })
+                    )
+                    .as_str(),
+                );
+            }
+        }
     };
 
     // if let sig.output {
@@ -65,28 +75,8 @@ pub fn handle(item: proc_macro::TokenStream, kind: &str) -> proc_macro::TokenStr
     proc_macro::TokenStream::from(expanded)
 }
 
-fn w2(msg: &str) -> proc_macro::TokenStream {
+fn warning(msg: &str) -> proc_macro::TokenStream {
     proc_macro::TokenStream::from(quote::quote! {
         compile_error!(#msg);
     })
-}
-
-fn warning(msg: &str) -> proc_macro::TokenStream {
-    [
-        proc_macro::TokenTree::Ident(proc_macro::Ident::new(
-            "compile_error",
-            proc_macro::Span::mixed_site(),
-        )),
-        proc_macro::TokenTree::Punct(proc_macro::Punct::new('!', proc_macro::Spacing::Alone)),
-        proc_macro::TokenTree::Group(proc_macro::Group::new(
-            proc_macro::Delimiter::Parenthesis,
-            [proc_macro::TokenTree::Literal(proc_macro::Literal::string(
-                msg,
-            ))]
-            .into_iter()
-            .collect(),
-        )),
-    ]
-    .into_iter()
-    .collect()
 }
