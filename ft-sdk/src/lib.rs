@@ -12,7 +12,7 @@ extern crate self as ft_sdk;
 pub mod auth;
 pub mod cookie;
 mod crypto;
-mod data;
+pub mod data;
 mod email;
 mod error;
 pub mod form;

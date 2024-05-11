@@ -1,10 +1,5 @@
 #[ft_sdk::form]
-fn create_username(
-    site_id: ft_sdk::Hidden<"site_id">,
-    username: ft_sdk::Required<"foo">,
-    age: ft_sdk::Optional<"age", i32>,
-) -> ft_sdk::form::Result {
-    ft_sdk::println!("{site_id}, {username}, {age}");
+fn create_account(username: ft_sdk::Required<"username">) -> ft_sdk::form::Result {
     // let mut errors = vec![];
     // errors.push(ft_sdk::global_error(
     //     "you do not have permission to do this",
