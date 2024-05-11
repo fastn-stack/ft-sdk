@@ -22,24 +22,32 @@ impl From<Output> for http::Response<bytes::Bytes> {
 }
 
 pub trait IntoCookie {
-    fn into_cookie(self) -> String;
+    fn into_cookie(self) -> http::HeaderValue;
+}
+
+impl IntoCookie for http::HeaderValue {
+    fn into_cookie(self) -> http::HeaderValue {
+        self
+    }
 }
 
 impl<K: AsRef<str>, V: AsRef<str>> IntoCookie for (K, V) {
-    fn into_cookie(self) -> String {
+    fn into_cookie(self) -> http::HeaderValue {
         let (k, v) = self;
         format!(
             "{}={}; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000",
             k.as_ref(),
             v.as_ref()
         )
+        .parse()
+        .unwrap()
     }
 }
 
 impl Output {
     pub fn with_cookie<C: IntoCookie>(self, c: C) -> Self {
         let mut r: http::Response<bytes::Bytes> = self.into();
-        let cookie: http::HeaderValue = c.into_cookie().parse().unwrap();
+        let cookie: http::HeaderValue = c.into_cookie();
 
         match r.headers_mut().entry(http::header::SET_COOKIE) {
             http::header::Entry::Vacant(entry) => {
@@ -124,6 +132,33 @@ mod test {
                 "n2=v2; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
             ))
         );
+    }
+
+    #[test]
+    fn raw_cookie() {
+        let r: http::Response<bytes::Bytes> = super::Output::Reload
+            .with_cookie(http::HeaderValue::from_static("hello"))
+            .into();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
+        assert_eq!(iter.next(), None);
+
+        let r: http::Response<bytes::Bytes> = super::Output::Reload
+            .with_cookie(("name", "value"))
+            .with_cookie(http::HeaderValue::from_static("hello"))
+            .into();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+        assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
     }
 }
 
