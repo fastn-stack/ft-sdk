@@ -1,6 +1,6 @@
 #[ft_sdk::processor]
-fn hello_world(_path: ft_sdk::Path, id: ft_sdk::Required<"id">) -> ft_sdk::processor::Result {
-    println!("params: {id}");
+fn hello_world(path: ft_sdk::Path) -> ft_sdk::processor::Result {
+    ft_sdk::println!("params: {path}");
     ft_sdk::processor::json("and this is coming from wasm!")
 }
 
