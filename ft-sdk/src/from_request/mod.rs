@@ -3,6 +3,7 @@ mod cookie;
 mod field_error;
 mod form;
 mod json;
+mod mountpoint;
 mod path;
 #[cfg(feature = "field-extractors")]
 mod query;
@@ -10,6 +11,7 @@ mod query;
 mod required;
 
 pub use field_error::FieldError;
+pub use mountpoint::Mountpoint;
 pub use path::Path;
 #[cfg(feature = "field-extractors")]
 pub use {cookie::Cookie, query::Query, required::Required};

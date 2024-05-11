@@ -14,6 +14,7 @@ pub mod cookie;
 mod crypto;
 mod email;
 mod error;
+pub mod form;
 pub mod from_request;
 pub mod handler;
 pub mod http;
@@ -38,7 +39,7 @@ pub use email::{send_email, EmailError};
 pub use error::{single_error, Error};
 #[cfg(feature = "field-extractors")]
 pub use from_request::Required;
-pub use from_request::{FieldError, FromRequest, Path};
+pub use from_request::{FieldError, FromRequest, Mountpoint, Path};
 pub use ft_derive::processor;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
