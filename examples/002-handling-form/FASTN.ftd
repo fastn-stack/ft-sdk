@@ -1,9 +1,9 @@
 -- import: fastn
 
--- fastn.package: hello-world
+-- fastn.package: handling-form
 
 -- fastn.url-mappings:
 
 ;; make sure the name of the wasm file is the same as the name in Cargo.toml
 ;; (with - replaced with _)
-/wasm/* -> wasm+proxy://form_handling.wasm/*
+/wasm/* -> wasm+proxy://handling_form.wasm/*

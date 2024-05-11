@@ -1,5 +1,5 @@
 [package]
-name = "form-handling"  # make sure name stays in sync with build.sh
+name = "handling-form"  # make sure name stays in sync with build.sh
 version = "0.1.0"
 edition = "2021"
 
