@@ -4,10 +4,10 @@ pub struct FieldError {
     pub error: String,
 }
 
-impl From<FieldError> for ft_sdk::http::Error {
+impl From<FieldError> for ft_sdk::Error {
     fn from(e: FieldError) -> Self {
         let mut errors = std::collections::HashMap::new();
         errors.insert(e.field.to_string(), e.error);
-        ft_sdk::http::Error::Form(errors)
+        ft_sdk::Error::Form(errors)
     }
 }

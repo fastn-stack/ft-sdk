@@ -1,4 +1,4 @@
-pub use ft_sys::http::*;
+// pub use ft_sys::http::*;
 
 #[derive(Debug)]
 pub enum Output {
@@ -189,43 +189,7 @@ mod test {
     }
 }
 
-pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> Error {
-    let mut errors = ft_sdk::FormError::new();
-    errors.insert(k.as_ref().to_string(), e.as_ref().to_string());
-    Error::Form(errors)
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("serde_json error {0}")]
-    Serde(#[from] serde_json::Error),
-
-    #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("diesel error {0}")]
-    Diesel(#[from] diesel::result::Error),
-
-    #[error("http error")]
-    Response(http::Response<bytes::Bytes>),
-
-    #[error("form error {0:?}")]
-    Form(ft_sdk::FormError),
-
-    #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("diesel connection error {0}")]
-    DieselConnection(#[from] diesel::result::ConnectionError),
-}
-
-impl From<Error> for http::Response<bytes::Bytes> {
-    fn from(e: Error) -> Self {
-        match e {
-            Error::Response(r) => r,
-            Error::Form(errors) => json_(serde_json::json!({"errors": errors})),
-            _ => ft_sdk::server_error!("error: {e:?}"),
-        }
-    }
-}
-
-pub type Result = std::result::Result<Output, Error>;
+pub type Result = std::result::Result<Output, ft_sdk::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum JsonError {
@@ -256,7 +220,7 @@ pub fn redirect<S: AsRef<str>>(url: S) -> Result {
     Ok(Output::Redirect(url.as_ref().to_string()))
 }
 
-fn json_<T: serde::Serialize>(t: T) -> http::Response<bytes::Bytes> {
+pub(crate) fn json_<T: serde::Serialize>(t: T) -> http::Response<bytes::Bytes> {
     let d = match serde_json::to_string(&t) {
         Ok(d) => d,
         Err(e) => return ft_sdk::server_error!("json error: {e:?}"),
@@ -279,9 +243,9 @@ macro_rules! not_found {
 }
 
 #[doc(hidden)]
-pub fn not_found_(msg: String) -> Error {
+pub fn not_found_(msg: String) -> ft_sdk::Error {
     ft_sdk::println!("not-found: {msg}");
-    Error::Response(
+    ft_sdk::Error::Response(
         http::Response::builder()
             .status(http::StatusCode::NOT_FOUND)
             .body(bytes::Bytes::from(msg))

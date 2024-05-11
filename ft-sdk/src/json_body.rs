@@ -44,20 +44,17 @@ impl JsonBody {
 
 pub trait JsonBodyExt {
     fn json_body(&self) -> serde_json::Result<JsonBody>;
-    fn json_body_(&self) -> Result<JsonBody, ft_sdk::http::Error>;
-    fn required<T: serde::de::DeserializeOwned>(
-        &self,
-        field: &str,
-    ) -> Result<T, ft_sdk::http::Error>;
+    fn json_body_(&self) -> Result<JsonBody, ft_sdk::Error>;
+    fn required<T: serde::de::DeserializeOwned>(&self, field: &str) -> Result<T, ft_sdk::Error>;
     fn required2<T1: serde::de::DeserializeOwned, T2: serde::de::DeserializeOwned>(
         &self,
         field1: &str,
         field2: &str,
-    ) -> Result<(T1, T2), ft_sdk::http::Error>;
+    ) -> Result<(T1, T2), ft_sdk::Error>;
 }
 
 impl JsonBodyExt for http::Request<bytes::Bytes> {
-    fn json_body_(&self) -> Result<JsonBody, ft_sdk::http::Error> {
+    fn json_body_(&self) -> Result<JsonBody, ft_sdk::Error> {
         // TODO: check if content type is application/json
         Ok(JsonBody {
             body: match serde_json::from_slice(self.body()) {
@@ -65,7 +62,7 @@ impl JsonBodyExt for http::Request<bytes::Bytes> {
                 Err(e) => {
                     let mut errors = std::collections::HashMap::new();
                     errors.insert("all".to_string(), e.to_string());
-                    return Err(ft_sdk::http::Error::Form(errors));
+                    return Err(ft_sdk::Error::Form(errors));
                 }
             },
         })
@@ -78,27 +75,24 @@ impl JsonBodyExt for http::Request<bytes::Bytes> {
         })
     }
 
-    fn required<T: serde::de::DeserializeOwned>(
-        &self,
-        field: &str,
-    ) -> Result<T, ft_sdk::http::Error> {
+    fn required<T: serde::de::DeserializeOwned>(&self, field: &str) -> Result<T, ft_sdk::Error> {
         let mut errors = ft_sdk::FormError::new();
         let j = self.json_body_()?;
         j.field_(field, &mut errors)
-            .map_err(|()| ft_sdk::http::Error::Form(errors))
+            .map_err(|()| ft_sdk::Error::Form(errors))
     }
 
     fn required2<T1: serde::de::DeserializeOwned, T2: serde::de::DeserializeOwned>(
         &self,
         field1: &str,
         field2: &str,
-    ) -> Result<(T1, T2), ft_sdk::http::Error> {
+    ) -> Result<(T1, T2), ft_sdk::Error> {
         let j = self.json_body_()?;
 
         let mut errors = std::collections::HashMap::new();
         match (j.field_(field1, &mut errors), j.field_(field2, &mut errors)) {
             (Ok(v1), Ok(v2)) => Ok((v1, v2)),
-            _ => Err(ft_sdk::http::Error::Form(errors)),
+            _ => Err(ft_sdk::Error::Form(errors)),
         }
     }
 }

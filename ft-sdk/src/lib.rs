@@ -13,6 +13,7 @@ pub mod auth;
 pub mod cookie;
 mod crypto;
 mod email;
+mod error;
 pub mod from_request;
 pub mod http;
 mod in_;
@@ -33,6 +34,7 @@ pub use cookie::{Cookie, CookieExt};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
+pub use error::Error;
 #[cfg(feature = "field-extractors")]
 pub use from_request::Required;
 pub use from_request::{FieldError, FromRequest, Path};
