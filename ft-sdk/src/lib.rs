@@ -23,8 +23,8 @@ mod in_;
 mod json_body;
 mod layout;
 #[cfg(all(
-feature = "migration",
-any(feature = "postgres-default", feature = "sqlite-default")
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 mod migration;
 pub mod processor;
@@ -38,9 +38,9 @@ pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
 pub use error::{single_error, Error};
-#[cfg(feature = "field-extractors")]
-pub use from_request::Required;
 pub use from_request::{FieldError, FromRequest, Mountpoint, Path};
+#[cfg(feature = "field-extractors")]
+pub use from_request::{Optional, Required};
 pub use ft_derive::processor;
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
@@ -51,8 +51,8 @@ pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, Layout, Page};
 #[cfg(all(
-feature = "migration",
-any(feature = "postgres-default", feature = "sqlite-default")
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 pub use migration::{migrate, migrate_simple_};
 pub use query::{Query, QueryExt};
