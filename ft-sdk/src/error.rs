@@ -22,6 +22,9 @@ pub enum Error {
     #[cfg(any(feature = "postgres", feature = "sqlite"))]
     #[error("diesel connection error {0}")]
     DieselConnection(#[from] diesel::result::ConnectionError),
+
+    #[error("generic error {0}")]
+    Generic(String),
 }
 
 impl From<Error> for http::Response<bytes::Bytes> {
