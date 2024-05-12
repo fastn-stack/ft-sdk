@@ -9,7 +9,7 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["sqlite-default", "migration", "field-extractors"]
+default = ["sqlite-default", "migration"]
 postgres-default = ["ft-sys/postgres-default", "postgres"]
 postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
