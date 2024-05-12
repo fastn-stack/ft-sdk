@@ -1,4 +1,4 @@
-pub use ft_sys::http::{current_request, send_response};
+pub use ft_sys::http::{current_request, send, send_response};
 
 #[derive(Debug)]
 pub enum Output {
