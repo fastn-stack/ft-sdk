@@ -20,8 +20,8 @@ pub enum Error {
     Form(ft_sdk::FormError),
 
     #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("diesel connection error {0}")]
-    DieselConnection(#[from] diesel::result::ConnectionError),
+    #[error("connection error {0}")]
+    Connection(#[from] ft_sdk::ConnectionError),
 
     #[error("generic error {0}")]
     Generic(String),
