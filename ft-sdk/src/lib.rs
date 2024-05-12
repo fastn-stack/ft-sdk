@@ -38,7 +38,7 @@ pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
 pub use error::{single_error, Error};
-pub use from_request::{FieldError, FromRequest, Mountpoint, Path};
+pub use from_request::{FieldError, FromRequest, Mountpoint, OutputProcessor, Path};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Hidden, Optional, Required};
 pub use ft_derive::{data, form, processor};
