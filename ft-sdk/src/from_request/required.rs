@@ -23,7 +23,7 @@ impl<const KEY: &'static str> PartialEq<&str> for Required<KEY, String> {
 }
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned> Required<KEY, T> {
-    pub fn error<S: AsRef<str>>(self, msg: S) -> ft_sdk::FieldError {
+    pub fn error<S: AsRef<str>>(&self, msg: S) -> ft_sdk::FieldError {
         ft_sdk::FieldError {
             field: KEY,
             error: msg.as_ref().to_string(),
