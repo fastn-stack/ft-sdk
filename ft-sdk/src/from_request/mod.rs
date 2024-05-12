@@ -30,6 +30,8 @@ impl FromRequest for chrono::DateTime<chrono::Utc> {
     }
 }
 
-pub trait OutputProcessor<O>: Sized {
-    fn process_output(&self, output: O) -> Result<O, ft_sdk::Error>;
+// TODO: need better name
+pub trait WrappedFromRequest<O>: Sized {
+    fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;
+    fn wrap(self, output: O) -> Result<O, ft_sdk::Error>;
 }
