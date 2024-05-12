@@ -35,11 +35,10 @@ where
 impl<F, T, O> Handler<T, O> for F
 where
     F: Fn(T) -> Result<O, ft_sdk::Error>,
-    T: ft_sdk::FromRequest + ft_sdk::OutputProcessor<O>,
+    T: ft_sdk::FromRequest,
 {
     fn call(self, req: &http::Request<serde_json::Value>) -> Result<O, ft_sdk::Error> {
-        let t = T::from_request(req)?;
-        Ok(T::process_output((self)()?)?)
+        (self)(T::from_request(req)?)
     }
 }
 
