@@ -6,6 +6,18 @@ pub enum Output {
     Json(serde_json::Value),
 }
 
+impl Output {
+    pub fn map_json<F>(self, f: F) -> Output
+    where
+        F: FnOnce(serde_json::Value) -> serde_json::Value,
+    {
+        match self {
+            Output::Redirect(url) => Output::Redirect(url),
+            Output::Json(j) => Output::Json(f(j)),
+        }
+    }
+}
+
 impl From<Output> for http::Response<bytes::Bytes> {
     fn from(o: Output) -> Self {
         match o {
