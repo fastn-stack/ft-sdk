@@ -1,12 +1,11 @@
 #[ft_sdk::migration]
-fn migration() -> ft_sdk::Migration {
-    let migration_sqls: include_dir::Dir<'static> =
-        include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations");
-    ft_sdk::Migration {
-        app_name: "hello-world",
-        migration_sqls,
-        migration_functions: vec![],
-    }
+fn migration(conn: &mut ft_sdk::Connection) -> Result<(), ft_sdk::MigrationError> {
+    ft_sdk::migrate(
+        conn,
+        "hello-world",
+        include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
+        vec![],
+    )
 }
 
 #[ft_sdk::form]
