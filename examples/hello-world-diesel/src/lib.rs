@@ -9,6 +9,15 @@ struct Migration {
     pub conn: ft_sdk::Connection,
 }
 
+#[ft_sdk::migration]
+fn migration() -> ft_sdk::Migration {
+    ft_sdk::Migration {
+        app_name: "hello-world",
+        migration_sqls: include_dir::include_dir!("migrations"),
+        migration_functions: vec![],
+    }
+}
+
 #[ft_sdk::handle_http]
 fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::http::Result {
     ft_sdk::migrate_simple!("hello-world", &in_, &mut conn)?;
