@@ -34,41 +34,32 @@ pub type FnMigration = (
     fn(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 );
 
-pub struct Migration {
-    pub app_name: &'static str,
-    pub migration_sqls: include_dir::Dir<'static>,
-    pub migration_functions: Vec<FnMigration>,
-}
-
-pub fn migrate(conn: &mut ft_sdk::Connection, migration: Migration) -> Result<(), MigrationError> {
+pub fn migrate(
+    conn: &mut ft_sdk::Connection,
+    app_name: &str,
+    migration_sqls: include_dir::Dir,
+    migration_functions: Vec<FnMigration>,
+) -> Result<(), MigrationError> {
     let now = ft_sdk::env::now();
     // check if the migration table exists, if not create it
     create_migration_table(conn).map_err(MigrationError::CanNotCreateMigrationTable)?;
 
     // find the latest applied migration number from the table
-    let latest_applied_migration_number =
-        find_latest_applied_migration_number(conn, migration.app_name)
-            .map_err(MigrationError::CanNotFindLatestAppliedMigrationNumber)?;
+    let latest_applied_migration_number = find_latest_applied_migration_number(conn, app_name)
+        .map_err(MigrationError::CanNotFindLatestAppliedMigrationNumber)?;
 
     let migrations = sort_migrations(
-        migration.migration_sqls,
-        migration.migration_functions,
+        migration_sqls,
+        migration_functions,
         latest_applied_migration_number,
     )?;
 
     for cmd in migrations {
         match cmd {
-            Cmd::Sql { id, name, sql } => apply_sql_migration(
-                conn,
-                migration.app_name,
-                id,
-                name.as_str(),
-                sql.as_str(),
-                &now,
-            )?,
-            Cmd::Fn { id, name, r#fn } => {
-                apply_fn_migration(conn, migration.app_name, id, name, r#fn, &now)?
+            Cmd::Sql { id, name, sql } => {
+                apply_sql_migration(conn, app_name, id, name.as_str(), sql.as_str(), &now)?
             }
+            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, app_name, id, name, r#fn, &now)?,
         }
     }
 

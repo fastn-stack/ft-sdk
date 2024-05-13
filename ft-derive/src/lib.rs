@@ -57,7 +57,7 @@ pub fn migration(
                 }
             };
 
-            match ft_sdk::migration::migrate(&mut conn, #fn_name()) {
+            match #fn_name(&mut conn) {
                 Ok(()) => 1,
                 Err(e) => {
                     ft_sdk::println!("error when applying migration: {e}");

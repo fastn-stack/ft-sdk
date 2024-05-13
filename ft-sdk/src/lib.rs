@@ -23,10 +23,10 @@ mod in_;
 mod json_body;
 mod layout;
 #[cfg(all(
-feature = "migration",
-any(feature = "postgres-default", feature = "sqlite-default")
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub mod migration;
+mod migration;
 pub mod processor;
 mod query;
 mod rng;
@@ -52,10 +52,10 @@ pub use in_::In;
 pub use json_body::{JsonBody, JsonBodyExt};
 pub use layout::{Action, Layout, Page};
 #[cfg(all(
-feature = "migration",
-any(feature = "postgres-default", feature = "sqlite-default")
+    feature = "migration",
+    any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub use migration::Migration;
+pub use migration::{migrate, MigrationError};
 pub use query::{Query, QueryExt};
 pub use rng::Rng;
 
