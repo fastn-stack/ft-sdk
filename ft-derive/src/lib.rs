@@ -32,6 +32,50 @@ pub fn form(
     handle(item, "form", "handler")
 }
 
+#[proc_macro_attribute]
+pub fn migration(
+    _attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let syn::ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = syn::parse_macro_input!(item as syn::ItemFn);
+
+    let fn_name = &sig.ident;
+
+    let expanded = quote::quote! {
+        #[no_mangle]
+        pub extern "C" fn migration__endpoint() -> i32 {
+            let mut conn = match ft_sdk::default_connection() {
+                Ok(c) => c,
+                Err(e) => {
+                    ft_sdk::println!("error when getting connection to apply migration: {e}");
+                    return 0;
+                }
+            };
+
+            match ft_sdk::migration::migrate(&mut conn, #fn_name()) {
+                Ok(()) => 1,
+                Err(e) => {
+                    ft_sdk::println!("error when applying migration: {e}");
+                    0
+                }
+            }
+        }
+
+        #(#attrs)*
+        #vis #sig {
+            #block
+        }
+    };
+
+    // println!("{expanded}");
+    proc_macro::TokenStream::from(expanded)
+}
+
 fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macro::TokenStream {
     let syn::ItemFn {
         attrs,
@@ -49,7 +93,7 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
 
     match sig.output {
         syn::ReturnType::Default => {
-            return warning(format!("The return type must be ft_sdk::{kind}::Result").as_str())
+            return warning(format!("The return type must be ft_sdk::{kind}::Result").as_str());
         }
         syn::ReturnType::Type(_, ref ty) => {
             if ty.as_ref() != &return_type {
