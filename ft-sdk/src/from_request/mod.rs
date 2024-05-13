@@ -30,6 +30,12 @@ impl FromRequest for chrono::DateTime<chrono::Utc> {
     }
 }
 
+impl FromRequest for ft_sdk::Connection {
+    fn from_request(_req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
+        Ok(ft_sdk::default_connection()?)
+    }
+}
+
 // TODO: need better name
 pub trait WrappedFromRequest<O>: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;
