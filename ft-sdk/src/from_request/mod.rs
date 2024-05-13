@@ -15,6 +15,7 @@ mod query;
 mod required;
 
 pub use field_error::FieldError;
+pub use form::Form;
 pub use mountpoint::Mountpoint;
 pub use path::Path;
 #[cfg(feature = "field-extractors")]
