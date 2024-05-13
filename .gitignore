@@ -4,3 +4,4 @@ target
 *.wasm
 
 .direnv
+.DS_Store

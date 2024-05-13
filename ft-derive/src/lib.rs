@@ -48,7 +48,7 @@ pub fn migration(
 
     let expanded = quote::quote! {
         #[no_mangle]
-        pub extern "C" fn migration__endpoint() -> i32 { // return 0 for success
+        pub extern "C" fn migration__entrypoint() -> i32 { // return 0 for success
             let mut conn = match ft_sdk::default_connection() {
                 Ok(c) => c,
                 Err(e) => {
@@ -85,8 +85,8 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
     } = syn::parse_macro_input!(item as syn::ItemFn);
 
     let fn_name = &sig.ident;
-    let fn_name_endpoint =
-        syn::Ident::new(format!("{}__endpoint", fn_name).as_str(), fn_name.span());
+    let fn_name_entrypoint =
+        syn::Ident::new(format!("{}__entrypoint", fn_name).as_str(), fn_name.span());
     let return_type: syn::Type =
         syn::parse_str(format!("ft_sdk::{kind}::Result").as_str()).unwrap();
     let handler: syn::Path = syn::parse_str(format!("ft_sdk::{handler}::handle").as_str()).unwrap();
@@ -110,7 +110,7 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
 
     let expanded = quote::quote! {
         #[no_mangle]
-        pub extern "C" fn #fn_name_endpoint() {
+        pub extern "C" fn #fn_name_entrypoint() {
             #handler(#fn_name)
         }
 

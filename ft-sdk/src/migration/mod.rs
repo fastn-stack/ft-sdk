@@ -160,7 +160,7 @@ pub enum InvalidMigrationError {
     #[error("Invalid sql content not utf8: {0}, {1:?}")]
     InvalidSqlFileContentNotUtf8(i32, std::string::FromUtf8Error),
     #[error("SQL file is not integer: {0:?}")]
-    SqlFileIsNotInteger(#[from] std::num::ParseIntError),
+    SqlFileIsNotInteger(String, std::num::ParseIntError),
 }
 
 enum Cmd {
@@ -242,10 +242,15 @@ fn sort_migrations(
 }
 
 fn parse_migration_name(name: &str) -> Result<(i32, &str), InvalidMigrationError> {
-    let (number, name) = match name.split_once('_') {
+    let (number, name) = match name.split_once('-') {
         Some(v) => v,
         None => (name, name),
     };
 
-    Ok((number.parse()?, name))
+    Ok((
+        number
+            .parse()
+            .map_err(|e| InvalidMigrationError::SqlFileIsNotInteger(name.to_string(), e))?,
+        name,
+    ))
 }
