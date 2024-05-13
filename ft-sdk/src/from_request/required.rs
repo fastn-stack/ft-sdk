@@ -1,4 +1,4 @@
-pub struct Required<const KEY: &'static str, T: serde::de::DeserializeOwned = String>(T);
+pub struct Required<const KEY: &'static str, T: serde::de::DeserializeOwned = String>(pub T);
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display> std::fmt::Display
     for Required<KEY, T>
