@@ -48,20 +48,20 @@ pub fn migration(
 
     let expanded = quote::quote! {
         #[no_mangle]
-        pub extern "C" fn migration__endpoint() -> i32 {
+        pub extern "C" fn migration__endpoint() -> i32 { // return 0 for success
             let mut conn = match ft_sdk::default_connection() {
                 Ok(c) => c,
                 Err(e) => {
                     ft_sdk::println!("error when getting connection to apply migration: {e}");
-                    return 0;
+                    return 1;
                 }
             };
 
-            match #fn_name(&mut conn) {
-                Ok(()) => 1,
+            match #fn_name(conn) {
+                Ok(()) => 0,
                 Err(e) => {
                     ft_sdk::println!("error when applying migration: {e}");
-                    0
+                    1
                 }
             }
         }

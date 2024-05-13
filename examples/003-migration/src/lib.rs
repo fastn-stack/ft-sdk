@@ -1,7 +1,7 @@
 #[ft_sdk::migration]
-fn migration(conn: &mut ft_sdk::Connection) -> Result<(), ft_sdk::MigrationError> {
+fn migration(mut conn: ft_sdk::Connection) -> Result<(), ft_sdk::MigrationError> {
     ft_sdk::migrate(
-        conn,
+        &mut conn,
         "hello-world",
         include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
         vec![],
