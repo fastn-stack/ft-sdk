@@ -24,7 +24,7 @@ fn create_account(
     mut conn: ft_sdk::Connection,
 ) -> ft_sdk::form::Result {
     if username == "admin" {
-        return Err(username.error("admin is not allowed").into());
+        return Err(username.error("username 'admin' is not allowed").into());
     }
 
     // do a select query to see if username is already taken
@@ -33,7 +33,9 @@ fn create_account(
     ))
     .get_result(&mut conn)?
     {
-        return Err(username.error("username already exists").into());
+        return Err(username
+            .error(format!("username '{username}' already exists"))
+            .into());
     }
 
     diesel::insert_into(account_user::table)
