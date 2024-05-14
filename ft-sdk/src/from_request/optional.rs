@@ -1,4 +1,6 @@
-pub struct Optional<const KEY: &'static str, T: serde::de::DeserializeOwned = String>(Option<T>);
+pub struct Optional<const KEY: &'static str, T: serde::de::DeserializeOwned = String>(
+    pub Option<T>,
+);
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display> std::fmt::Display
     for Optional<KEY, T>
