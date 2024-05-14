@@ -93,11 +93,13 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
 
     match sig.output {
         syn::ReturnType::Default => {
-            return warning(format!("The return type must be ft_sdk::{kind}::Result").as_str());
+            return compiler_error(
+                format!("The return type must be ft_sdk::{kind}::Result").as_str(),
+            );
         }
         syn::ReturnType::Type(_, ref ty) => {
             if ty.as_ref() != &return_type {
-                return warning(
+                return compiler_error(
                     format!(
                         "The return type must be ft_sdk::{kind}::Result, not {}.",
                         proc_macro::TokenStream::from(quote::quote! { #ty })
@@ -124,7 +126,7 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
     proc_macro::TokenStream::from(expanded)
 }
 
-fn warning(msg: &str) -> proc_macro::TokenStream {
+fn compiler_error(msg: &str) -> proc_macro::TokenStream {
     proc_macro::TokenStream::from(quote::quote! {
         compile_error!(#msg);
     })
