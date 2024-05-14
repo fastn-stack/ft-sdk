@@ -2,6 +2,7 @@
 mod cookie;
 mod field_error;
 mod form;
+mod headers;
 #[cfg(feature = "field-extractors")]
 mod hidden;
 mod json;
