@@ -42,7 +42,7 @@ pub use error::{single_error, Error};
 pub use from_request::{FieldError, Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Hidden, Optional, Required};
-pub use ft_derive::{data, form, migration, processor};
+pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
