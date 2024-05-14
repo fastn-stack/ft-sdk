@@ -31,7 +31,7 @@ pub mod processor;
 mod query;
 mod rng;
 pub mod utils;
-pub mod wrapped_handler;
+pub mod wrapped_processor;
 
 pub use cookie::{Cookie, CookieExt};
 

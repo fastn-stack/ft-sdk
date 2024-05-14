@@ -9,11 +9,11 @@ pub fn processor(
 }
 
 #[proc_macro_attribute]
-pub fn wrapping_processor(
+pub fn wrapped_processor(
     _attr: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    handle(item, "processor", "wrapped_handler")
+    handle(item, "processor", "wrapped_processor")
 }
 
 #[proc_macro_attribute]
