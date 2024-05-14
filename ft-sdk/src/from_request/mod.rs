@@ -39,7 +39,10 @@ impl FromRequest for ft_sdk::Connection {
 }
 
 // TODO: need better name
-pub trait WrappedFromRequest<O>: Sized {
+pub trait WrappedFromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;
-    fn wrap(self, output: O) -> Result<O, ft_sdk::Error>;
+    fn wrap(
+        self,
+        output: ft_sdk::processor::Output,
+    ) -> Result<ft_sdk::processor::Output, ft_sdk::Error>;
 }
