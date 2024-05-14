@@ -70,3 +70,81 @@ where
         t.wrap(o)
     }
 }
+
+impl<F, T1, T2, T3, T4> WrappedHandler<((), T1, T2, T3, T4)> for F
+where
+    F: Fn(&mut T1, T2, T3, T4) -> Result<ft_sdk::processor::Output, ft_sdk::Error>,
+    T1: ft_sdk::WrappedFromRequest,
+    T2: ft_sdk::FromRequest,
+    T3: ft_sdk::FromRequest,
+    T4: ft_sdk::FromRequest,
+{
+    fn call(
+        self,
+        req: &http::Request<serde_json::Value>,
+    ) -> Result<ft_sdk::processor::Output, ft_sdk::Error> {
+        // TODO: try to parse both t1 and t2 and return result for both together to clients
+        let mut t = T1::from_request(req)?;
+        let o = (self)(
+            &mut t,
+            T2::from_request(req)?,
+            T3::from_request(req)?,
+            T4::from_request(req)?,
+        )?;
+        t.wrap(o)
+    }
+}
+
+impl<F, T1, T2, T3, T4, T5> WrappedHandler<((), T1, T2, T3, T4, T5)> for F
+where
+    F: Fn(&mut T1, T2, T3, T4, T5) -> Result<ft_sdk::processor::Output, ft_sdk::Error>,
+    T1: ft_sdk::WrappedFromRequest,
+    T2: ft_sdk::FromRequest,
+    T3: ft_sdk::FromRequest,
+    T4: ft_sdk::FromRequest,
+    T5: ft_sdk::FromRequest,
+{
+    fn call(
+        self,
+        req: &http::Request<serde_json::Value>,
+    ) -> Result<ft_sdk::processor::Output, ft_sdk::Error> {
+        // TODO: try to parse both t1 and t2 and return result for both together to clients
+        let mut t = T1::from_request(req)?;
+        let o = (self)(
+            &mut t,
+            T2::from_request(req)?,
+            T3::from_request(req)?,
+            T4::from_request(req)?,
+            T5::from_request(req)?,
+        )?;
+        t.wrap(o)
+    }
+}
+
+impl<F, T1, T2, T3, T4, T5, T6> WrappedHandler<((), T1, T2, T3, T4, T5, T6)> for F
+where
+    F: Fn(&mut T1, T2, T3, T4, T5, T6) -> Result<ft_sdk::processor::Output, ft_sdk::Error>,
+    T1: ft_sdk::WrappedFromRequest,
+    T2: ft_sdk::FromRequest,
+    T3: ft_sdk::FromRequest,
+    T4: ft_sdk::FromRequest,
+    T5: ft_sdk::FromRequest,
+    T6: ft_sdk::FromRequest,
+{
+    fn call(
+        self,
+        req: &http::Request<serde_json::Value>,
+    ) -> Result<ft_sdk::processor::Output, ft_sdk::Error> {
+        // TODO: try to parse both t1 and t2 and return result for both together to clients
+        let mut t = T1::from_request(req)?;
+        let o = (self)(
+            &mut t,
+            T2::from_request(req)?,
+            T3::from_request(req)?,
+            T4::from_request(req)?,
+            T5::from_request(req)?,
+            T6::from_request(req)?,
+        )?;
+        t.wrap(o)
+    }
+}
