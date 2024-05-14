@@ -3,17 +3,15 @@ members = [
     "examples/001-hello-world",
     "examples/002-handling-form",
     "examples/003-migration",
-    "examples/hello-world-diesel",
     # "examples/sample-pg",
     # "examples/sample-sqlite",
-    "examples/auth-provider",
+    # "examples/auth-provider",
     "ft-derive",
     "ft-sdk",
     "ft-sys",
     "ft-sys-shared",
-    "f",
 ]
-exclude = ["examples"]
+exclude = ["examples", "f"]
 resolver = "2"
 
 [workspace.package]

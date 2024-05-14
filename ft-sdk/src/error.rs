@@ -25,6 +25,9 @@ pub enum Error {
 
     #[error("generic error {0}")]
     Generic(String),
+
+    #[error("unauthorised {0}")]
+    Unauthorised(String),
 }
 
 impl From<Error> for http::Response<bytes::Bytes> {
