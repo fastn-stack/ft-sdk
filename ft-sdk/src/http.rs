@@ -1,26 +1,5 @@
 pub use ft_sys::http::{current_request, send, send_response};
 
-#[derive(Debug)]
-pub enum Output {
-    Http(http::Response<bytes::Bytes>),
-    Reload,
-    Redirect(String),
-    Data(ft_sdk::FrontendData),
-    Json(serde_json::Value),
-}
-
-impl From<Output> for ::std::result::Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
-    fn from(o: Output) -> Self {
-        match o {
-            Output::Http(r) => Ok(r),
-            Output::Reload => json_(serde_json::json!({"reload": true})),
-            Output::Redirect(url) => json_(serde_json::json!({"redirect": url })),
-            Output::Data(data) => json_(serde_json::json!({"data": data })),
-            Output::Json(j) => json_(j),
-        }
-    }
-}
-
 // pub trait IntoCookie {
 //     fn into_cookie(self) -> http::HeaderValue;
 // }
@@ -188,16 +167,6 @@ impl From<Output> for ::std::result::Result<http::Response<bytes::Bytes>, ft_sdk
 //         assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
 //     }
 // }
-
-pub type Result = std::result::Result<Output, ft_sdk::Error>;
-
-#[derive(Debug, thiserror::Error)]
-pub enum JsonError {
-    #[error("serde_json error {0}")]
-    Serde(#[from] serde_json::Error),
-    #[error("http error {0}")]
-    Http(#[from] http::Error),
-}
 
 pub(crate) fn json_<T: serde::Serialize>(
     t: T,

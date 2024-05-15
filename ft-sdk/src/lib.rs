@@ -36,7 +36,7 @@ pub use email::{send_email, EmailError};
 pub use error::{single_error, FieldError};
 pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
 #[cfg(feature = "field-extractors")]
-pub use from_request::{Hidden, Optional, Required};
+pub use from_request::{Hidden, Optional, Query, Required};
 pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
