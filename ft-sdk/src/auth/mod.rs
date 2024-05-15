@@ -107,7 +107,7 @@ pub fn session_providers() -> Vec<String> {
 }
 
 pub fn ud(
-    req: &http::Request<bytes::Bytes>,
+    req: &http::Request<serde_json::Value>,
     conn: &mut ft_sdk::Connection,
 ) -> Option<ft_sys::UserData> {
     use db::{fastn_session, fastn_user};

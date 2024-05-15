@@ -2,6 +2,7 @@
 mod cookie;
 mod field_error;
 mod form;
+pub mod handler;
 mod headers;
 #[cfg(feature = "field-extractors")]
 mod hidden;
@@ -14,6 +15,7 @@ mod path;
 mod query;
 #[cfg(feature = "field-extractors")]
 mod required;
+pub mod wrapped_processor;
 
 pub use field_error::FieldError;
 pub use form::Form;

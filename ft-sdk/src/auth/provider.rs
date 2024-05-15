@@ -45,7 +45,7 @@ impl From<AuthError> for ft_sdk::Error {
     }
 }
 
-/// returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
+/// Returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
 ///
 /// We check across data from all providers if `provider` is `None`, else we only check
 /// the data from the provider.

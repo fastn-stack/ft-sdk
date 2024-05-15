@@ -89,7 +89,8 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
         syn::Ident::new(format!("{}__entrypoint", fn_name).as_str(), fn_name.span());
     let return_type: syn::Type =
         syn::parse_str(format!("ft_sdk::{kind}::Result").as_str()).unwrap();
-    let handler: syn::Path = syn::parse_str(format!("ft_sdk::{handler}::handle").as_str()).unwrap();
+    let handler: syn::Path =
+        syn::parse_str(format!("ft_sdk::from_request::{handler}::handle").as_str()).unwrap();
 
     match sig.output {
         syn::ReturnType::Default => {

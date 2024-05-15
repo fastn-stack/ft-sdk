@@ -1,7 +1,7 @@
 // https://github.com/alexpusch/rust-magic-patterns/blob/master/axum-style-magic-function-param/Readme.md
 // https://joshchoo.com/writing/how-actix-web-app-state-and-data-extractor-works
 pub fn handle<T, H: WrappedHandler<T>>(h: H) {
-    let req = ft_sdk::handler::current_request();
+    let req = ft_sdk::from_request::handler::current_request();
     let resp = match h.call(&req) {
         Ok(resp) => resp.into(),
         Err(e) => {
