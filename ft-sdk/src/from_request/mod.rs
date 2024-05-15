@@ -40,5 +40,5 @@ impl FromRequest for ft_sdk::Connection {
 
 // TODO: need better name
 pub trait WrappedFromRequest: FromRequest {
-    fn wrap(self, output: serde_json::Value) -> Result<ft_sdk::processor::Output, ft_sdk::Error>;
+    fn wrap(self, output: serde_json::Value) -> Result<serde_json::Value, ft_sdk::Error>;
 }
