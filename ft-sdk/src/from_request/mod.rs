@@ -1,6 +1,5 @@
 #[cfg(feature = "field-extractors")]
 mod cookie;
-mod field_error;
 mod form;
 pub mod handler;
 mod headers;
@@ -17,7 +16,6 @@ mod query;
 mod required;
 pub mod wrapped_processor;
 
-pub use field_error::FieldError;
 pub use form::Form;
 pub use mountpoint::Mountpoint;
 pub use path::Path;

@@ -1,41 +1,30 @@
-pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> Error {
-    let mut errors = ft_sdk::FormError::new();
-    errors.insert(k.as_ref().to_string(), e.as_ref().to_string());
-    Error::Form(errors)
-}
-
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("serde_json error {0}")]
-    Serde(#[from] serde_json::Error),
-
-    #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("diesel error {0}")]
-    Diesel(#[from] diesel::result::Error),
-
-    #[error("http error")]
-    Response(http::Response<bytes::Bytes>),
-
-    #[error("form error {0:?}")]
-    Form(ft_sdk::FormError),
-
-    #[cfg(any(feature = "postgres", feature = "sqlite"))]
-    #[error("connection error {0}")]
-    Connection(#[from] ft_sdk::ConnectionError),
-
-    #[error("generic error {0}")]
-    Generic(String),
-
-    #[error("unauthorised {0}")]
-    Unauthorised(String),
+pub enum FieldError {
+    #[error("single error {0}: {1}")]
+    Single(String, String),
+    #[error("multi error {0:?}")]
+    Multi(ft_sdk::FormError),
 }
 
-impl From<Error> for http::Response<bytes::Bytes> {
-    fn from(e: Error) -> Self {
-        match e {
-            Error::Response(r) => r,
-            Error::Form(errors) => ft_sdk::http::json_(serde_json::json!({"errors": errors})),
-            _ => ft_sdk::server_error!("error: {e:?}"),
-        }
-    }
+pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> FieldError {
+    FieldError::Single(k.as_ref().to_string(), e.as_ref().to_string())
+}
+
+pub fn handle_error(e: ft_sdk::Error) -> http::Response<bytes::Bytes> {
+    // TODO: check if http response is in context
+    // TODO: check if http::StatusCode is in context
+    // match e {
+    //     ft_sdk::Error::FieldError(e) => {
+    //         let mut m = serde_json::Map::new();
+    //         for (k, v) in e.0 {
+    //             m.insert(k, v);
+    //         }
+    //         crate::http::json_(serde_json::json!({"errors": m}))
+    //     }
+    //     _ => crate::server_error!("unhandled error: {e:?}"),
+    // }
+    http::Response::builder()
+        .status(http::StatusCode::INTERNAL_SERVER_ERROR)
+        .body(format!("json error: {e:?}\n").into())
+        .unwrap()
 }

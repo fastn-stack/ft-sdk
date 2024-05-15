@@ -6,7 +6,7 @@ pub enum Output {
     Reload,
 }
 
-impl From<Output> for http::Response<bytes::Bytes> {
+impl From<Output> for std::result::Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
     fn from(o: Output) -> Self {
         match o {
             Output::Redirect(url) => crate::http::json_(serde_json::json!({"redirect": url })),

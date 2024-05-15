@@ -1,14 +1,13 @@
 // https://github.com/alexpusch/rust-magic-patterns/blob/master/axum-style-magic-function-param/Readme.md
 // https://joshchoo.com/writing/how-actix-web-app-state-and-data-extractor-works
-pub fn handle<T, O: Into<http::Response<bytes::Bytes>>, H: Handler<T, O>>(h: H) {
+pub fn handle<T, O: Into<Result<http::Response<bytes::Bytes>, ft_sdk::Error>>, H: Handler<T, O>>(
+    h: H,
+) {
     let req = current_request();
-    let resp = match h.call(&req) {
-        Ok(resp) => resp.into(),
-        Err(e) => {
-            ft_sdk::println!("Error: {:?}", e);
-            e.into()
-        }
-    };
+    let resp = h.call(&req).and_then(Into::into).unwrap_or_else(|e| {
+        ft_sdk::println!("Error: {:?}", e);
+        ft_sdk::error::handle_error(e)
+    });
     ft_sdk::http::send_response(resp);
 }
 

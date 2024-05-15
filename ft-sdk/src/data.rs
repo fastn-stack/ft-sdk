@@ -5,10 +5,10 @@ pub enum Output {
     Json(serde_json::Value),
 }
 
-impl From<Output> for http::Response<bytes::Bytes> {
+impl From<Output> for std::result::Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
     fn from(o: Output) -> Self {
         match o {
-            Output::Json(j) => crate::http::json_(j),
+            Output::Json(j) => Ok(crate::http::json_(j)?),
         }
     }
 }

@@ -57,7 +57,7 @@ pub fn check_if_verified_email_exists(
     use diesel::dsl::{count, sql};
     use diesel::prelude::*;
     use diesel::sql_types::{Bool, Text};
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     // TODO: 'email' should come from `_provider`
     #[cfg(not(feature = "postgres"))]
@@ -96,7 +96,7 @@ pub fn get_user_data_by_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     // TODO: don't load all the users, just load the user with the email
     // this is until we figure out why binds are not properly working
@@ -161,7 +161,7 @@ pub fn create_user(
     data: Vec<ft_sdk::auth::UserData>,
 ) -> Result<ft_sdk::UserId, AuthError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     let mut data = data;
     let now = ft_sys::env::now();
@@ -214,7 +214,7 @@ pub fn login(
     // If the user is already logged in, and the provider id is different, this id would be added as
     // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_session;
+    use ft_sdk::auth::schema::fastn_session;
     use rand_core::RngCore;
 
     let now = ft_sys::env::now();
@@ -304,7 +304,7 @@ pub fn update_user(
     // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::auth::UserId, AuthError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     let mut data = data;
     data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));

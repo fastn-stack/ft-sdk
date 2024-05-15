@@ -24,10 +24,7 @@ impl<const KEY: &'static str> PartialEq<&str> for Optional<KEY, String> {
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned> Optional<KEY, T> {
     pub fn error<S: AsRef<str>>(self, msg: S) -> ft_sdk::FieldError {
-        ft_sdk::FieldError {
-            field: KEY,
-            error: msg.as_ref().to_string(),
-        }
+        ft_sdk::single_error(KEY, msg)
     }
 }
 
@@ -36,11 +33,9 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> ft_sdk::FromReques
 {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         match req.body() {
-            serde_json::Value::Null => Err(ft_sdk::FieldError {
-                field: KEY,
-                error: "body is Null, expected Object".to_string(),
+            serde_json::Value::Null => {
+                Err(ft_sdk::single_error(KEY, "body is Null, expected Object").into())
             }
-            .into()),
             serde_json::Value::Object(map) => {
                 if let Some(value) = map.get(KEY) {
                     Ok(serde_json::from_value(value.clone())
@@ -50,11 +45,7 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> ft_sdk::FromReques
                     Ok(Optional(None))
                 }
             }
-            _ => Err(ft_sdk::FieldError {
-                field: KEY,
-                error: "body is not json object".to_string(),
-            }
-            .into()),
+            _ => Err(ft_sdk::single_error(KEY, "body is not json object").into()),
         }
     }
 }

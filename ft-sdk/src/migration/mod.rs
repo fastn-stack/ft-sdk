@@ -17,17 +17,6 @@ pub enum MigrationError {
     ApplyMigration(#[from] ApplyMigrationError),
 }
 
-impl From<MigrationError> for ft_sdk::Error {
-    fn from(e: MigrationError) -> Self {
-        ft_sdk::Error::Response(
-            ::http::Response::builder()
-                .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
-                .body(format!("migration error: {e:?}\n").into())
-                .unwrap(),
-        )
-    }
-}
-
 pub type FnMigration = (
     i32,
     &'static str,

@@ -29,11 +29,12 @@ pub mod utils;
 
 pub use cookie::{Cookie, CookieExt};
 
+pub use anyhow::Error;
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use error::{single_error, Error};
-pub use from_request::{FieldError, Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
+pub use error::{single_error, FieldError};
+pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Hidden, Optional, Required};
 pub use ft_derive::{data, form, migration, processor, wrapped_processor};

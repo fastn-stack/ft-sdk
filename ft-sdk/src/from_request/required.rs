@@ -24,10 +24,7 @@ impl<const KEY: &'static str> PartialEq<&str> for Required<KEY, String> {
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned> Required<KEY, T> {
     pub fn error<S: AsRef<str>>(&self, msg: S) -> ft_sdk::FieldError {
-        ft_sdk::FieldError {
-            field: KEY,
-            error: msg.as_ref().to_string(),
-        }
+        ft_sdk::single_error(KEY, msg)
     }
 }
 
@@ -58,38 +55,24 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::
 {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         match req.body() {
-            serde_json::Value::Null => Err(ft_sdk::FieldError {
-                field: KEY,
-                error: "body is Null, expected Object".to_string(),
+            serde_json::Value::Null => {
+                Err(ft_sdk::single_error(KEY, "body is Null, expected Object").into())
             }
-            .into()),
             serde_json::Value::Object(map) => {
                 if let Some(value) = map.get(KEY) {
                     if std::any::TypeId::of::<T>() == std::any::TypeId::of::<String>() {
                         if let serde_json::Value::String(s) = value {
                             if s.is_empty() {
-                                return Err(ft_sdk::FieldError {
-                                    field: KEY,
-                                    error: "field is empty".to_string(),
-                                }
-                                .into());
+                                return Err(ft_sdk::single_error(KEY, "field is empty").into());
                             }
                         }
                     }
                     Ok(serde_json::from_value(value.clone()).map(Required)?)
                 } else {
-                    Err(ft_sdk::FieldError {
-                        field: KEY,
-                        error: "missing field".to_string(),
-                    }
-                    .into())
+                    Err(ft_sdk::single_error(KEY, "missing field").into())
                 }
             }
-            _ => Err(ft_sdk::FieldError {
-                field: KEY,
-                error: "body is not json object".to_string(),
-            }
-            .into()),
+            _ => Err(ft_sdk::single_error(KEY, "body is not json object").into()),
         }
     }
 }
