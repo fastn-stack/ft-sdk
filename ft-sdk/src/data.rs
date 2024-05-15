@@ -1,4 +1,4 @@
-pub type Result = std::result::Result<Output, ft_sdk::Error>;
+pub type Result = std::result::Result<ft_sdk::http::CHR<Output>, ft_sdk::Error>;
 
 #[derive(Debug)]
 pub enum Output {
@@ -14,5 +14,7 @@ impl From<Output> for std::result::Result<http::Response<bytes::Bytes>, ft_sdk::
 }
 
 pub fn json<T: serde::Serialize>(t: T) -> Result {
-    Ok(Output::Json(serde_json::to_value(t)?))
+    Ok(ft_sdk::http::CHR::new(Output::Json(serde_json::to_value(
+        t,
+    )?)))
 }

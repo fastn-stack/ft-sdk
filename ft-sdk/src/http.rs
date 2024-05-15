@@ -1,5 +1,31 @@
 pub use ft_sys::http::{current_request, send, send_response};
 
+#[derive(Debug)]
+pub struct CHR<O> {
+    pub(crate) cookies: Vec<http::HeaderValue>,
+    pub(crate) headers: Vec<(http::header::HeaderName, http::HeaderValue)>,
+    pub(crate) response: O,
+}
+
+impl<O> CHR<O> {
+    pub fn new(response: O) -> Self {
+        Self {
+            cookies: Vec::new(),
+            headers: Vec::new(),
+            response,
+        }
+    }
+}
+
+pub fn chr(
+    _cookies: Vec<http::HeaderValue>,
+    _headers: Vec<(http::header::HeaderName, http::HeaderValue)>,
+    response: http::Response<bytes::Bytes>,
+) -> http::Response<bytes::Bytes> {
+    // TODO: handle cookies and headers
+    response
+}
+
 // pub trait IntoCookie {
 //     fn into_cookie(self) -> http::HeaderValue;
 // }
