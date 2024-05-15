@@ -1,24 +1,24 @@
 pub trait Page<L>: serde::Serialize {
-    fn page(c: &mut L, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
+    fn page(c: &mut L, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::Error>
     where
         Self: Sized;
 }
 
 pub trait Action<L> {
-    fn validate(c: &mut L, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
+    fn validate(c: &mut L, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::Error>
     where
         Self: Sized;
     fn action(
         &self,
         c: &mut L,
         conn: &mut ft_sdk::Connection,
-    ) -> Result<ft_sdk::http::Output, ft_sdk::http::Error>
+    ) -> Result<ft_sdk::http::Output, ft_sdk::Error>
     where
         Self: Sized;
 }
 
 pub trait Layout {
-    fn from_in(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::http::Error>
+    fn from_in(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> Result<Self, ft_sdk::Error>
     where
         Self: Sized;
 

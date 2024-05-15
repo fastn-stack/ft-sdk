@@ -1,0 +1,12 @@
+[package]
+name = "handling-form"  # make sure name stays in sync with build.sh
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ft-sdk = { version = "0.1", path = "../../ft-sdk", features = ["field-extractors"] }
+http = "1"
+bytes = "1"

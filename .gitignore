@@ -2,5 +2,7 @@
 target
 *.sqlite
 *.wasm
-
+.fastn
+.packages
 .direnv
+.DS_Store

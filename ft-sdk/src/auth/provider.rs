@@ -41,9 +41,9 @@ pub enum AuthError {
     IdentityExists,
 }
 
-impl From<AuthError> for ft_sdk::http::Error {
+impl From<AuthError> for ft_sdk::Error {
     fn from(e: AuthError) -> Self {
-        ft_sdk::http::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
+        ft_sdk::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
     }
 }
 
@@ -317,9 +317,9 @@ pub enum LoginError {
 }
 
 // TODO: make this a derive
-impl From<LoginError> for ft_sdk::http::Error {
+impl From<LoginError> for ft_sdk::Error {
     fn from(e: LoginError) -> Self {
-        ft_sdk::http::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
+        ft_sdk::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
     }
 }
 

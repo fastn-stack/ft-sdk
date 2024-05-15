@@ -16,7 +16,7 @@ impl In {
     pub fn from_request(
         req: http::Request<bytes::Bytes>,
         conn: &mut ft_sdk::Connection,
-    ) -> Result<Self, ft_sdk::http::Error> {
+    ) -> Result<Self, ft_sdk::Error> {
         Ok(In {
             req: req.clone(),
             now: ft_sys::now(),

@@ -4,13 +4,20 @@
 //! FifthTry Apps.
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
+#![cfg_attr(feature = "field-extractors", feature(adt_const_params))]
+#![cfg_attr(feature = "field-extractors", allow(incomplete_features))]
 
 extern crate self as ft_sdk;
 
 pub mod auth;
 pub mod cookie;
 mod crypto;
+pub mod data;
 mod email;
+mod error;
+pub mod form;
+pub mod from_request;
+pub mod handler;
 pub mod http;
 mod in_;
 mod json_body;
@@ -20,15 +27,22 @@ mod layout;
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 mod migration;
+pub mod processor;
 mod query;
 mod rng;
 pub mod utils;
+pub mod wrapped_processor;
+
 pub use cookie::{Cookie, CookieExt};
 
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use ft_derive::handle_http;
+pub use error::{single_error, Error};
+pub use from_request::{FieldError, Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
+#[cfg(feature = "field-extractors")]
+pub use from_request::{Hidden, Optional, Required};
+pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
@@ -41,7 +55,7 @@ pub use layout::{Action, Layout, Page};
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub use migration::{migrate, migrate_simple_};
+pub use migration::{migrate, MigrationError};
 pub use query::{Query, QueryExt};
 pub use rng::Rng;
 

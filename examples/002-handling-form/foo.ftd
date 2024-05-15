@@ -1,0 +1,15 @@
+-- import: fastn/processors
+
+-- string username:
+$processor$: processors.request-data
+
+-- ftd.row:
+spacing.fixed.px: 5
+
+-- ftd.text: hello,
+-- ftd.text: $username
+
+-- end: ftd.row
+
+-- ftd.text: go back
+link: /

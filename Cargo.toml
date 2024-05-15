@@ -1,17 +1,17 @@
 [workspace]
 members = [
     "examples/001-hello-world",
-    "examples/002-form-handling",
-    "examples/hello-world-diesel",
+    "examples/002-handling-form",
+    "examples/003-migration",
     # "examples/sample-pg",
     # "examples/sample-sqlite",
-    "examples/auth-provider",
+    # "examples/auth-provider",
     "ft-derive",
     "ft-sdk",
     "ft-sys",
     "ft-sys-shared",
 ]
-exclude = ["examples"]
+exclude = ["examples", "f"]
 resolver = "2"
 
 [workspace.package]
@@ -21,9 +21,9 @@ authors = [
     "Rithik Seth <rithik@fifthtry.com>",
 ]
 edition = "2021"
-description = "ft: FifthTry Backend"
+description = "ft-sdk: Rust SDK for fastn and FifthTry Platform"
 license = "BSD-3-Clause"
-repository = "https://github.com/FifthTry/ft"
+repository = "https://github.com/FifthTry/ft-sdk"
 homepage = "https://FifthTry.com"
 
 
