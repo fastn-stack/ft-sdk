@@ -32,7 +32,10 @@ where
     ) -> Result<ft_sdk::processor::Output, ft_sdk::Error> {
         let mut t = T::from_request(req)?;
         let o = (self)(&mut t)?;
-        t.wrap(o)
+        match o {
+            ft_sdk::processor::Output::Json(j) => t.wrap(j),
+            _ => Ok(o),
+        }
     }
 }
 
@@ -49,7 +52,10 @@ where
         // TODO: try to parse both t1 and t2 and return result for both together to clients
         let mut t = T1::from_request(req)?;
         let o = (self)(&mut t, T2::from_request(req)?)?;
-        t.wrap(o)
+        match o {
+            ft_sdk::processor::Output::Json(j) => t.wrap(j),
+            _ => Ok(o),
+        }
     }
 }
 
@@ -67,7 +73,10 @@ where
         // TODO: try to parse both t1 and t2 and return result for both together to clients
         let mut t = T1::from_request(req)?;
         let o = (self)(&mut t, T2::from_request(req)?, T3::from_request(req)?)?;
-        t.wrap(o)
+        match o {
+            ft_sdk::processor::Output::Json(j) => t.wrap(j),
+            _ => Ok(o),
+        }
     }
 }
 
@@ -91,7 +100,10 @@ where
             T3::from_request(req)?,
             T4::from_request(req)?,
         )?;
-        t.wrap(o)
+        match o {
+            ft_sdk::processor::Output::Json(j) => t.wrap(j),
+            _ => Ok(o),
+        }
     }
 }
 
@@ -117,7 +129,10 @@ where
             T4::from_request(req)?,
             T5::from_request(req)?,
         )?;
-        t.wrap(o)
+        match o {
+            ft_sdk::processor::Output::Json(j) => t.wrap(j),
+            _ => Ok(o),
+        }
     }
 }
 
@@ -145,6 +160,9 @@ where
             T5::from_request(req)?,
             T6::from_request(req)?,
         )?;
-        t.wrap(o)
+        match o {
+            ft_sdk::processor::Output::Json(j) => t.wrap(j),
+            _ => Ok(o),
+        }
     }
 }
