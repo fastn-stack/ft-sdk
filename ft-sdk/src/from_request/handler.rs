@@ -24,6 +24,7 @@ pub fn current_request() -> Result<http::Request<serde_json::Value>, ft_sdk::Err
     if b.as_ref() == b"" {
         return Ok(http::Request::from_parts(h, serde_json::Value::Null));
     }
+    // todo: what if content type is not application/json?
     let b = serde_json::from_slice(&b)?;
     Ok(http::Request::from_parts(h, b))
 }

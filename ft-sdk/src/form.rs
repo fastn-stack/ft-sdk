@@ -17,8 +17,8 @@ impl From<ft_sdk::http::CHR<Output>>
         }: ft_sdk::http::CHR<Output>,
     ) -> Self {
         let response = match response {
-            Output::Redirect(url) => crate::http::json_(serde_json::json!({"redirect": url })),
-            Output::Reload => crate::http::json_(serde_json::json!({"reload": true })),
+            Output::Redirect(url) => crate::http::json(serde_json::json!({"redirect": url })),
+            Output::Reload => crate::http::json(serde_json::json!({"reload": true })),
         }?;
         Ok(ft_sdk::http::chr(cookies, headers, response))
     }

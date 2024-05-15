@@ -8,7 +8,7 @@ pub struct CHR<O> {
 }
 
 impl<O> CHR<O> {
-    pub fn new(response: O) -> Self {
+    pub(crate) fn new(response: O) -> Self {
         Self {
             cookies: Vec::new(),
             headers: Vec::new(),
@@ -17,7 +17,7 @@ impl<O> CHR<O> {
     }
 }
 
-pub fn chr(
+pub(crate) fn chr(
     _cookies: Vec<http::HeaderValue>,
     _headers: Vec<(http::header::HeaderName, http::HeaderValue)>,
     response: http::Response<bytes::Bytes>,
@@ -194,9 +194,9 @@ pub fn chr(
 //     }
 // }
 
-pub(crate) fn json_<T: serde::Serialize>(
+pub(crate) fn json<T: serde::Serialize>(
     t: T,
-) -> std::result::Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
+) -> Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
     let d = match serde_json::to_string(&t) {
         Ok(d) => d,
         Err(e) => return Err(ft_sdk::server_error!("json error: {e:?}")),
