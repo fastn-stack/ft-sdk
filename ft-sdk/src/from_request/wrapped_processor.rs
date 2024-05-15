@@ -1,7 +1,12 @@
-// https://github.com/alexpusch/rust-magic-patterns/blob/master/axum-style-magic-function-param/Readme.md
-// https://joshchoo.com/writing/how-actix-web-app-state-and-data-extractor-works
 pub fn handle<T, H: WrappedHandler<T>>(h: H) {
-    let req = ft_sdk::from_request::handler::current_request();
+    let req = match ft_sdk::from_request::handler::current_request() {
+        Ok(v) => v,
+        Err(e) => {
+            ft_sdk::println!("Error parsing request: {:?}", e);
+            ft_sdk::error::handle_error(e);
+            return;
+        }
+    };
     let resp = h.call(&req).and_then(Into::into).unwrap_or_else(|e| {
         ft_sdk::println!("Error: {:?}", e);
         ft_sdk::error::handle_error(e)
@@ -32,6 +37,7 @@ fn wrap<T: ft_sdk::WrappedFromRequest>(
         response,
     })
 }
+
 // why is the first element in all these, e.g. WrappedHandler<((), T), O> a ()? If we remove
 // () from it, we start getting compilation error.
 impl<F, T> WrappedHandler<((), T)> for F
