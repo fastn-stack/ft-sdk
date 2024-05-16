@@ -1,13 +1,17 @@
-#[derive(Debug, thiserror::Error)]
-pub enum FieldError {
+#[derive(Debug, thiserror::Error, PartialEq)]
+pub enum SpecialError {
     #[error("single error {0}: {1}")]
     Single(String, String),
     #[error("multi error {0:?}")]
     Multi(ft_sdk::FormError),
+    #[error("not found: {0}")]
+    NotFound(String),
+    #[error("unauthorised: {0}")]
+    Unauthorised(String),
 }
 
-pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> FieldError {
-    FieldError::Single(k.as_ref().to_string(), e.as_ref().to_string())
+pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> SpecialError {
+    SpecialError::Single(k.as_ref().to_string(), e.as_ref().to_string())
 }
 
 fn je(r: Result<http::Response<bytes::Bytes>, ft_sdk::Error>) -> http::Response<bytes::Bytes> {
@@ -20,20 +24,21 @@ fn je(r: Result<http::Response<bytes::Bytes>, ft_sdk::Error>) -> http::Response<
 }
 
 pub fn handle_error(e: anyhow::Error) -> http::Response<bytes::Bytes> {
-    if let Some(status) = e.downcast_ref::<http::StatusCode>() {
-        ft_sdk::println!("status code: {status}");
-        return http::Response::builder()
-            .status(*status)
-            .body(format!("status code: {status}\n").into())
-            .unwrap();
-    }
-    if let Some(field_error) = e.downcast_ref::<FieldError>() {
-        ft_sdk::println!("field error: {field_error}");
+    if let Some(field_error) = e.downcast_ref::<SpecialError>() {
+        ft_sdk::println!("special error: {field_error}");
         return match field_error {
-            FieldError::Single(k, se) => {
+            SpecialError::Single(k, se) => {
                 je(ft_sdk::http::json(serde_json::json!({"errors": {k: se}})))
             }
-            FieldError::Multi(me) => je(ft_sdk::http::json(serde_json::json!({"errors": me}))),
+            SpecialError::Multi(me) => je(ft_sdk::http::json(serde_json::json!({"errors": me}))),
+            SpecialError::NotFound(msg) => http::Response::builder()
+                .status(http::StatusCode::NOT_FOUND)
+                .body(format!("page not found: {msg}\n").into())
+                .unwrap(),
+            SpecialError::Unauthorised(msg) => http::Response::builder()
+                .status(http::StatusCode::UNAUTHORIZED)
+                .body(format!("unauthorised: {msg}\n").into())
+                .unwrap(),
         };
     }
     http::Response::builder()
@@ -92,7 +97,7 @@ mod test {
     }
 
     fn first2() -> Result<(), anyhow::Error> {
-        Err(EFirst::Yo)? // .context(Status::SeeOther)
+        Err(EFirst::Yo).context(Status::SeeOther)
     }
 
     #[test]
@@ -105,5 +110,55 @@ mod test {
 
         // looks like we have to rethink our context approach
         assert!(true)
+    }
+
+    fn outer3() -> Result<(), anyhow::Error> {
+        Ok(do_something()?)
+    }
+
+    #[derive(thiserror::Error, Debug)]
+    enum DoSomethingError {
+        #[error("get user error {0}")]
+        // [from] important
+        GetUser(#[from] GetUserError),
+    }
+
+    fn do_something() -> Result<(), DoSomethingError> {
+        get_user()?;
+        Ok(())
+    }
+
+    #[derive(thiserror::Error, Debug)]
+    enum GetUserError {
+        #[error("unauthorised {0}")]
+        // note that [from] is important here, else error is not added to error chain
+        Unauthorised(#[from] super::SpecialError),
+    }
+
+    fn get_user() -> Result<i32, GetUserError> {
+        Err(GetUserError::Unauthorised(
+            super::SpecialError::Unauthorised("yo".to_string()),
+        ))
+    }
+
+    #[test]
+    fn t3() {
+        let e = outer3().unwrap_err();
+
+        assert_eq!(e.downcast_ref::<super::SpecialError>(), None);
+        let mut iter = e.chain();
+        assert_eq!(
+            iter.next().unwrap().downcast_ref::<super::SpecialError>(),
+            None
+        );
+        assert_eq!(
+            iter.next().unwrap().downcast_ref::<super::SpecialError>(),
+            None
+        );
+        assert_eq!(
+            iter.next().unwrap().downcast_ref::<super::SpecialError>(),
+            Some(super::SpecialError::Unauthorised("yo".to_string())).as_ref()
+        );
+        assert!(iter.next().is_none());
     }
 }
