@@ -28,6 +28,7 @@ pub mod utils;
 
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
+pub use chr::IntoCookie;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
 pub use error::{not_found_, single_error, unauthorised_, SpecialError};
