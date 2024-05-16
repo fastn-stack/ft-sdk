@@ -31,9 +31,9 @@ pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
 pub use error::{not_found_, single_error, unauthorised_, SpecialError};
-pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
 #[cfg(feature = "field-extractors")]
-pub use from_request::{Hidden, Optional, Query, Required};
+pub use from_request::{Cookie, Hidden, Optional, Query, Required};
+pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
 pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;

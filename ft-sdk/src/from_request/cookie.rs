@@ -1,22 +1,11 @@
-pub struct Cookie<const KEY: &'static str>(Option<String>);
+pub struct Cookie<const KEY: &'static str>(pub Option<String>);
 
 impl<const KEY: &'static str> std::fmt::Display for Cookie<KEY> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.0)
-    }
-}
-
-impl<const KEY: &'static str> PartialEq<&str> for Cookie<KEY> {
-    fn eq(&self, other: &&str) -> bool {
-        self.0 == *other
-    }
-}
-
-impl<const KEY: &'static str> std::ops::Deref for Cookie<KEY> {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+        match self.0 {
+            Some(ref v) => f.write_str(v),
+            None => f.write_str("None"),
+        }
     }
 }
 

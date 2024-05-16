@@ -107,11 +107,10 @@ pub fn session_providers() -> Vec<String> {
 }
 
 pub fn ud(
-    req: &http::Request<serde_json::Value>,
+    cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
 ) -> Option<ft_sys::UserData> {
     use diesel::prelude::*;
-    use ft_sdk::CookieExt;
     use schema::{fastn_session, fastn_user};
 
     let debug_user = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()).map(|v| {
@@ -129,8 +128,8 @@ pub fn ud(
         return debug_user;
     }
 
-    let session_cookie = req.cookie(SESSION_KEY)?;
-    let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie).ok()?;
+    let session_cookie = cookie.0?;
+    let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
     let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
 
     let (user_id, user_data) = conn
