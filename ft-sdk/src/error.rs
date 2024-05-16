@@ -76,6 +76,9 @@ mod test {
             *e.downcast_ref::<http::StatusCode>().unwrap(),
             http::StatusCode::SEE_OTHER
         );
+        // in this example .chain() can not be used as .downcast_ref() on iter returned
+        // by chain requires std::error::Error, and http::StatusCode does not implement
+        // std::error::Error trait.
     }
 
     #[derive(thiserror::Error, Debug, PartialEq)]
@@ -108,7 +111,10 @@ mod test {
             println!("status: {:?}", cause.downcast_ref::<Status>());
         }
 
-        // looks like we have to rethink our context approach
+        // In this example, the code compiles, but it only finds the status attached
+        // by the first function that converts non anyhow::Error to anyhow::Error using
+        // the .context(), as shown in first2(). Status attached by out2 and outer2 are
+        // simply lost.
         assert!(true)
     }
 
@@ -160,5 +166,8 @@ mod test {
             Some(super::SpecialError::Unauthorised("yo".to_string())).as_ref()
         );
         assert!(iter.next().is_none());
+
+        // This example works, but end-user has to make sure std::error::Error traits
+        // source() works correctly (here we have used `[from]` to ensure that)
     }
 }
