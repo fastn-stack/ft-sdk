@@ -41,12 +41,6 @@ pub enum AuthError {
     IdentityExists,
 }
 
-impl From<AuthError> for ft_sdk::Error {
-    fn from(e: AuthError) -> Self {
-        ft_sdk::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
-    }
-}
-
 /// Returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
 ///
 /// We check across data from all providers if `provider` is `None`, else we only check
@@ -145,7 +139,7 @@ pub fn user_data_by_identity(
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     // TODO: don't load all the users, just load the user with the email
     // this is until we figure out why binds are not properly working
@@ -248,17 +242,17 @@ pub fn create_user(
     Ok(ft_sdk::auth::UserId(user_id))
 }
 
-/// persist the user in session
+/// persist the user in session and redirect to `next`
 ///
 /// `identity`: Eg for GitHub, it could be the username. This is stored in the cookie so can be
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
-    in_: ft_sdk::In,
     user_id: &ft_sdk::UserId,
     provider_id: &str,
     identity: &str,
-) -> Result<(), LoginError> {
+    next: &str,
+) -> Result<ft_sdk::chr::CHR<ft_sdk::form::Output>, LoginError> {
     // TODO:
     // move this comment to fn docs when this is done
     // If the user is already logged in, and the provider id is different, this id would be added as
@@ -289,8 +283,6 @@ pub fn login(
         ))
         .returning(fastn_session::id);
 
-    ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
-
     let id: String = query.get_result(conn)?;
 
     let session_str = serde_json::to_string(&serde_json::json!({
@@ -299,12 +291,10 @@ pub fn login(
         "identity": identity,
     }))?;
 
-    let mut session_cookie = ft_sdk::Cookie::new(ft_sdk::auth::SESSION_KEY, &session_str);
-    session_cookie.set_path("/");
+    let chr = ft_sdk::chr::CHR::new(ft_sdk::form::Output::Redirect(next.to_string()))
+        .with_cookie((ft_sdk::auth::SESSION_KEY, &session_str));
 
-    in_.add_cookie(session_cookie);
-
-    Ok(())
+    Ok(chr)
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -314,13 +304,6 @@ pub enum LoginError {
 
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
-}
-
-// TODO: make this a derive
-impl From<LoginError> for ft_sdk::Error {
-    fn from(e: LoginError) -> Self {
-        ft_sdk::Error::Response(ft_sdk::server_error!("auth error: {e:?}\n"))
-    }
 }
 
 /// Normalise and save user details
@@ -395,7 +378,7 @@ fn identity_exists(
     user_id: Option<ft_sdk::UserId>,
 ) -> Result<bool, diesel::result::Error> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
 
