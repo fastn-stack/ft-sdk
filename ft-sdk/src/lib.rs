@@ -11,7 +11,6 @@ extern crate self as ft_sdk;
 
 pub mod auth;
 pub mod chr;
-pub mod cookie;
 mod crypto;
 pub mod data;
 mod email;
@@ -26,8 +25,6 @@ mod migration;
 pub mod processor;
 mod rng;
 pub mod utils;
-
-pub use cookie::{Cookie, CookieExt};
 
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
