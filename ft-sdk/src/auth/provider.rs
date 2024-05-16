@@ -231,6 +231,7 @@ pub fn create_user(
     let query = diesel::insert_into(fastn_user::table)
         .values((
             fastn_user::name.eq(name.unwrap()),
+            fastn_user::identity.eq(identity),
             fastn_user::data.eq(data_json),
             fastn_user::created_at.eq(now),
             fastn_user::updated_at.eq(now),
@@ -359,6 +360,7 @@ pub fn update_user(
         let new_data = new_data.unwrap();
 
         let query = diesel::update(fastn_user::table.filter(fastn_user::id.eq(&id.0))).set((
+            fastn_user::identity.eq(identity),
             fastn_user::data.eq(&new_data),
             fastn_user::updated_at.eq(&now),
         ));
