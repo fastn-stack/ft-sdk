@@ -1,15 +1,22 @@
-pub struct Required<const KEY: &'static str, T: serde::de::DeserializeOwned = String>(pub T);
+pub struct Required<
+    const KEY: &'static str,
+    T: serde::de::DeserializeOwned + std::str::FromStr<Err = String> = String,
+>(pub T);
 
-impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::fmt::Display> std::fmt::Display
-    for Required<KEY, T>
+impl<
+        const KEY: &'static str,
+        T: serde::de::DeserializeOwned + std::str::FromStr<Err = String> + std::fmt::Display,
+    > std::fmt::Display for Required<KEY, T>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         T::fmt(&self.0, f)
     }
 }
 
-impl<const KEY: &'static str, T: serde::de::DeserializeOwned + PartialEq> PartialEq<T>
-    for Required<KEY, T>
+impl<
+        const KEY: &'static str,
+        T: serde::de::DeserializeOwned + std::str::FromStr<Err = String> + PartialEq,
+    > PartialEq<T> for Required<KEY, T>
 {
     fn eq(&self, other: &T) -> bool {
         self.0 == *other
@@ -22,13 +29,17 @@ impl<const KEY: &'static str> PartialEq<&str> for Required<KEY, String> {
     }
 }
 
-impl<const KEY: &'static str, T: serde::de::DeserializeOwned> Required<KEY, T> {
+impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::str::FromStr<Err = String>>
+    Required<KEY, T>
+{
     pub fn error<S: AsRef<str>>(&self, msg: S) -> ft_sdk::SpecialError {
         ft_sdk::single_error(KEY, msg)
     }
 }
 
-impl<const KEY: &'static str, T: serde::de::DeserializeOwned> std::ops::Deref for Required<KEY, T> {
+impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::str::FromStr<Err = String>>
+    std::ops::Deref for Required<KEY, T>
+{
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -36,8 +47,8 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> std::ops::Deref fo
     }
 }
 
-impl<const KEY: &'static str, T: serde::de::DeserializeOwned> std::ops::DerefMut
-    for Required<KEY, T>
+impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::str::FromStr<Err = String>>
+    std::ops::DerefMut for Required<KEY, T>
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
@@ -50,8 +61,10 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> std::ops::DerefMut
 // serde::de::DeserializeOwned as a trait, which feels is also "owned" and hence `'static`, so
 // adding 'static here does not limit the types that can be used with this trait (beyond what
 // serde::de::DeserializeOwned already limits).
-impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::FromRequest
-    for Required<KEY, T>
+impl<
+        const KEY: &'static str,
+        T: serde::de::DeserializeOwned + 'static + std::str::FromStr<Err = String>,
+    > ft_sdk::FromRequest for Required<KEY, T>
 {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         match req.body() {
