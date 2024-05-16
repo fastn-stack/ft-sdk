@@ -55,10 +55,8 @@ pub fn handle_error(e: anyhow::Error) -> http::Response<bytes::Bytes> {
     if let Some(field_error) = e.downcast_ref::<SpecialError>() {
         ft_sdk::println!("special error: {field_error}");
         return match field_error {
-            SpecialError::Single(k, se) => {
-                je(ft_sdk::http::json(serde_json::json!({"errors": {k: se}})))
-            }
-            SpecialError::Multi(me) => je(ft_sdk::http::json(serde_json::json!({"errors": me}))),
+            SpecialError::Single(k, se) => je(crate::json(serde_json::json!({"errors": {k: se}}))),
+            SpecialError::Multi(me) => je(crate::json(serde_json::json!({"errors": me}))),
             SpecialError::NotFound(msg) => http::Response::builder()
                 .status(http::StatusCode::NOT_FOUND)
                 .body(format!("page not found: {msg}\n").into())

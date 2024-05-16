@@ -1,5 +1,3 @@
-pub use ft_sys::http::{current_request, send, send_response};
-
 #[derive(Debug)]
 pub struct CHR<O> {
     pub(crate) cookies: Vec<http::HeaderValue>,
@@ -193,21 +191,3 @@ pub(crate) fn chr(
 //         assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
 //     }
 // }
-
-pub(crate) fn json<T: serde::Serialize>(
-    t: T,
-) -> Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
-    let d = match serde_json::to_string(&t) {
-        Ok(d) => d,
-        Err(e) => {
-            return Ok(http::Response::builder()
-                .status(500)
-                .body(format!("json-error: {e:?}\n").into())?)
-        }
-    };
-
-    Ok(http::Response::builder()
-        .status(200)
-        .header("Content-Type", "application/json")
-        .body(d.into())?)
-}

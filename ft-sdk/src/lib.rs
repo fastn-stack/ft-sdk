@@ -10,6 +10,7 @@
 extern crate self as ft_sdk;
 
 pub mod auth;
+pub mod chr;
 pub mod cookie;
 mod crypto;
 pub mod data;
@@ -17,7 +18,6 @@ mod email;
 mod error;
 pub mod form;
 pub mod from_request;
-pub mod http;
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
@@ -42,7 +42,7 @@ pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
-pub use ft_sys::{env, println, ConnectionError, UserData};
+pub use ft_sys::{env, http, println, ConnectionError, UserData};
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
@@ -90,4 +90,22 @@ pub fn default_sqlite() -> Result<SqliteConnection, ConnectionError> {
     let db_url = db.unwrap_or_else(|| "default".to_string());
 
     SqliteConnection::connect(db_url.as_str())
+}
+
+pub(crate) fn json<T: serde::Serialize>(
+    t: T,
+) -> Result<::http::Response<bytes::Bytes>, ft_sdk::Error> {
+    let d = match serde_json::to_string(&t) {
+        Ok(d) => d,
+        Err(e) => {
+            return Ok(::http::Response::builder()
+                .status(500)
+                .body(format!("json-error: {e:?}\n").into())?)
+        }
+    };
+
+    Ok(::http::Response::builder()
+        .status(200)
+        .header("Content-Type", "application/json")
+        .body(d.into())?)
 }

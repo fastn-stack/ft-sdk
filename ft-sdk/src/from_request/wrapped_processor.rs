@@ -20,9 +20,9 @@ pub trait WrappedHandler<T>: Sized {
 
 fn wrap<T: ft_sdk::WrappedFromRequest>(
     t: T,
-    o: ft_sdk::http::CHR<ft_sdk::processor::Output>,
+    o: ft_sdk::chr::CHR<ft_sdk::processor::Output>,
 ) -> ft_sdk::processor::Result {
-    let ft_sdk::http::CHR {
+    let ft_sdk::chr::CHR {
         cookies,
         headers,
         response,
@@ -31,7 +31,7 @@ fn wrap<T: ft_sdk::WrappedFromRequest>(
         ft_sdk::processor::Output::Json(j) => ft_sdk::processor::Output::Json(t.wrap(j)?),
         _ => response,
     };
-    Ok(ft_sdk::http::CHR {
+    Ok(ft_sdk::chr::CHR {
         cookies,
         headers,
         response,
