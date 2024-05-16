@@ -20,6 +20,12 @@ impl<const KEY: &'static str> std::ops::Deref for Query<KEY> {
     }
 }
 
+impl<const KEY: &'static str> Query<KEY> {
+    pub fn error<S: AsRef<str>>(&self, msg: S) -> ft_sdk::SpecialError {
+        ft_sdk::single_error(KEY, msg)
+    }
+}
+
 impl<const KEY: &'static str> ft_sdk::FromRequest for Query<KEY> {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         let query = req.uri().query().unwrap_or_default();
