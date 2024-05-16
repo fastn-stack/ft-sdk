@@ -65,7 +65,7 @@ pub struct ProviderUserData {
     pub provider: String,
 }
 
-/// Get the currently logged-in user's userid. returns `None` if the user is not logged in.
+/// Get the currently logged-in user's userid. Returns `None` if the user is not logged in.
 pub fn user_id() -> Option<UserId> {
     todo!()
 }
