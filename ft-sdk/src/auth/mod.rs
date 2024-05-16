@@ -8,7 +8,7 @@ pub mod provider;
 #[derive(Clone)]
 pub struct UserId(pub i64);
 
-pub(crate) const SESSION_KEY: &str = "fastn_sid";
+pub const SESSION_KEY: &str = "fastn_sid";
 
 /// Any provider can provide any of this information about currently logged-in user,
 /// which is stored against the user in the database. The provider who drops in the
@@ -65,7 +65,7 @@ pub struct ProviderUserData {
     pub provider: String,
 }
 
-/// Get the currently logged-in user's userid. returns `None` if the user is not logged in.
+/// Get the currently logged-in user's userid. Returns `None` if the user is not logged in.
 pub fn user_id() -> Option<UserId> {
     todo!()
 }
@@ -106,6 +106,7 @@ pub fn session_providers() -> Vec<String> {
     todo!()
 }
 
+#[cfg(feature = "field-extractors")]
 pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,

@@ -148,7 +148,7 @@ pub enum InvalidMigrationError {
     InvalidSqlFileNameNotUtf8(std::ffi::OsString),
     #[error("Invalid sql content not utf8: {0}, {1:?}")]
     InvalidSqlFileContentNotUtf8(i32, std::string::FromUtf8Error),
-    #[error("SQL file is not integer: {0:?}")]
+    #[error("SQL file does not start with integer: {0:?}, {1:?}")]
     SqlFileIsNotInteger(String, std::num::ParseIntError),
 }
 

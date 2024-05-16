@@ -16,6 +16,7 @@ pub enum EmailError {
 /// * `reply_to` - (name, email)
 /// * `mkind` - mail kind, used for logical logging purposes
 /// * `cc`, `bcc` - Vec<(name, email)>
+#[allow(clippy::too_many_arguments)]
 pub fn send_email(
     conn: &mut ft_sdk::Connection,
     from: (&str, &str),
