@@ -16,12 +16,20 @@ impl<O> CHR<O> {
 }
 
 pub(crate) fn chr(
-    _cookies: Vec<http::HeaderValue>,
-    _headers: Vec<(http::header::HeaderName, http::HeaderValue)>,
-    response: http::Response<bytes::Bytes>,
-) -> http::Response<bytes::Bytes> {
-    // TODO: handle cookies and headers
-    response
+    cookies: Vec<http::HeaderValue>,
+    headers: Vec<(http::header::HeaderName, http::HeaderValue)>,
+    mut response: http::Response<bytes::Bytes>,
+) -> Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
+    for cookie in cookies.into_iter() {
+        response
+            .headers_mut()
+            .try_append(http::header::SET_COOKIE, cookie)?;
+    }
+    for (k, v) in headers.into_iter() {
+        response.headers_mut().try_append(k, v)?;
+    }
+
+    Ok(response)
 }
 
 // pub trait IntoCookie {

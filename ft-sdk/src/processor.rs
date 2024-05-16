@@ -32,7 +32,7 @@ impl From<ft_sdk::chr::CHR<Output>>
             Output::Redirect(url) => crate::json(serde_json::json!({"redirect": url })),
             Output::Json(j) => crate::json(j),
         }?;
-        Ok(ft_sdk::chr::chr(cookies, headers, response))
+        ft_sdk::chr::chr(cookies, headers, response)
     }
 }
 
