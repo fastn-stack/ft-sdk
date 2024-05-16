@@ -41,3 +41,69 @@ pub fn handle_error(e: anyhow::Error) -> http::Response<bytes::Bytes> {
         .body(format!("json error: {e:?}\n").into())
         .unwrap()
 }
+
+#[cfg(test)]
+mod test {
+    use anyhow::Context;
+
+    #[derive(thiserror::Error, Debug)]
+    enum EFirst {
+        #[error("yo")]
+        Yo,
+    }
+
+    fn outer() -> Result<(), anyhow::Error> {
+        anyhow::Ok(out()?).context(http::StatusCode::CREATED)
+    }
+
+    fn out() -> Result<(), anyhow::Error> {
+        anyhow::Ok(first()?).context(http::StatusCode::ACCEPTED)
+    }
+
+    fn first() -> Result<(), anyhow::Error> {
+        Err(EFirst::Yo).context(http::StatusCode::SEE_OTHER)
+    }
+
+    #[test]
+    fn t() {
+        let e = outer().unwrap_err();
+        assert_eq!(
+            *e.downcast_ref::<http::StatusCode>().unwrap(),
+            http::StatusCode::SEE_OTHER
+        );
+    }
+
+    #[derive(thiserror::Error, Debug, PartialEq)]
+    enum Status {
+        #[error("created")]
+        Created,
+        #[error("accepted")]
+        Accepted,
+        #[error("see-other")]
+        SeeOther,
+    }
+
+    fn outer2() -> Result<(), anyhow::Error> {
+        anyhow::Ok(out2()?).context(Status::Created)
+    }
+
+    fn out2() -> Result<(), anyhow::Error> {
+        anyhow::Ok(first2()?).context(Status::Accepted)
+    }
+
+    fn first2() -> Result<(), anyhow::Error> {
+        Err(EFirst::Yo)? // .context(Status::SeeOther)
+    }
+
+    #[test]
+    fn t2() {
+        let e = outer2().unwrap_err();
+        println!("status1: {:?}", e.downcast_ref::<Status>());
+        for cause in e.chain() {
+            println!("status: {:?}", cause.downcast_ref::<Status>());
+        }
+
+        // looks like we have to rethink our context approach
+        assert!(true)
+    }
+}
