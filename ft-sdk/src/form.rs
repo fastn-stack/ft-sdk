@@ -1,4 +1,4 @@
-pub type Result = std::result::Result<Output, ft_sdk::Error>;
+pub type Result = std::result::Result<ft_sdk::chr::CHR<Output>, ft_sdk::Error>;
 
 #[derive(Debug)]
 pub enum Output {
@@ -6,19 +6,30 @@ pub enum Output {
     Reload,
 }
 
-impl From<Output> for http::Response<bytes::Bytes> {
-    fn from(o: Output) -> Self {
-        match o {
-            Output::Redirect(url) => crate::http::json_(serde_json::json!({"redirect": url })),
-            Output::Reload => crate::http::json_(serde_json::json!({"reload": true })),
-        }
+impl From<ft_sdk::chr::CHR<Output>>
+    for std::result::Result<http::Response<bytes::Bytes>, ft_sdk::Error>
+{
+    fn from(
+        ft_sdk::chr::CHR {
+            cookies,
+            headers,
+            response,
+        }: ft_sdk::chr::CHR<Output>,
+    ) -> Self {
+        let response = match response {
+            Output::Redirect(url) => crate::json(serde_json::json!({"redirect": url })),
+            Output::Reload => crate::json(serde_json::json!({"reload": true })),
+        }?;
+        ft_sdk::chr::chr(cookies, headers, response)
     }
 }
 
 pub fn redirect<S: AsRef<str>>(url: S) -> Result {
-    Ok(Output::Redirect(url.as_ref().to_string()))
+    Ok(ft_sdk::chr::CHR::new(Output::Redirect(
+        url.as_ref().to_string(),
+    )))
 }
 
 pub fn reload() -> Result {
-    Ok(Output::Reload)
+    Ok(ft_sdk::chr::CHR::new(Output::Reload))
 }

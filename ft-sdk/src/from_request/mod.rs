@@ -1,7 +1,7 @@
 #[cfg(feature = "field-extractors")]
 mod cookie;
-mod field_error;
 mod form;
+pub mod handler;
 mod headers;
 #[cfg(feature = "field-extractors")]
 mod hidden;
@@ -14,8 +14,8 @@ mod path;
 mod query;
 #[cfg(feature = "field-extractors")]
 mod required;
+pub mod wrapped_processor;
 
-pub use field_error::FieldError;
 pub use form::Form;
 pub use mountpoint::Mountpoint;
 pub use path::Path;
@@ -40,5 +40,5 @@ impl FromRequest for ft_sdk::Connection {
 
 // TODO: need better name
 pub trait WrappedFromRequest: FromRequest {
-    fn wrap(self, output: serde_json::Value) -> Result<ft_sdk::processor::Output, ft_sdk::Error>;
+    fn wrap(self, output: serde_json::Value) -> Result<serde_json::Value, ft_sdk::Error>;
 }

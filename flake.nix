@@ -1,7 +1,6 @@
 {
   description = "ft-sdk";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   inputs.rust-overlay.url = "github:oxalica/rust-overlay";
 
   outputs = { self, nixpkgs, rust-overlay }:
@@ -12,10 +11,7 @@
         inherit system overlays;
       };
 
-      toolchain = pkgs.rust-bin.stable.latest.default.override {
-        extensions = [ "rustfmt" "clippy" "rust-src" ];
-        targets = [ "wasm32-unknown-unknown" ];
-      };
+      toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
     in
     {
       devShells.${system}.default = pkgs.mkShell {

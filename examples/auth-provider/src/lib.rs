@@ -2,14 +2,14 @@ const PROVIDER_ID: &str = "sample";
 const HASHED_PASSWORD: &str = "hashed-password";
 
 #[ft_sdk::handle_http]
-fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::http::Result {
+fn handle(in_: ft_sdk::In, mut conn: ft_sdk::Connection) -> ft_sdk::chr::Result {
     match in_.req.uri().path() {
         "/create-account/" => create_account(in_, &mut conn),
         t => Err(ft_sdk::not_found!("unhandled path: {t}")),
     }
 }
 
-fn create_account(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::http::Result {
+fn create_account(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::chr::Result {
     use ft_sdk::JsonBodyExt;
     let (email, password): (String, String) = in_.req.required2("email", "password")?;
 
@@ -19,7 +19,7 @@ fn create_account(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::htt
     validate_strong_password(password.as_str(), &mut errors);
 
     if !errors.is_empty() {
-        return Err(ft_sdk::http::Error::Form(errors));
+        return Err(ft_sdk::chr::Error::Form(errors));
     }
 
     let user_id = ft_sdk::auth::provider::create_user(
@@ -35,7 +35,7 @@ fn create_account(in_: ft_sdk::In, conn: &mut ft_sdk::Connection) -> ft_sdk::htt
     ft_sdk::auth::provider::login(conn, in_.clone(), &user_id, PROVIDER_ID, &email)?;
 
     // TODO: get next argument
-    ft_sdk::http::redirect("/")
+    ft_sdk::chr::redirect("/")
 }
 
 fn validate_strong_password(

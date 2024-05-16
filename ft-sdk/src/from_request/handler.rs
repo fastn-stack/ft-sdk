@@ -1,22 +1,32 @@
 // https://github.com/alexpusch/rust-magic-patterns/blob/master/axum-style-magic-function-param/Readme.md
 // https://joshchoo.com/writing/how-actix-web-app-state-and-data-extractor-works
-pub fn handle<T, O: Into<http::Response<bytes::Bytes>>, H: Handler<T, O>>(h: H) {
-    let req = current_request();
-    let resp = match h.call(&req) {
-        Ok(resp) => resp.into(),
+pub fn handle<T, O: Into<Result<http::Response<bytes::Bytes>, ft_sdk::Error>>, H: Handler<T, O>>(
+    h: H,
+) {
+    let req = match current_request() {
+        Ok(v) => v,
         Err(e) => {
-            ft_sdk::println!("Error: {:?}", e);
-            e.into()
+            ft_sdk::println!("Error parsing request: {:?}", e);
+            ft_sdk::error::handle_error(e);
+            return;
         }
     };
+    let resp = h.call(&req).and_then(Into::into).unwrap_or_else(|e| {
+        ft_sdk::println!("Error: {:?}", e);
+        ft_sdk::error::handle_error(e)
+    });
     ft_sdk::http::send_response(resp);
 }
 
-pub fn current_request() -> http::Request<serde_json::Value> {
+pub fn current_request() -> Result<http::Request<serde_json::Value>, ft_sdk::Error> {
     let r = ft_sys::http::current_request();
     let (h, b) = r.into_parts();
-    let b = serde_json::from_slice(&b).unwrap(); // TODO: handle error
-    http::Request::from_parts(h, b)
+    if b.as_ref() == b"" {
+        return Ok(http::Request::from_parts(h, serde_json::Value::Null));
+    }
+    // todo: what if content type is not application/json?
+    let b = serde_json::from_slice(&b)?;
+    Ok(http::Request::from_parts(h, b))
 }
 
 pub trait Handler<T, O>: Sized {

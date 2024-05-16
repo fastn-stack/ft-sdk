@@ -47,7 +47,7 @@ impl From<AuthError> for ft_sdk::Error {
     }
 }
 
-/// returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
+/// Returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
 ///
 /// We check across data from all providers if `provider` is `None`, else we only check
 /// the data from the provider.
@@ -59,7 +59,7 @@ pub fn check_if_verified_email_exists(
     use diesel::dsl::{count, sql};
     use diesel::prelude::*;
     use diesel::sql_types::{Bool, Text};
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     // TODO: 'email' should come from `_provider`
     #[cfg(not(feature = "postgres"))]
@@ -98,7 +98,7 @@ pub fn user_data_by_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     // TODO: don't load all the users, just load the user with the email
     // this is until we figure out why binds are not properly working
@@ -207,7 +207,7 @@ pub fn create_user(
     data: Vec<ft_sdk::auth::UserData>,
 ) -> Result<ft_sdk::UserId, AuthError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     if identity_exists(conn, identity, provider_id, None)? {
         return Err(AuthError::IdentityExists);
@@ -264,7 +264,7 @@ pub fn login(
     // If the user is already logged in, and the provider id is different, this id would be added as
     // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_session;
+    use ft_sdk::auth::schema::fastn_session;
     use rand_core::RngCore;
 
     let now = ft_sys::env::now();
@@ -354,7 +354,7 @@ pub fn update_user(
     // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::auth::UserId, AuthError> {
     use diesel::prelude::*;
-    use ft_sdk::auth::db::fastn_user;
+    use ft_sdk::auth::schema::fastn_user;
 
     if identity_exists(conn, identity, provider_id, Some(id.clone()))? {
         return Err(AuthError::IdentityExists);

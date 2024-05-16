@@ -9,33 +9,39 @@ pub enum EmailError {
 ///
 /// # Arguments
 /// * `from` - (name, email)
-/// * `to` - (name, email)
+/// * `to` - Vec<(name, email)>
 /// * `subject` - email subject
-/// * `body` - email body
+/// * `body_html` - email body in html format
+/// * `body_text` - email body in text format
+/// * `reply_to` - (name, email)
 /// * `mkind` - mail kind, used for logical logging purposes
-/// * `cc`, `bcc` - comma separated email with names. E.g: <test1@gmail.com>, Bob <test2@ocr-inc.com>
+/// * `cc`, `bcc` - Vec<(name, email)>
 pub fn send_email(
     conn: &mut ft_sdk::Connection,
     from: (&str, &str),
-    to: (&str, &str),
+    to: Vec<(&str, &str)>,
     subject: &str,
     body_html: &str,
     body_text: &str,
-    reply_to: Option<&str>,
-    cc: Option<&str>,
-    bcc: Option<&str>,
+    reply_to: Option<Vec<(&str, &str)>>,
+    cc: Option<Vec<(&str, &str)>>,
+    bcc: Option<Vec<(&str, &str)>>,
     mkind: &str,
 ) -> Result<(), EmailError> {
     use diesel::prelude::*;
 
     let now = ft_sdk::env::now();
-    let from_address = format!("{} <{}>", from.0, from.1);
-    let to_address = format!("{} <{}>", to.0, to.1);
+    let from = format!("{} <{}>", from.0, from.1);
+
+    let to = to_comma_separated_str(to);
+    let reply_to = reply_to.map(to_comma_separated_str);
+    let cc = cc.map(to_comma_separated_str);
+    let bcc = bcc.map(to_comma_separated_str);
 
     let affected = diesel::insert_into(fastn_email_queue::table)
         .values((
-            fastn_email_queue::from_address.eq(from_address),
-            fastn_email_queue::to_address.eq(to_address),
+            fastn_email_queue::from_address.eq(from),
+            fastn_email_queue::to_address.eq(to),
             fastn_email_queue::subject.eq(subject),
             fastn_email_queue::body_html.eq(body_html),
             fastn_email_queue::body_text.eq(body_text),
@@ -82,4 +88,10 @@ diesel::table! {
         // the queue every so often
         status       -> Text,
     }
+}
+
+fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
+    x.iter().fold(String::new(), |acc, x| {
+        format!("{}, {} <{}>", acc, x.0, x.1)
+    })
 }

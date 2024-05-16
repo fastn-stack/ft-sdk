@@ -42,20 +42,28 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned> ft_sdk::FromReques
     for Hidden<KEY, T>
 {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
+        // Ideally, this field should not lead to form error.
+        // These fields are supposed to be correct as they are not user entered data.
+        // We can technically return 500 from these fields, but that would be a bit harsh,
+        // so we are returning field error.
         match req.body() {
-            serde_json::Value::Null => Err(ft_sdk::Error::Generic(format!(
-                "when reading {KEY} found Null body, expected Object"
-            ))),
+            serde_json::Value::Null => Err(ft_sdk::single_error(
+                KEY,
+                format!("when reading {KEY} found Null body, expected Object"),
+            )
+            .into()),
             serde_json::Value::Object(map) => {
                 if let Some(value) = map.get(KEY) {
                     Ok(serde_json::from_value(value.clone()).map(Hidden)?)
                 } else {
-                    Err(ft_sdk::Error::Generic(format!("{KEY} is missing in input")))
+                    Err(ft_sdk::single_error(KEY, format!("{KEY} is missing in input")).into())
                 }
             }
-            _ => Err(ft_sdk::Error::Generic(format!(
-                "when reading {KEY} found body that is not an Object"
-            ))),
+            _ => Err(ft_sdk::single_error(
+                KEY,
+                format!("when reading {KEY} found body that is not an Object"),
+            )
+            .into()),
         }
     }
 }
