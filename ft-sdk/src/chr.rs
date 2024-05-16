@@ -113,65 +113,67 @@ mod test {
         );
         assert_eq!(iter.next(), None);
 
-        //     let r: http::Response<bytes::Bytes> = super::Output::Reload
-        //         .with_cookie(("name", "value", 200))
-        //         .into();
-        //
-        //     let cookies = r.headers().get_all(http::header::SET_COOKIE);
-        //     let mut iter = cookies.iter();
-        //     assert_eq!(
-        //         iter.next(),
-        //         Some(&http::HeaderValue::from_static(
-        //             "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=200"
-        //         ))
-        //     );
-        //     assert_eq!(iter.next(), None);
-        //
-        //     let r: http::Response<bytes::Bytes> = super::Output::Reload
-        //         .with_cookie(("name", "value"))
-        //         .with_cookie(("n2", "v2"))
-        //         .into();
-        //
-        //     let cookies = r.headers().get_all(http::header::SET_COOKIE);
-        //     let mut iter = cookies.iter();
-        //     assert_eq!(
-        //         iter.next(),
-        //         Some(&http::HeaderValue::from_static(
-        //             "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
-        //         ))
-        //     );
-        //     assert_eq!(
-        //         iter.next(),
-        //         Some(&http::HeaderValue::from_static(
-        //             "n2=v2; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
-        //         ))
-        //     );
+        let r = ft_sdk::json(()).unwrap();
+        let chr = super::CHR::new(()).with_cookie(("name", "value", 200));
+        let r = super::chr(chr.cookies, chr.headers, r).unwrap();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=200"
+            ))
+        );
+        assert_eq!(iter.next(), None);
+
+        let r = ft_sdk::json(()).unwrap();
+        let chr = super::CHR::new(())
+            .with_cookie(("name", "value"))
+            .with_cookie(("n2", "v2"));
+        let r = super::chr(chr.cookies, chr.headers, r).unwrap();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "n2=v2; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
     }
-    //
-    // #[test]
-    // fn raw_cookie() {
-    //     let r: http::Response<bytes::Bytes> = super::Output::Reload
-    //         .with_cookie(http::HeaderValue::from_static("hello"))
-    //         .into();
-    //
-    //     let cookies = r.headers().get_all(http::header::SET_COOKIE);
-    //     let mut iter = cookies.iter();
-    //     assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
-    //     assert_eq!(iter.next(), None);
-    //
-    //     let r: http::Response<bytes::Bytes> = super::Output::Reload
-    //         .with_cookie(("name", "value"))
-    //         .with_cookie(http::HeaderValue::from_static("hello"))
-    //         .into();
-    //
-    //     let cookies = r.headers().get_all(http::header::SET_COOKIE);
-    //     let mut iter = cookies.iter();
-    //     assert_eq!(
-    //         iter.next(),
-    //         Some(&http::HeaderValue::from_static(
-    //             "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
-    //         ))
-    //     );
-    //     assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
-    // }
+
+    #[test]
+    fn raw_cookie() {
+        let r = ft_sdk::json(()).unwrap();
+        let chr = super::CHR::new(()).with_cookie(http::HeaderValue::from_static("hello"));
+        let r = super::chr(chr.cookies, chr.headers, r).unwrap();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
+        assert_eq!(iter.next(), None);
+
+        let r = ft_sdk::json(()).unwrap();
+        let chr = super::CHR::new(())
+            .with_cookie(("name", "value"))
+            .with_cookie(http::HeaderValue::from_static("hello"));
+        let r = super::chr(chr.cookies, chr.headers, r).unwrap();
+
+        let cookies = r.headers().get_all(http::header::SET_COOKIE);
+        let mut iter = cookies.iter();
+        assert_eq!(
+            iter.next(),
+            Some(&http::HeaderValue::from_static(
+                "name=value; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000"
+            ))
+        );
+        assert_eq!(iter.next(), Some(&http::HeaderValue::from_static("hello")));
+    }
 }
