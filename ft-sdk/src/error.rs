@@ -10,6 +10,34 @@ pub enum SpecialError {
     Unauthorised(String),
 }
 
+/// Create a page not found response.
+#[macro_export]
+macro_rules! not_found {
+    ($($t:tt)*) => {{
+        let msg = format!($($t)*);
+        $crate::not_found_(msg)
+    }};
+}
+
+#[doc(hidden)]
+pub fn not_found_(msg: String) -> SpecialError {
+    SpecialError::NotFound(msg)
+}
+
+/// Create a page not found response.
+#[macro_export]
+macro_rules! unauthorised {
+    ($($t:tt)*) => {{
+        let msg = format!($($t)*);
+        $crate::unauthorised_(msg)
+    }};
+}
+
+#[doc(hidden)]
+pub fn unauthorised_(msg: String) -> SpecialError {
+    SpecialError::Unauthorised(msg)
+}
+
 pub fn single_error<K: AsRef<str>, E: AsRef<str>>(k: K, e: E) -> SpecialError {
     SpecialError::Single(k.as_ref().to_string(), e.as_ref().to_string())
 }
@@ -115,7 +143,6 @@ mod test {
         // by the first function that converts non anyhow::Error to anyhow::Error using
         // the .context(), as shown in first2(). Status attached by out2 and outer2 are
         // simply lost.
-        assert!(true)
     }
 
     fn outer3() -> Result<(), anyhow::Error> {

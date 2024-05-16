@@ -199,35 +199,15 @@ pub(crate) fn json<T: serde::Serialize>(
 ) -> Result<http::Response<bytes::Bytes>, ft_sdk::Error> {
     let d = match serde_json::to_string(&t) {
         Ok(d) => d,
-        Err(e) => return Err(ft_sdk::server_error!("json error: {e:?}")),
+        Err(e) => {
+            return Ok(http::Response::builder()
+                .status(500)
+                .body(format!("json-error: {e:?}\n").into())?)
+        }
     };
 
     Ok(http::Response::builder()
         .status(200)
         .header("Content-Type", "application/json")
         .body(d.into())?)
-}
-
-/// Create a page not found response.
-#[macro_export]
-macro_rules! not_found {
-    ($($t:tt)*) => {{
-        let msg = format!($($t)*);
-        $crate::http::not_found_(msg)
-    }};
-}
-
-#[doc(hidden)]
-pub fn not_found_(msg: String) -> ft_sdk::Error {
-    anyhow::format_err!("not-found: {msg}").context(http::StatusCode::NOT_FOUND)
-}
-
-/// Create a server error response.
-#[macro_export]
-macro_rules! server_error {
-    ($($t:tt)*) => {{
-        let msg = format!($($t)*);
-        ft_sdk::println!("server-error: {msg}");
-        anyhow::format_err!("server-error: {msg}").context(http::StatusCode::INTERNAL_SERVER_ERROR)
-    }};
 }
