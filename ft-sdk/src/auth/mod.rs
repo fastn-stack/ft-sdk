@@ -106,6 +106,7 @@ pub fn session_providers() -> Vec<String> {
     todo!()
 }
 
+#[cfg(feature = "field-extractors")]
 pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
