@@ -37,6 +37,8 @@ pub enum AuthError {
     Diesel(#[from] diesel::result::Error),
     #[error("ft_sdk::auth::UserData::Name is required")]
     NameNotProvided,
+    #[error("identity already exists")]
+    IdentityExists,
 }
 
 impl From<AuthError> for ft_sdk::Error {
@@ -90,7 +92,7 @@ pub fn check_if_verified_email_exists(
     Ok(count > 0)
 }
 
-pub fn get_user_data_by_email(
+pub fn user_data_by_email(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
     email: &str,
@@ -129,7 +131,51 @@ pub fn get_user_data_by_email(
 
     let user = user.unwrap();
 
-    ft_sdk::println!("{:?}", &user);
+    let data = user_data_from_json(user.1.clone());
+
+    match data.get(provider_id).cloned() {
+        Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
+        None => Err(UserDataError::NoDataFound),
+    }
+}
+
+pub fn user_data_by_identity(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    identity: &str,
+) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
+    use diesel::prelude::*;
+    use ft_sdk::auth::db::fastn_user;
+
+    // TODO: don't load all the users, just load the user with the email
+    // this is until we figure out why binds are not properly working
+    let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
+
+    let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
+        ft_sdk::println!("error: {:?}", e);
+        match e {
+            diesel::result::Error::NotFound => UserDataError::NoDataFound,
+            e => UserDataError::DatabaseError(e),
+        }
+    })?;
+
+    let user = users.iter().find(|(_, ud)| {
+        let data = user_data_from_json(ud.clone());
+        data.get(provider_id)
+            .and_then(|d| {
+                d.iter().find(|d| match d {
+                    ft_sdk::auth::UserData::Identity(i) => i == identity,
+                    _ => false,
+                })
+            })
+            .is_some()
+    });
+
+    if user.is_none() {
+        return Err(UserDataError::NoDataFound);
+    }
+
+    let user = user.unwrap();
 
     let data = user_data_from_json(user.1.clone());
 
@@ -162,6 +208,10 @@ pub fn create_user(
 ) -> Result<ft_sdk::UserId, AuthError> {
     use diesel::prelude::*;
     use ft_sdk::auth::schema::fastn_user;
+
+    if identity_exists(conn, identity, provider_id, None)? {
+        return Err(AuthError::IdentityExists);
+    }
 
     let mut data = data;
     let now = ft_sys::env::now();
@@ -306,6 +356,10 @@ pub fn update_user(
     use diesel::prelude::*;
     use ft_sdk::auth::schema::fastn_user;
 
+    if identity_exists(conn, identity, provider_id, Some(id.clone()))? {
+        return Err(AuthError::IdentityExists);
+    }
+
     let mut data = data;
     data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
 
@@ -332,6 +386,46 @@ pub fn update_user(
     ft_sdk::println!("modified {} user(s)", affected);
 
     Ok(id.clone())
+}
+
+fn identity_exists(
+    conn: &mut ft_sdk::Connection,
+    identity: &str,
+    provider_id: &str,
+    user_id: Option<ft_sdk::UserId>,
+) -> Result<bool, diesel::result::Error> {
+    use diesel::prelude::*;
+    use ft_sdk::auth::db::fastn_user;
+
+    let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
+
+    let users: Vec<(i64, serde_json::Value)> = query.get_results(conn)?;
+
+    let user = users.iter().find(|(_, ud)| {
+        let data = user_data_from_json(ud.clone());
+
+        data.get(provider_id)
+            .map(|v| {
+                v.iter().any(|d| match d {
+                    ft_sdk::auth::UserData::Identity(i) => i == identity,
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    });
+
+    if user.is_none() {
+        return Ok(false);
+    }
+
+    if let Some(user_id) = user_id {
+        let user = user.unwrap();
+        if user.0 == user_id.0 {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
 }
 
 /// update existing user's data (`old_data`) with the provided `data`

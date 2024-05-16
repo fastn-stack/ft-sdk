@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS fastn_email_queue
 (
     id           INTEGER PRIMARY KEY,
     from_address TEXT NOT NULL,
-    reply_to     TEXT NOT NULL,
+    reply_to     TEXT NULL,
     -- to_address, cc_address, bcc_address contains comma separated email with
     -- names https://users.rust-lang.org/t/80813/11
     -- Alice <test1@gmail.com>, Bob <test2@ocr-inc.com>
