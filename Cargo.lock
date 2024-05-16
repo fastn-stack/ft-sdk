@@ -36,16 +36,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "auth-provider"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "diesel",
- "ft-sdk",
- "http",
- "serde_json",
- "thiserror",
-]
+name = "anyhow"
+version = "1.0.83"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25bdb32cbbdce2b519a9cd7df3a678443100e265d5e25ca763b7572a5104f5f3"
 
 [[package]]
 name = "autocfg"
@@ -178,15 +172,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
-name = "form-handling"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "ft-sdk",
- "http",
-]
-
-[[package]]
 name = "form_urlencoded"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -207,6 +192,7 @@ dependencies = [
 name = "ft-sdk"
 version = "0.1.2"
 dependencies = [
+ "anyhow",
  "bytes",
  "chrono",
  "diesel",
@@ -252,6 +238,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "handling-form"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "ft-sdk",
+ "http",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -277,19 +272,6 @@ dependencies = [
  "bytes",
  "ft-sdk",
  "http",
-]
-
-[[package]]
-name = "hello-world-diesel"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "diesel",
- "ft-sdk",
- "http",
- "include_dir",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -381,6 +363,17 @@ name = "log"
 version = "0.4.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
+
+[[package]]
+name = "migration"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "diesel",
+ "ft-sdk",
+ "http",
+ "include_dir",
+]
 
 [[package]]
 name = "num-traits"

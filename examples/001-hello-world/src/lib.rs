@@ -1,4 +1,10 @@
-#[ft_sdk::handle_http]
-fn handle(_in: ft_sdk::In, _conn: ft_sdk::Connection) -> ft_sdk::http::Result {
-    ft_sdk::http::json("and this is coming from wasm!")
+#[ft_sdk::processor]
+fn hello_world(path: ft_sdk::Path) -> ft_sdk::processor::Result {
+    ft_sdk::println!("params: {path}");
+    ft_sdk::processor::json("and this is coming from wasm!")
+}
+
+#[ft_sdk::processor]
+fn redirect() -> ft_sdk::processor::Result {
+    ft_sdk::processor::redirect("/redirected/")
 }

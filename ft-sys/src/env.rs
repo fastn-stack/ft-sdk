@@ -4,7 +4,6 @@ extern "C" {
     #[cfg(target_family = "wasm")]
     fn env_print(ptr: i32, len: i32);
     fn env_now() -> i32;
-    fn env_ud() -> i32;
     fn env_var(ptr: i32, len: i32) -> i32;
     fn env_random() -> i32;
 }
@@ -35,13 +34,6 @@ macro_rules! println {
 /// Get the current time in UTC.
 pub fn now() -> chrono::DateTime<chrono::Utc> {
     let ptr = unsafe { env_now() };
-    ft_sys::memory::json_from_ptr(ptr)
-}
-
-/// Get the currently logged in user making the http request. If the user is
-/// not logged in this returns `None`
-pub fn ud() -> Option<ft_sys::UserData> {
-    let ptr = unsafe { env_ud() };
     ft_sys::memory::json_from_ptr(ptr)
 }
 

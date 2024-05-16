@@ -16,8 +16,10 @@ sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 migration = [] # only if either sqlite-default or postgres-default is activated
 auth-provider = ["uuid"]
+field-extractors = []
 
 [dependencies]
+anyhow.workspace = true
 ft-sys = { path = "../ft-sys", version = "0.1.2", default-features = false }
 ft-derive = { path = "../ft-derive", version = "0.1.0" }
 serde.workspace = true

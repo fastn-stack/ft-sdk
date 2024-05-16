@@ -17,52 +17,19 @@ pub enum MigrationError {
     ApplyMigration(#[from] ApplyMigrationError),
 }
 
-impl From<MigrationError> for ft_sdk::http::Error {
-    fn from(e: MigrationError) -> Self {
-        ft_sdk::http::Error::Response(
-            ::http::Response::builder()
-                .status(::http::StatusCode::INTERNAL_SERVER_ERROR)
-                .body(format!("migration error: {e:?}\n").into())
-                .unwrap(),
-        )
-    }
-}
-
 pub type FnMigration = (
     i32,
     &'static str,
     fn(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
 );
 
-#[macro_export]
-macro_rules! migrate_simple {
-    ($app_name:expr, $in_:expr, $conn:expr) => {{
-        $crate::migrate_simple_(
-            $conn,
-            $app_name,
-            include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
-            &$in_.now,
-        )
-    }};
-}
-
-#[doc(hidden)]
-pub fn migrate_simple_(
-    conn: &mut ft_sdk::Connection,
-    app_name: &str,
-    migration_sqls: include_dir::Dir,
-    now: &chrono::DateTime<chrono::Utc>,
-) -> Result<(), ft_sdk::http::Error> {
-    migrate(conn, app_name, migration_sqls, vec![], now).map_err(Into::into)
-}
-
 pub fn migrate(
     conn: &mut ft_sdk::Connection,
     app_name: &str,
     migration_sqls: include_dir::Dir,
     migration_functions: Vec<FnMigration>,
-    now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), MigrationError> {
+    let now = ft_sdk::env::now();
     // check if the migration table exists, if not create it
     create_migration_table(conn).map_err(MigrationError::CanNotCreateMigrationTable)?;
 
@@ -76,12 +43,12 @@ pub fn migrate(
         latest_applied_migration_number,
     )?;
 
-    for migration in migrations {
-        match migration {
+    for cmd in migrations {
+        match cmd {
             Cmd::Sql { id, name, sql } => {
-                apply_sql_migration(conn, app_name, id, name.as_str(), sql.as_str(), now)?
+                apply_sql_migration(conn, app_name, id, name.as_str(), sql.as_str(), &now)?
             }
-            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, app_name, id, name, r#fn, now)?,
+            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, app_name, id, name, r#fn, &now)?,
         }
     }
 
@@ -182,7 +149,7 @@ pub enum InvalidMigrationError {
     #[error("Invalid sql content not utf8: {0}, {1:?}")]
     InvalidSqlFileContentNotUtf8(i32, std::string::FromUtf8Error),
     #[error("SQL file is not integer: {0:?}")]
-    SqlFileIsNotInteger(#[from] std::num::ParseIntError),
+    SqlFileIsNotInteger(String, std::num::ParseIntError),
 }
 
 enum Cmd {
@@ -264,10 +231,15 @@ fn sort_migrations(
 }
 
 fn parse_migration_name(name: &str) -> Result<(i32, &str), InvalidMigrationError> {
-    let (number, name) = match name.split_once('_') {
+    let (number, name) = match name.split_once('-') {
         Some(v) => v,
         None => (name, name),
     };
 
-    Ok((number.parse()?, name))
+    Ok((
+        number
+            .parse()
+            .map_err(|e| InvalidMigrationError::SqlFileIsNotInteger(name.to_string(), e))?,
+        name,
+    ))
 }

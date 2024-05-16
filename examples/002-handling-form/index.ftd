@@ -1,0 +1,31 @@
+-- ftd.text: create your account!
+
+-- ftd.string-field $username: username
+$value: admin
+
+-- ftd.text-input:
+placeholder: enter username
+value: $username.value
+$on-input$: $ftd.set-string($a = $username.value, v = $VALUE)
+$on-input$: $set-null($var = $username.error)
+
+-- ftd.text: $username.error
+color: red
+if: { username.error != NULL }
+
+-- ftd.text: create account
+$on-click$: create-account($u = $username)
+
+
+
+-- void create-account(u):
+ftd.string-field $u:
+
+ftd.submit_form("/wasm/create-account/", u)
+
+
+
+-- string set-null(var):
+optional string $var:
+
+var = null

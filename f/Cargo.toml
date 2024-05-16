@@ -1,5 +1,5 @@
 [package]
-name = "ft-derive"
+name = "f"
 version = "0.1.0"
 authors.workspace = true
 edition.workspace = true
@@ -8,9 +8,4 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
-[lib]
-proc-macro = true
-
 [dependencies]
-syn = { version = "1", features = ["full", "extra-traits"] }
-quote = "1"

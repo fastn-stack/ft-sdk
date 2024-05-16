@@ -4,45 +4,50 @@
 //! FifthTry Apps.
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
+#![cfg_attr(feature = "field-extractors", feature(adt_const_params))]
+#![cfg_attr(feature = "field-extractors", allow(incomplete_features))]
 
 extern crate self as ft_sdk;
 
 pub mod auth;
 pub mod cookie;
 mod crypto;
+pub mod data;
 mod email;
+mod error;
+pub mod form;
+pub mod from_request;
 pub mod http;
-mod in_;
-mod json_body;
-mod layout;
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
 mod migration;
-mod query;
+pub mod processor;
 mod rng;
 pub mod utils;
+
 pub use cookie::{Cookie, CookieExt};
 
+pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use ft_derive::handle_http;
+pub use error::{not_found_, single_error, unauthorised_, SpecialError};
+pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
+#[cfg(feature = "field-extractors")]
+pub use from_request::{Hidden, Optional, Query, Required};
+pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, println, ConnectionError, UserData};
-pub use in_::In;
-pub use json_body::{JsonBody, JsonBodyExt};
-pub use layout::{Action, Layout, Page};
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-pub use migration::{migrate, migrate_simple_};
-pub use query::{Query, QueryExt};
+pub use migration::{migrate, MigrationError};
 pub use rng::Rng;
 
 pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
@@ -85,110 +90,4 @@ pub fn default_sqlite() -> Result<SqliteConnection, ConnectionError> {
     let db_url = db.unwrap_or_else(|| "default".to_string());
 
     SqliteConnection::connect(db_url.as_str())
-}
-
-/// Create a http response with given JSON.
-///
-/// if `in_` is provided, any `in_.set_cookies` will be added to the response.
-pub fn json_response<T: serde::Serialize>(
-    t: T,
-    in_: Option<&ft_sdk::In>,
-) -> ::http::Response<bytes::Bytes> {
-    let mut resp = ::http::Response::builder()
-        .status(::http::StatusCode::OK)
-        .header(::http::header::CONTENT_TYPE, "application/json");
-
-    // set cookies
-    // TODO: add cookie crate and change set_cookies hashmap to have Cookie value
-    // also wanna support signed cookies
-
-    let all_cookies = in_.map(|i| {
-        i.set_cookies
-            .borrow()
-            .iter()
-            .map(|c| c.to_string_strict())
-            .collect::<Vec<String>>()
-            .join(";")
-    });
-
-    if all_cookies.is_some() {
-        resp = resp.header(::http::header::SET_COOKIE, all_cookies.unwrap());
-    }
-
-    resp.body(bytes::Bytes::from(serde_json::to_vec(&t).unwrap()))
-        .unwrap()
-}
-
-#[cfg(test)]
-mod test {
-    use pretty_assertions::assert_eq;
-    use std::cell::RefCell;
-    use std::rc::Rc;
-
-    #[test]
-    fn test_json_response_with_no_cookie() {
-        let t = serde_json::json!({"name": "John"});
-
-        // not using In::from_request() as it requires a wasm env
-        let in_ = ft_sdk::In {
-            ud: None,
-            req: http::Request::default(),
-            now: chrono::Utc::now(),
-            set_cookies: Rc::new(RefCell::new(Vec::new())),
-            form_errors: Default::default(),
-        };
-
-        let res = super::json_response(&t, Some(&in_));
-
-        assert_eq!(
-            res.body(),
-            &bytes::Bytes::from(serde_json::to_vec(&t).unwrap())
-        );
-
-        assert_eq!(in_.set_cookies.borrow().len(), 0);
-    }
-
-    #[test]
-    fn test_json_response_with_cookies() {
-        let t = serde_json::json!({"name": "John"});
-
-        // not using In::from_request() as it requires a wasm env
-        let in_ = ft_sdk::In {
-            ud: None,
-            req: http::Request::default(),
-            now: chrono::Utc::now(),
-            set_cookies: Rc::new(RefCell::new(Vec::new())),
-            form_errors: Default::default(),
-        };
-
-        set_test_cookies(in_.clone());
-
-        let res = super::json_response(t, Some(&in_));
-
-        let cookie_str = res.headers().get("set-cookie").unwrap();
-
-        // the browser should set only the last value of the cookie
-        assert_eq!(
-            cookie_str,
-            "test=test_value; Secure; HttpOnly; SameSite=Strict;\
-            test2=test_value2; Secure; HttpOnly; SameSite=Strict;\
-            test2=new_value; Secure; HttpOnly; SameSite=Strict"
-        );
-
-        assert_eq!(in_.set_cookies.borrow().len(), 3);
-    }
-
-    fn set_test_cookies(in_: ft_sdk::In) {
-        use ft_sdk::Cookie;
-
-        let cookies = vec![
-            Cookie::new("test", "test_value"),
-            Cookie::new("test2", "test_value2"),
-            Cookie::new("test2", "new_value"),
-        ];
-
-        for c in cookies {
-            in_.add_cookie(c);
-        }
-    }
 }

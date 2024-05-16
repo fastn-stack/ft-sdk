@@ -68,7 +68,7 @@ pub trait CookieExt {
     fn cookie(&self, name: &str) -> Option<&str>;
 }
 
-impl CookieExt for ::http::Request<bytes::Bytes> {
+impl CookieExt for ::http::Request<serde_json::Value> {
     fn cookie(&self, name: &str) -> Option<&str> {
         self.headers()
             .get("cookie")
