@@ -4,7 +4,7 @@ diesel::table! {
     fastn_user (id) {
         id -> Int8,
         name -> Nullable<Text>,
-        username -> Nullable<Text>,
+        identity -> Text,
         data -> Jsonb,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,

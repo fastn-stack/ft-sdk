@@ -1,3 +1,5 @@
+use crate::Required;
+
 pub struct Query<const KEY: &'static str>(pub String);
 
 impl<const KEY: &'static str> std::fmt::Display for Query<KEY> {
@@ -20,6 +22,12 @@ impl<const KEY: &'static str> std::ops::Deref for Query<KEY> {
     }
 }
 
+impl<const KEY: &'static str> Query<KEY> {
+    pub fn error<S: AsRef<str>>(&self, msg: S) -> ft_sdk::SpecialError {
+        ft_sdk::single_error(KEY, msg)
+    }
+}
+
 impl<const KEY: &'static str> ft_sdk::FromRequest for Query<KEY> {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         let query = req.uri().query().unwrap_or_default();
@@ -31,9 +39,22 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for Query<KEY> {
             }
         };
 
-        args.iter().find(|(k, _)| k == KEY).map_or_else(
-            || Err(ft_sdk::single_error(KEY, format!("{} is missing in input", KEY)).into()),
-            |(_, v)| Ok(Query(v.to_string())),
-        )
+        if let Some((_, v)) = args.into_iter().find(|(k, _)| k == KEY) {
+            return Ok(Query(v));
+        }
+
+        if let serde_json::Value::Object(map) = req.body() {
+            if let Some(value) = map.get(KEY) {
+                if let serde_json::Value::String(s) = value {
+                    if s.is_empty() {
+                        return Err(ft_sdk::single_error(KEY, "field is empty").into());
+                    }
+
+                    return Ok(Query(s.to_string()));
+                }
+            }
+        }
+
+        Err(ft_sdk::single_error(KEY, format!("{KEY} is missing in input")).into())
     }
 }
