@@ -5,6 +5,8 @@ mod schema;
 #[cfg(feature = "auth-provider")]
 pub mod provider;
 
+pub use schema::{fastn_session, fastn_user};
+
 #[derive(Clone)]
 pub struct UserId(pub i64);
 

@@ -1,5 +1,3 @@
-use crate::Required;
-
 pub struct Query<const KEY: &'static str>(pub String);
 
 impl<const KEY: &'static str> std::fmt::Display for Query<KEY> {
