@@ -42,14 +42,12 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for Query<KEY> {
         }
 
         if let serde_json::Value::Object(map) = req.body() {
-            if let Some(value) = map.get(KEY) {
-                if let serde_json::Value::String(s) = value {
-                    if s.is_empty() {
-                        return Err(ft_sdk::single_error(KEY, "field is empty").into());
-                    }
-
-                    return Ok(Query(s.to_string()));
+            if let Some(serde_json::Value::String(s)) = map.get(KEY) {
+                if s.is_empty() {
+                    return Err(ft_sdk::single_error(KEY, "field is empty").into());
                 }
+
+                return Ok(Query(s.to_string()));
             }
         }
 

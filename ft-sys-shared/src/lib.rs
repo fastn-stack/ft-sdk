@@ -109,10 +109,23 @@ pub struct UserData {
     pub verified_email: bool,
 }
 
+// copy from diesel, keeping only the necessary variants
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub enum DatabaseErrorKind {
+    UniqueViolation,
+    ForeignKeyViolation,
+    NotNullViolation,
+    CheckViolation,
+    SerializationFailure,
+    ReadOnlyTransaction,
+    ClosedConnection,
+    Unknown,
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum DbError {
     DatabaseError {
-        code: String,
+        kind: DatabaseErrorKind,
         message: String,
         details: Option<String>,
         hint: Option<String>,

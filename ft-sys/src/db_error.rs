@@ -17,7 +17,7 @@ pub fn db_error_to_diesel_error(e: ft_sys_shared::DbError) -> diesel::result::Er
             Box::new(e),
         ),
         ft_sys_shared::DbError::DatabaseError {
-            code,
+            kind,
             message,
             details,
             hint,
@@ -25,15 +25,17 @@ pub fn db_error_to_diesel_error(e: ft_sys_shared::DbError) -> diesel::result::Er
             column_name,
             constraint_name,
             statement_position,
+            ..
         } => diesel::result::Error::DatabaseError(
-            match code.as_str() {
-                "23505" => UniqueViolation,
-                "23503" => ForeignKeyViolation,
-                "40001" => SerializationFailure,
-                "25006" => ReadOnlyTransaction,
-                "23502" => NotNullViolation,
-                "23514" => CheckViolation,
-                _ => Unknown,
+            match kind {
+                ft_sys_shared::DatabaseErrorKind::UniqueViolation => UniqueViolation,
+                ft_sys_shared::DatabaseErrorKind::ForeignKeyViolation => ForeignKeyViolation,
+                ft_sys_shared::DatabaseErrorKind::NotNullViolation => NotNullViolation,
+                ft_sys_shared::DatabaseErrorKind::CheckViolation => CheckViolation,
+                ft_sys_shared::DatabaseErrorKind::SerializationFailure => SerializationFailure,
+                ft_sys_shared::DatabaseErrorKind::ReadOnlyTransaction => ReadOnlyTransaction,
+                ft_sys_shared::DatabaseErrorKind::ClosedConnection => ClosedConnection,
+                ft_sys_shared::DatabaseErrorKind::Unknown => Unknown,
             },
             Box::new(DbError {
                 message,
