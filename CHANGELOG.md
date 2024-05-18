@@ -4,6 +4,7 @@
 
 ### ft-sys-shared: `0.1.1-alpha.3`
 
+- changed `UserData.username` to `UserData.identity`
 - added `DatabaseErrorKind`
 - changed `DbError::DatabaseError` (replaced `code` with `kind`)
 
