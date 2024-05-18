@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 18th May 2024
+
+### ft-sys-shared: `0.1.1-alpha.3`
+
+- added `DatabaseErrorKind`
+- changed `DbError::DatabaseError` (replaced `code` with `kind`)
+
 ## 29th Apr 2024
 
 ### ft-sys-shared: `0.1.1-alpha.2`
