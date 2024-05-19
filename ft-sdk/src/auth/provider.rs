@@ -92,47 +92,26 @@ pub fn user_data_by_email(
     provider_id: &str,
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    // use diesel::prelude::*;
-    // use ft_sdk::auth::schema::fastn_user;
-    //
-    // // TODO: don't load all the users, just load the user with the email
-    // // this is until we figure out why binds are not properly working
-    // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
-    //
-    // let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
-    //     ft_sdk::println!("error: {:?}", e);
-    //     match e {
-    //         diesel::result::Error::NotFound => UserDataError::NoDataFound,
-    //         e => UserDataError::DatabaseError(e),
-    //     }
-    // })?;
-    //
-    // let user = users.iter().find(|(_, ud)| {
-    //     let data = user_data_from_json(ud.clone());
-    //     data.get(provider_id)
-    //         .and_then(|d| {
-    //             d.iter().find(|d| match d {
-    //                 ft_sdk::auth::UserData::Email(e) => e == email,
-    //                 ft_sdk::auth::UserData::VerifiedEmail(e) => e == email,
-    //                 _ => false,
-    //             })
-    //         })
-    //         .is_some()
-    // });
-    //
-    // if user.is_none() {
-    //     return Err(UserDataError::NoDataFound);
-    // }
-    //
-    // let user = user.unwrap();
-    //
-    // let data = user_data_from_json(user.1.clone());
-    //
-    // match data.get(provider_id).cloned() {
-    //     Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
-    //     None => Err(UserDataError::NoDataFound),
-    // }
-    todo!()
+    user_data_by_query(
+        conn,
+        provider_id,
+        format!(
+            r#"
+            SELECT
+                id, data -> '{provider_id}'
+            FROM fastn_user
+            WHERE
+                EXISTS (
+                    SELECT
+                        1
+                    FROM json_each(data -> '{provider_id}' -> 'verified_emails')
+                    WHERE value = $1
+                )
+            "#
+        )
+        .as_str(),
+        email,
+    )
 }
 
 pub fn assert_valid_provider_id(provider_id: &str) {
@@ -148,6 +127,29 @@ pub fn user_data_by_identity(
     provider_id: &str,
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
+    user_data_by_query(
+        conn,
+        provider_id,
+        format!(
+            r#"
+        SELECT
+            id, data -> '{provider_id}'
+        FROM fastn_user
+        WHERE
+             data -> '{provider_id}' -> 'identity' = $1
+        "#
+        )
+        .as_str(),
+        identity,
+    )
+}
+
+fn user_data_by_query(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    query: &str,
+    param: &str,
+) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
     use diesel::prelude::*;
 
     #[derive(diesel::QueryableByName)]
@@ -159,17 +161,9 @@ pub fn user_data_by_identity(
 
     assert_valid_provider_id(provider_id);
 
-    let ud: UD = match diesel::sql_query(format!(
-        r#"
-        SELECT
-            id, data -> '{provider_id}'
-        FROM fastn_user
-        WHERE
-             data -> '{provider_id}' -> 'identity' = $1
-        "#
-    ))
-    .bind::<diesel::sql_types::Text, _>(identity)
-    .load(conn)
+    let ud: UD = match diesel::sql_query(query)
+        .bind::<diesel::sql_types::Text, _>(param)
+        .load(conn)
     {
         Ok(v) if v.is_empty() => return Err(UserDataError::NoDataFound),
         Ok(v) if v.len() > 1 => return Err(UserDataError::MultipleRowsFound),
