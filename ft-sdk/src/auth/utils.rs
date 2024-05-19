@@ -77,7 +77,7 @@ pub(crate) fn user_data_from_json(
 #[allow(dead_code)]
 pub(crate) fn user_data_to_json(
     data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
-) -> serde_json::Value {
+) -> Result<String, serde_json::Error> {
     use ft_sdk::auth::UserData;
 
     let map = data
@@ -178,7 +178,7 @@ pub(crate) fn user_data_to_json(
         })
         .collect();
 
-    serde_json::Value::Object(map)
+    serde_json::to_string(&serde_json::Value::Object(map))
 }
 
 #[cfg(test)]
@@ -206,7 +206,7 @@ mod test {
             )],
         );
 
-        let json = super::user_data_to_json(data);
+        let json = super::user_data_to_json(data).unwrap();
 
         let expected_json = serde_json::json!({
             "email": {
@@ -230,7 +230,7 @@ mod test {
             },
         });
 
-        assert_eq!(json, expected_json);
+        assert_eq!(json, serde_json::to_string(&expected_json).unwrap());
     }
 
     #[test]

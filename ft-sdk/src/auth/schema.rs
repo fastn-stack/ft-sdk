@@ -5,7 +5,7 @@ diesel::table! {
         id -> Int8,
         name -> Nullable<Text>,
         identity -> Text,
-        data -> Jsonb,
+        data -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }
@@ -17,7 +17,7 @@ diesel::table! {
     fastn_session (id) {
         id -> Text,
         uid -> Nullable<Int8>,
-        data -> Jsonb,
+        data -> Text,
         updated_at -> Timestamptz,
         created_at -> Timestamptz,
     }

@@ -91,46 +91,55 @@ pub fn user_data_by_email(
     provider_id: &str,
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    use diesel::prelude::*;
-    use ft_sdk::auth::schema::fastn_user;
+    // use diesel::prelude::*;
+    // use ft_sdk::auth::schema::fastn_user;
+    //
+    // // TODO: don't load all the users, just load the user with the email
+    // // this is until we figure out why binds are not properly working
+    // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
+    //
+    // let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
+    //     ft_sdk::println!("error: {:?}", e);
+    //     match e {
+    //         diesel::result::Error::NotFound => UserDataError::NoDataFound,
+    //         e => UserDataError::DatabaseError(e),
+    //     }
+    // })?;
+    //
+    // let user = users.iter().find(|(_, ud)| {
+    //     let data = user_data_from_json(ud.clone());
+    //     data.get(provider_id)
+    //         .and_then(|d| {
+    //             d.iter().find(|d| match d {
+    //                 ft_sdk::auth::UserData::Email(e) => e == email,
+    //                 ft_sdk::auth::UserData::VerifiedEmail(e) => e == email,
+    //                 _ => false,
+    //             })
+    //         })
+    //         .is_some()
+    // });
+    //
+    // if user.is_none() {
+    //     return Err(UserDataError::NoDataFound);
+    // }
+    //
+    // let user = user.unwrap();
+    //
+    // let data = user_data_from_json(user.1.clone());
+    //
+    // match data.get(provider_id).cloned() {
+    //     Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
+    //     None => Err(UserDataError::NoDataFound),
+    // }
+    todo!()
+}
 
-    // TODO: don't load all the users, just load the user with the email
-    // this is until we figure out why binds are not properly working
-    let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
-
-    let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
-        ft_sdk::println!("error: {:?}", e);
-        match e {
-            diesel::result::Error::NotFound => UserDataError::NoDataFound,
-            e => UserDataError::DatabaseError(e),
+pub fn assert_valid_provider_id(provider_id: &str) {
+    provider_id.chars().for_each(|c| {
+        if !c.is_ascii_alphanumeric() {
+            panic!("invalid provider id: {}", provider_id);
         }
-    })?;
-
-    let user = users.iter().find(|(_, ud)| {
-        let data = user_data_from_json(ud.clone());
-        data.get(provider_id)
-            .and_then(|d| {
-                d.iter().find(|d| match d {
-                    ft_sdk::auth::UserData::Email(e) => e == email,
-                    ft_sdk::auth::UserData::VerifiedEmail(e) => e == email,
-                    _ => false,
-                })
-            })
-            .is_some()
     });
-
-    if user.is_none() {
-        return Err(UserDataError::NoDataFound);
-    }
-
-    let user = user.unwrap();
-
-    let data = user_data_from_json(user.1.clone());
-
-    match data.get(provider_id).cloned() {
-        Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
-        None => Err(UserDataError::NoDataFound),
-    }
 }
 
 pub fn user_data_by_identity(
@@ -138,45 +147,62 @@ pub fn user_data_by_identity(
     provider_id: &str,
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    use diesel::prelude::*;
-    use ft_sdk::auth::schema::fastn_user;
-
-    // TODO: don't load all the users, just load the user with the email
-    // this is until we figure out why binds are not properly working
-    let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
-
-    let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
-        ft_sdk::println!("error: {:?}", e);
-        match e {
-            diesel::result::Error::NotFound => UserDataError::NoDataFound,
-            e => UserDataError::DatabaseError(e),
-        }
-    })?;
-
-    let user = users.iter().find(|(_, ud)| {
-        let data = user_data_from_json(ud.clone());
-        data.get(provider_id)
-            .and_then(|d| {
-                d.iter().find(|d| match d {
-                    ft_sdk::auth::UserData::Identity(i) => i == identity,
-                    _ => false,
-                })
-            })
-            .is_some()
-    });
-
-    if user.is_none() {
-        return Err(UserDataError::NoDataFound);
-    }
-
-    let user = user.unwrap();
-
-    let data = user_data_from_json(user.1.clone());
-
-    match data.get(provider_id).cloned() {
-        Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
-        None => Err(UserDataError::NoDataFound),
-    }
+    todo!()
+    // use diesel::prelude::*;
+    // use ft_sdk::auth::schema::fastn_user;
+    //
+    // assert_valid_provider_id(provider_id);
+    //
+    // // todo: sanitise provider_id
+    // diesel::sql_query(format!(
+    //     "select * from fastn_user where data -> {provider_id} -> 'identity' = ?"
+    // ))
+    // .bind::<diesel::sql_types::Text, _>(identity)
+    // .execute(conn)
+    // .map_err(|e| {
+    //     ft_sdk::println!("error: {:?}", e);
+    //     match e {
+    //         diesel::result::Error::NotFound => UserDataError::NoDataFound,
+    //         e => UserDataError::DatabaseError(e),
+    //     }
+    // })?;
+    //
+    // // TODO: don't load all the users, just load the user with the email
+    // // this is until we figure out why binds are not properly working
+    // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
+    //
+    // let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
+    //     ft_sdk::println!("error: {:?}", e);
+    //     match e {
+    //         diesel::result::Error::NotFound => UserDataError::NoDataFound,
+    //         e => UserDataError::DatabaseError(e),
+    //     }
+    // })?;
+    //
+    // let user = users.iter().find(|(_, ud)| {
+    //     let data = user_data_from_json(ud.clone());
+    //     data.get(provider_id)
+    //         .and_then(|d| {
+    //             d.iter().find(|d| match d {
+    //                 ft_sdk::auth::UserData::Identity(i) => i == identity,
+    //                 _ => false,
+    //             })
+    //         })
+    //         .is_some()
+    // });
+    //
+    // if user.is_none() {
+    //     return Err(UserDataError::NoDataFound);
+    // }
+    //
+    // let user = user.unwrap();
+    //
+    // let data = user_data_from_json(user.1.clone());
+    //
+    // match data.get(provider_id).cloned() {
+    //     Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
+    //     None => Err(UserDataError::NoDataFound),
+    // }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -200,47 +226,48 @@ pub fn create_user(
     identity: &str,
     data: Vec<ft_sdk::auth::UserData>,
 ) -> Result<ft_sdk::UserId, AuthError> {
-    use diesel::prelude::*;
-    use ft_sdk::auth::schema::fastn_user;
-
-    if identity_exists(conn, identity, provider_id, None)? {
-        return Err(AuthError::IdentityExists);
-    }
-
-    let mut data = data;
-    let now = ft_sys::env::now();
-
-    data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
-
-    // find name
-    let name = data.iter().find_map(|d| match d {
-        ft_sdk::auth::UserData::Name(name) => Some(name.clone()),
-        _ => None,
-    });
-
-    if name.is_none() {
-        return Err(AuthError::NameNotProvided);
-    }
-
-    let mut data_with_provider = std::collections::HashMap::new();
-
-    data_with_provider.insert(provider_id.to_string(), data);
-
-    let data_json = user_data_to_json(data_with_provider);
-
-    let query = diesel::insert_into(fastn_user::table)
-        .values((
-            fastn_user::name.eq(name.unwrap()),
-            fastn_user::identity.eq(identity),
-            fastn_user::data.eq(data_json),
-            fastn_user::created_at.eq(now),
-            fastn_user::updated_at.eq(now),
-        ))
-        .returning(fastn_user::id);
-
-    let user_id: i64 = query.get_result(conn)?;
-
-    Ok(ft_sdk::auth::UserId(user_id))
+    // use diesel::prelude::*;
+    // use ft_sdk::auth::schema::fastn_user;
+    //
+    // if identity_exists(conn, identity, provider_id, None)? {
+    //     return Err(AuthError::IdentityExists);
+    // }
+    //
+    // let mut data = data;
+    // let now = ft_sys::env::now();
+    //
+    // data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
+    //
+    // // find name
+    // let name = data.iter().find_map(|d| match d {
+    //     ft_sdk::auth::UserData::Name(name) => Some(name.clone()),
+    //     _ => None,
+    // });
+    //
+    // if name.is_none() {
+    //     return Err(AuthError::NameNotProvided);
+    // }
+    //
+    // let mut data_with_provider = std::collections::HashMap::new();
+    //
+    // data_with_provider.insert(provider_id.to_string(), data);
+    //
+    // let data_json = user_data_to_json(data_with_provider)?;
+    //
+    // let query = diesel::insert_into(fastn_user::table)
+    //     .values((
+    //         fastn_user::name.eq(name.unwrap()),
+    //         fastn_user::identity.eq(identity),
+    //         fastn_user::data.eq(data_json),
+    //         fastn_user::created_at.eq(now),
+    //         fastn_user::updated_at.eq(now),
+    //     ))
+    //     .returning(fastn_user::id);
+    //
+    // let user_id: i64 = query.get_result(conn)?;
+    //
+    // Ok(ft_sdk::auth::UserId(user_id))
+    todo!()
 }
 
 /// persist the user in session and redirect to `next`
@@ -254,48 +281,49 @@ pub fn login(
     identity: &str,
     next: &str,
 ) -> Result<ft_sdk::chr::CHR<ft_sdk::form::Output>, LoginError> {
-    // TODO:
-    // move this comment to fn docs when this is done
-    // If the user is already logged in, and the provider id is different, this id would be added as
-    // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
-    use diesel::prelude::*;
-    use ft_sdk::auth::schema::fastn_session;
-    use rand_core::RngCore;
-
-    let now = ft_sys::env::now();
-
-    let data = serde_json::json!({
-        "provider_id": provider_id,
-        "identity": identity,
-    });
-
-    let mut rand_buf: [u8; 16] = Default::default();
-    ft_sdk::Rng::fill_bytes(&mut ft_sdk::Rng {}, &mut rand_buf);
-    let session_id = uuid::Uuid::new_v8(rand_buf).to_string();
-
-    // TODO: store client information, like user agent, ip addr?
-    let query = diesel::insert_into(fastn_session::table)
-        .values((
-            fastn_session::id.eq(&session_id),
-            fastn_session::uid.eq(user_id.0),
-            fastn_session::data.eq(data),
-            fastn_session::created_at.eq(now),
-            fastn_session::updated_at.eq(now),
-        ))
-        .returning(fastn_session::id);
-
-    let id: String = query.get_result(conn)?;
-
-    let session_str = serde_json::to_string(&serde_json::json!({
-        "id": id,
-        "provider_id": provider_id,
-        "identity": identity,
-    }))?;
-
-    let chr = ft_sdk::chr::CHR::new(ft_sdk::form::Output::Redirect(next.to_string()))
-        .with_cookie((ft_sdk::auth::SESSION_KEY, &session_str));
-
-    Ok(chr)
+    // // TODO:
+    // // move this comment to fn docs when this is done
+    // // If the user is already logged in, and the provider id is different, this id would be added as
+    // // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
+    // use diesel::prelude::*;
+    // use ft_sdk::auth::schema::fastn_session;
+    // use rand_core::RngCore;
+    //
+    // let now = ft_sys::env::now();
+    //
+    // let data = serde_json::json!({
+    //     "provider_id": provider_id,
+    //     "identity": identity,
+    // });
+    //
+    // let mut rand_buf: [u8; 16] = Default::default();
+    // ft_sdk::Rng::fill_bytes(&mut ft_sdk::Rng {}, &mut rand_buf);
+    // let session_id = uuid::Uuid::new_v8(rand_buf).to_string();
+    //
+    // // TODO: store client information, like user agent, ip addr?
+    // let query = diesel::insert_into(fastn_session::table)
+    //     .values((
+    //         fastn_session::id.eq(&session_id),
+    //         fastn_session::uid.eq(user_id.0),
+    //         fastn_session::data.eq(data),
+    //         fastn_session::created_at.eq(now),
+    //         fastn_session::updated_at.eq(now),
+    //     ))
+    //     .returning(fastn_session::id);
+    //
+    // let id: String = query.get_result(conn)?;
+    //
+    // let session_str = serde_json::to_string(&serde_json::json!({
+    //     "id": id,
+    //     "provider_id": provider_id,
+    //     "identity": identity,
+    // }))?;
+    //
+    // let chr = ft_sdk::chr::CHR::new(ft_sdk::form::Output::Redirect(next.to_string()))
+    //     .with_cookie((ft_sdk::auth::SESSION_KEY, &session_str));
+    //
+    // Ok(chr)
+    todo!()
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -337,40 +365,42 @@ pub fn update_user(
     // TODO:
     // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::auth::UserId, AuthError> {
-    use diesel::prelude::*;
-    use ft_sdk::auth::schema::fastn_user;
-
-    if identity_exists(conn, identity, provider_id, Some(id.clone()))? {
-        return Err(AuthError::IdentityExists);
-    }
-
-    let mut data = data;
-    data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
-
-    let now = ft_sys::env::now();
-
-    let affected = conn.transaction(|c| {
-        let mut old_data = fastn_user::table
-            .filter(fastn_user::id.eq(&id.0))
-            .select(fastn_user::data)
-            .first::<serde_json::Value>(c)?;
-
-        let new_data = get_new_user_data(provider_id, data, &mut old_data).map(user_data_to_json);
-
-        let new_data = new_data.unwrap();
-
-        let query = diesel::update(fastn_user::table.filter(fastn_user::id.eq(&id.0))).set((
-            fastn_user::identity.eq(identity),
-            fastn_user::data.eq(&new_data),
-            fastn_user::updated_at.eq(&now),
-        ));
-
-        query.execute(c)
-    })?;
-
-    ft_sdk::println!("modified {} user(s)", affected);
-
-    Ok(id.clone())
+    todo!()
+    // use diesel::prelude::*;
+    // use ft_sdk::auth::schema::fastn_user;
+    //
+    // if identity_exists(conn, identity, provider_id, Some(id.clone()))? {
+    //     return Err(AuthError::IdentityExists);
+    // }
+    //
+    // let mut data = data;
+    // data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
+    //
+    // let now = ft_sys::env::now();
+    //
+    // let affected = conn.transaction::<_, AuthError, _>(|c| {
+    //     let mut old_data = fastn_user::table
+    //         .filter(fastn_user::id.eq(&id.0))
+    //         .select(fastn_user::data)
+    //         .first::<serde_json::Value>(c)?;
+    //
+    //     let new_data =
+    //         get_new_user_data(provider_id, data, &mut old_data).map(user_data_to_json)?;
+    //
+    //     let new_data = new_data?;
+    //
+    //     let query = diesel::update(fastn_user::table.filter(fastn_user::id.eq(&id.0))).set((
+    //         fastn_user::identity.eq(identity),
+    //         fastn_user::data.eq(&new_data),
+    //         fastn_user::updated_at.eq(&now),
+    //     ));
+    //
+    //     Ok(query.execute(c)?)
+    // })?;
+    //
+    // ft_sdk::println!("modified {} user(s)", affected);
+    //
+    // Ok(id.clone())
 }
 
 fn identity_exists(
@@ -379,38 +409,39 @@ fn identity_exists(
     provider_id: &str,
     user_id: Option<ft_sdk::UserId>,
 ) -> Result<bool, diesel::result::Error> {
-    use diesel::prelude::*;
-    use ft_sdk::auth::schema::fastn_user;
-
-    let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
-
-    let users: Vec<(i64, serde_json::Value)> = query.get_results(conn)?;
-
-    let user = users.iter().find(|(_, ud)| {
-        let data = user_data_from_json(ud.clone());
-
-        data.get(provider_id)
-            .map(|v| {
-                v.iter().any(|d| match d {
-                    ft_sdk::auth::UserData::Identity(i) => i == identity,
-                    _ => false,
-                })
-            })
-            .unwrap_or(false)
-    });
-
-    if user.is_none() {
-        return Ok(false);
-    }
-
-    if let Some(user_id) = user_id {
-        let user = user.unwrap();
-        if user.0 == user_id.0 {
-            return Ok(false);
-        }
-    }
-
-    Ok(true)
+    todo!()
+    // use diesel::prelude::*;
+    // use ft_sdk::auth::schema::fastn_user;
+    //
+    // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
+    //
+    // let users: Vec<(i64, serde_json::Value)> = query.get_results(conn)?;
+    //
+    // let user = users.iter().find(|(_, ud)| {
+    //     let data = user_data_from_json(ud.clone());
+    //
+    //     data.get(provider_id)
+    //         .map(|v| {
+    //             v.iter().any(|d| match d {
+    //                 ft_sdk::auth::UserData::Identity(i) => i == identity,
+    //                 _ => false,
+    //             })
+    //         })
+    //         .unwrap_or(false)
+    // });
+    //
+    // if user.is_none() {
+    //     return Ok(false);
+    // }
+    //
+    // if let Some(user_id) = user_id {
+    //     let user = user.unwrap();
+    //     if user.0 == user_id.0 {
+    //         return Ok(false);
+    //     }
+    // }
+    //
+    // Ok(true)
 }
 
 /// update existing user's data (`old_data`) with the provided `data`
@@ -551,6 +582,9 @@ mod test {
         let expected = super::get_new_user_data(provider_id, data, &mut old_data).unwrap();
         let expected = super::user_data_to_json(expected);
 
-        assert_eq!(expected, expected_json);
+        assert_eq!(
+            expected.unwrap(),
+            serde_json::to_string(&expected_json).unwrap()
+        );
     }
 }

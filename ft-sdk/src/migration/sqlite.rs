@@ -48,13 +48,12 @@ CREATE TABLE IF NOT EXISTS fastn_user
     name     TEXT NULL,
     identity TEXT,
     -- this stores ft_sdk::auth::UserData
-    data     BLOB,
+    data     TEXT,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 ) STRICT;
 
 "#;
-
 
 pub(super) const SESSION_TABLE: &str = r#"
 
@@ -62,7 +61,7 @@ CREATE TABLE IF NOT EXISTS fastn_session
 (
     id   TEXT PRIMARY KEY,
     uid  INTEGER NULL,
-    data BLOB, -- this is the session data only
+    data TEXT, -- this is the session data only
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
 
