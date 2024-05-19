@@ -172,7 +172,7 @@ pub fn user_data_by_identity(
         Err(e) => return Err(UserDataError::DatabaseError(e)),
     };
 
-    let ft_sdk::auth::ProviderData(data) = serde_json::from_str(&ud.data).unwrap();
+    let ft_sdk::auth::ProviderData(data) = serde_json::from_str(&ud.data)?;
     Ok((ft_sdk::auth::UserId(ud.id), data))
 }
 
@@ -184,6 +184,8 @@ pub enum UserDataError {
     MultipleRowsFound,
     #[error("db error: {0:?}")]
     DatabaseError(#[from] diesel::result::Error),
+    #[error("failed to deserialize data from db: {0:?}")]
+    FailedToDeserializeData(#[from] serde_json::Error),
 }
 
 pub fn create_user(
