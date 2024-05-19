@@ -6,8 +6,24 @@ pub enum SpecialError {
     Multi(ft_sdk::FormError),
     #[error("not found: {0}")]
     NotFound(String),
+    #[error("server error: {0}")]
+    ServerError(String),
     #[error("unauthorised: {0}")]
     Unauthorised(String),
+}
+
+/// Create a page not found response.
+#[macro_export]
+macro_rules! server_error {
+    ($($t:tt)*) => {{
+        let msg = format!($($t)*);
+        $crate::server_error_(msg)
+    }};
+}
+
+#[doc(hidden)]
+pub fn server_error_(msg: String) -> SpecialError {
+    SpecialError::ServerError(msg)
 }
 
 /// Create a page not found response.
@@ -64,6 +80,10 @@ pub fn handle_error(e: anyhow::Error) -> http::Response<bytes::Bytes> {
             SpecialError::Unauthorised(msg) => http::Response::builder()
                 .status(http::StatusCode::UNAUTHORIZED)
                 .body(format!("unauthorised: {msg}\n").into())
+                .unwrap(),
+            SpecialError::ServerError(msg) => http::Response::builder()
+                .status(http::StatusCode::INTERNAL_SERVER_ERROR)
+                .body(format!("server error: {msg}\n").into())
                 .unwrap(),
         };
     }

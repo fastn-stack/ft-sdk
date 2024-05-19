@@ -42,51 +42,6 @@ pub enum AuthError {
     IdentityExists,
 }
 
-/// Returns `true` if there's a [UserData::VerifiedEmail] for the provided email.
-///
-/// We check across data from all providers if `provider` is `None`, else we only check
-/// the data from the provider.
-pub fn check_if_verified_email_exists(
-    conn: &mut ft_sdk::Connection,
-    email: &str,
-    _provider: Option<&str>,
-) -> Result<bool, diesel::result::Error> {
-    use diesel::dsl::{count, sql};
-    use diesel::prelude::*;
-    use diesel::sql_types::{Bool, Text};
-    use ft_sdk::auth::schema::fastn_user;
-
-    // TODO: 'email' should come from `_provider`
-    #[cfg(not(feature = "postgres"))]
-    let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' LIKE ")
-        .bind::<Text, _>(format!("'%{}%'", email));
-
-    #[cfg(feature = "postgres")]
-    let filter = sql::<Bool>("data->'email'->'data'->'verified_emails' ? '")
-        .bind::<Text, _>(email)
-        .sql("'");
-
-    let query = fastn_user::table
-        .select(count(fastn_user::id))
-        .filter(filter);
-
-    #[cfg(not(feature = "postgres"))]
-    ft_sdk::utils::dbg_query::<_, ft_sys::Sqlite>(&query);
-
-    #[cfg(feature = "postgres")]
-    ft_sdk::utils::dbg_query::<_, diesel::pg::Pg>(&query);
-
-    let count: i64 = match query.get_result(conn) {
-        Ok(count) => count,
-        Err(e) => match e {
-            diesel::result::Error::NotFound => return Ok(false),
-            e => return Err(e),
-        },
-    };
-
-    Ok(count > 0)
-}
-
 pub fn user_data_by_email(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
@@ -132,12 +87,12 @@ pub fn user_data_by_identity(
         provider_id,
         format!(
             r#"
-        SELECT
-            id, data -> '{provider_id}'
-        FROM fastn_user
-        WHERE
-             data -> '{provider_id}' -> 'identity' = $1
-        "#
+            SELECT
+                id, data -> '{provider_id}'
+            FROM fastn_user
+            WHERE
+                 data -> '{provider_id}' -> 'identity' = $1
+            "#
         )
         .as_str(),
         identity,

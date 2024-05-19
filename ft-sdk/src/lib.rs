@@ -31,7 +31,7 @@ pub use auth::UserId;
 pub use chr::IntoCookie;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
-pub use error::{not_found_, single_error, unauthorised_, SpecialError};
+pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Cookie, Hidden, Optional, Query, Required};
 pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
