@@ -33,6 +33,76 @@ pub enum UserData {
     },
 }
 
+pub(crate) struct ProviderData(pub(crate) Vec<UserData>);
+
+impl<'de> serde::Deserialize<'de> for ProviderData {
+    fn deserialize<D>(deserializer: D) -> Result<ProviderData, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct UserDataVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for UserDataVisitor {
+            type Value = ProviderData;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a map")
+            }
+
+            fn visit_map<A>(self, mut map: A) -> Result<ProviderData, A::Error>
+            where
+                A: serde::de::MapAccess<'de>,
+            {
+                let mut all = ProviderData(Vec::new());
+                while let Some(k) = map.next_key::<String>()? {
+                    match k.as_str() {
+                        "verified_emails" => {
+                            let emails = map.next_value::<Vec<String>>()?;
+                            for email in emails {
+                                all.0.push(UserData::VerifiedEmail(email));
+                            }
+                        }
+                        "emails" => {
+                            let emails = map.next_value::<Vec<String>>()?;
+                            for email in emails {
+                                all.0.push(UserData::Email(email));
+                            }
+                        }
+                        "identity" => {
+                            let identity = map.next_value::<String>()?;
+                            all.0.push(UserData::Identity(identity));
+                        }
+                        "name" => {
+                            let name = map.next_value::<String>()?;
+                            all.0.push(UserData::Name(name));
+                        }
+                        "phones" => {
+                            let phones = map.next_value::<Vec<String>>()?;
+                            for phone in phones {
+                                all.0.push(UserData::Phone(phone));
+                            }
+                        }
+                        "profile_picture" => {
+                            let profile_picture = map.next_value::<String>()?;
+                            all.0.push(UserData::ProfilePicture(profile_picture));
+                        }
+                        t => {
+                            all.0.push(UserData::Custom {
+                                key: t.to_string(),
+                                value: map.next_value()?,
+                            });
+                        }
+                    }
+                }
+
+                Ok(all)
+            }
+        }
+
+        deserializer.deserialize_map(UserDataVisitor)
+    }
+}
+
 impl UserData {
     pub fn kind(&self) -> UserDataKind {
         match self {

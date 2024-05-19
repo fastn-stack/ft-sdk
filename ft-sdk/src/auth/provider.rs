@@ -22,6 +22,7 @@
 //! username etc. The UI will have been provided by the auth provider, or some other generic auth
 //! setting package.
 
+use diesel::{OptionalExtension, RunQueryDsl};
 use ft_sdk::auth::utils::{user_data_from_json, user_data_to_json};
 
 /// In the current session, we have zero or more scopes dropped by different auth
@@ -147,68 +148,40 @@ pub fn user_data_by_identity(
     provider_id: &str,
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    todo!()
-    // use diesel::prelude::*;
-    // use ft_sdk::auth::schema::fastn_user;
-    //
-    // assert_valid_provider_id(provider_id);
-    //
-    // // todo: sanitise provider_id
-    // diesel::sql_query(format!(
-    //     "select * from fastn_user where data -> {provider_id} -> 'identity' = ?"
-    // ))
-    // .bind::<diesel::sql_types::Text, _>(identity)
-    // .execute(conn)
-    // .map_err(|e| {
-    //     ft_sdk::println!("error: {:?}", e);
-    //     match e {
-    //         diesel::result::Error::NotFound => UserDataError::NoDataFound,
-    //         e => UserDataError::DatabaseError(e),
-    //     }
-    // })?;
-    //
-    // // TODO: don't load all the users, just load the user with the email
-    // // this is until we figure out why binds are not properly working
-    // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
-    //
-    // let users: Vec<(i64, serde_json::Value)> = query.get_results(conn).map_err(|e| {
-    //     ft_sdk::println!("error: {:?}", e);
-    //     match e {
-    //         diesel::result::Error::NotFound => UserDataError::NoDataFound,
-    //         e => UserDataError::DatabaseError(e),
-    //     }
-    // })?;
-    //
-    // let user = users.iter().find(|(_, ud)| {
-    //     let data = user_data_from_json(ud.clone());
-    //     data.get(provider_id)
-    //         .and_then(|d| {
-    //             d.iter().find(|d| match d {
-    //                 ft_sdk::auth::UserData::Identity(i) => i == identity,
-    //                 _ => false,
-    //             })
-    //         })
-    //         .is_some()
-    // });
-    //
-    // if user.is_none() {
-    //     return Err(UserDataError::NoDataFound);
-    // }
-    //
-    // let user = user.unwrap();
-    //
-    // let data = user_data_from_json(user.1.clone());
-    //
-    // match data.get(provider_id).cloned() {
-    //     Some(v) => Ok((ft_sdk::auth::UserId(user.0), v)),
-    //     None => Err(UserDataError::NoDataFound),
-    // }
+    use diesel::prelude::*;
+
+    #[derive(diesel::QueryableByName)]
+    #[diesel(table_name = ft_sdk::auth::fastn_user)]
+    struct UD {
+        id: i64,
+        data: String,
+    }
+
+    assert_valid_provider_id(provider_id);
+
+    let ud: UD = match diesel::sql_query(format!(
+        "select id, data -> '{provider_id}' from fastn_user where data -> '{provider_id}' -> 'identity' = $1"
+    ))
+    .bind::<diesel::sql_types::Text, _>(identity)
+    .load(conn)
+    {
+        Ok(v) if v.is_empty() => return Err(UserDataError::NoDataFound),
+        Ok(v) if v.len() > 1 => return Err(UserDataError::MultipleRowsFound),
+        Ok(mut v) => v.pop().unwrap(),
+        Err(diesel::result::Error::NotFound) => return Err(UserDataError::NoDataFound),
+        Err(e) => return Err(UserDataError::DatabaseError(e)),
+    };
+
+    let ft_sdk::auth::ProviderData(data) = serde_json::from_str(&ud.data).unwrap();
+    Ok((ft_sdk::auth::UserId(ud.id), data))
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum UserDataError {
     #[error("no data found for the provider")]
     NoDataFound,
+    #[error("multiple rows found")]
+    MultipleRowsFound,
     #[error("db error: {0:?}")]
     DatabaseError(#[from] diesel::result::Error),
 }
