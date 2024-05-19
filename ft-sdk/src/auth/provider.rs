@@ -160,7 +160,13 @@ pub fn user_data_by_identity(
     assert_valid_provider_id(provider_id);
 
     let ud: UD = match diesel::sql_query(format!(
-        "select id, data -> '{provider_id}' from fastn_user where data -> '{provider_id}' -> 'identity' = $1"
+        r#"
+        SELECT
+            id, data -> '{provider_id}'
+        FROM fastn_user
+        WHERE
+             data -> '{provider_id}' -> 'identity' = $1
+        "#
     ))
     .bind::<diesel::sql_types::Text, _>(identity)
     .load(conn)
@@ -204,9 +210,9 @@ pub fn create_user(
     // use diesel::prelude::*;
     // use ft_sdk::auth::schema::fastn_user;
     //
-    // if identity_exists(conn, identity, provider_id, None)? {
-    //     return Err(AuthError::IdentityExists);
-    // }
+    if identity_exists(conn, identity, provider_id)? {
+        return Err(AuthError::IdentityExists);
+    }
     //
     // let mut data = data;
     // let now = ft_sys::env::now();
@@ -340,13 +346,12 @@ pub fn update_user(
     // TODO:
     // token: Option<serde_json::Value>,
 ) -> Result<ft_sdk::auth::UserId, AuthError> {
-    todo!()
     // use diesel::prelude::*;
     // use ft_sdk::auth::schema::fastn_user;
     //
-    // if identity_exists(conn, identity, provider_id, Some(id.clone()))? {
-    //     return Err(AuthError::IdentityExists);
-    // }
+    if identity_exists(conn, identity, provider_id)? {
+        return Err(AuthError::IdentityExists);
+    }
     //
     // let mut data = data;
     // data.push(ft_sdk::auth::UserData::Identity(identity.to_string()));
@@ -376,16 +381,38 @@ pub fn update_user(
     // ft_sdk::println!("modified {} user(s)", affected);
     //
     // Ok(id.clone())
+    todo!()
 }
 
 fn identity_exists(
     conn: &mut ft_sdk::Connection,
     identity: &str,
     provider_id: &str,
-    user_id: Option<ft_sdk::UserId>,
 ) -> Result<bool, diesel::result::Error> {
-    todo!()
-    // use diesel::prelude::*;
+    use diesel::prelude::*;
+
+    #[derive(diesel::QueryableByName)]
+    struct R {
+        #[diesel(sql_type = diesel::sql_types::BigInt)]
+        count: i64,
+    }
+
+    match diesel::sql_query(format!(
+        r#"
+        SELECT count(*) count
+        FROM fastn_user
+        WHERE
+             data -> '{provider_id}' -> 'identity' = $1
+        "#
+    ))
+    .bind::<diesel::sql_types::Text, _>(identity)
+    .get_result::<R>(conn)
+    {
+        Ok(r) if r.count == 0 => Ok(false),
+        Ok(_) => Ok(true),
+        Err(e) => Err(e),
+    }
+
     // use ft_sdk::auth::schema::fastn_user;
     //
     // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
