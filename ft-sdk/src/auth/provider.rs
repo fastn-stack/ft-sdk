@@ -131,10 +131,10 @@ pub fn user_data_by_identity(
 
 #[derive(Debug, thiserror::Error)]
 pub enum CreateUserError {
-    #[error("set user id for session {0}")]
-    SetUserIDError(#[from] ft_sdk::auth::session::SetUserIDError),
     #[error("diesel error {0}")]
     Diesel(#[from] diesel::result::Error),
+    #[error("login error {0}")]
+    Login(#[from] LoginError),
 }
 
 pub fn create_user(
@@ -169,13 +169,7 @@ pub fn create_user(
             .get_result(conn)
             .unwrap();
 
-        match session_id {
-            Some(session_id) => {
-                ft_sdk::auth::session::set_user_id(conn, &session_id, user_id)?;
-                Ok(session_id)
-            }
-            None => Ok(ft_sdk::auth::session::create_with_user(conn, user_id)?),
-        }
+        login(conn, &ft_sdk::UserId(user_id), session_id).map_err(Into::into)
     })
 }
 
@@ -185,60 +179,24 @@ pub fn create_user(
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
-    user_id: &ft_sdk::UserId,
-    provider_id: &str,
-    identity: &str,
-    next: &str,
-) -> Result<ft_sdk::chr::CHR<ft_sdk::form::Output>, LoginError> {
-    // // TODO:
-    // // move this comment to fn docs when this is done
-    // // If the user is already logged in, and the provider id is different, this id would be added as
-    // // alternate id. In subsequent logins, the user can use any of the alternate ids to log in.
-    // use diesel::prelude::*;
-    // use ft_sdk::auth::schema::fastn_session;
-    // use rand_core::RngCore;
-    //
-    // let now = ft_sys::env::now();
-    //
-    // let data = serde_json::json!({
-    //     "provider_id": provider_id,
-    //     "identity": identity,
-    // });
-    //
-    // let mut rand_buf: [u8; 16] = Default::default();
-    // ft_sdk::Rng::fill_bytes(&mut ft_sdk::Rng {}, &mut rand_buf);
-    // let session_id = uuid::Uuid::new_v8(rand_buf).to_string();
-    //
-    // // TODO: store client information, like user agent, ip addr?
-    // let query = diesel::insert_into(fastn_session::table)
-    //     .values((
-    //         fastn_session::id.eq(&session_id),
-    //         fastn_session::uid.eq(user_id.0),
-    //         fastn_session::data.eq(data),
-    //         fastn_session::created_at.eq(now),
-    //         fastn_session::updated_at.eq(now),
-    //     ))
-    //     .returning(fastn_session::id);
-    //
-    // let id: String = query.get_result(conn)?;
-    //
-    // let session_str = serde_json::to_string(&serde_json::json!({
-    //     "id": id,
-    //     "provider_id": provider_id,
-    //     "identity": identity,
-    // }))?;
-    //
-    // let chr = ft_sdk::chr::CHR::new(ft_sdk::form::Output::Redirect(next.to_string()))
-    //     .with_cookie((ft_sdk::auth::SESSION_KEY, &session_str));
-    //
-    // Ok(chr)
-    todo!()
+    ft_sdk::UserId(user_id): &ft_sdk::UserId,
+    session_id: Option<ft_sdk::auth::SessionID>,
+) -> Result<ft_sdk::auth::SessionID, LoginError> {
+    match session_id {
+        Some(session_id) => {
+            ft_sdk::auth::session::set_user_id(conn, &session_id, *user_id)?;
+            Ok(session_id)
+        }
+        None => Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?),
+    }
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum LoginError {
     #[error("db error: {0}")]
     DatabaseError(#[from] diesel::result::Error),
+    #[error("set user id for session {0}")]
+    SetUserIDError(#[from] ft_sdk::auth::session::SetUserIDError),
 
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
