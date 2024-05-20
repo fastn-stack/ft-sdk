@@ -96,23 +96,24 @@ pub fn ud(
         });
     }
 
-    let session_cookie = cookie.0?;
-    let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
-    let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
+    ft_sdk::println!("sid: {cookie}");
+
+    let sid = cookie.0?;
 
     let (UserId(id), data) = utils::user_data_by_query(
         conn,
         r#"
             SELECT
-                id, data -> 'email'
+                fastn_user.id as id, fastn_user.data -> 'email' as data
             FROM fastn_user
             JOIN fastn_session
             WHERE
                 fastn_session.id = $1
                 AND fastn_user.id = fastn_session.uid
             "#,
-        session_id,
+        sid.as_str(),
     )
+    .inspect_err(|e| ft_sdk::println!("error: {e}"))
     .ok()?;
 
     Some(ft_sys::UserData {
