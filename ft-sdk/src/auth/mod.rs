@@ -28,6 +28,15 @@ pub struct ProviderData {
     pub custom: serde_json::Value,
 }
 
+impl ProviderData {
+    pub fn get_custom<T: serde::de::DeserializeOwned>(&self, key: &str) -> Option<T> {
+        self.custom
+            .get(key)
+            .and_then(|v| v.as_str())
+            .and_then(|v| serde_json::from_str(v).ok())
+    }
+}
+
 /// Get the currently logged-in user's userid. Returns `None` if the user is not logged in.
 pub fn user_id() -> Option<UserId> {
     todo!()

@@ -15,7 +15,7 @@ postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 migration = [] # only if either sqlite-default or postgres-default is activated
-auth-provider = ["uuid"]
+auth-provider = []
 field-extractors = []
 
 [dependencies]
@@ -32,7 +32,7 @@ serde_urlencoded.workspace = true
 diesel = { workspace = true, optional = true }
 include_dir.workspace = true
 rand_core.workspace = true
-uuid = { workspace = true, optional = true }
+uuid.workspace = true
 
 [dev-dependencies]
 pretty_assertions = "1"

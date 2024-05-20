@@ -22,7 +22,6 @@
 //! username etc. The UI will have been provided by the auth provider, or some other generic auth
 //! setting package.
 
-use crate::unauthorised;
 use diesel::{OptionalExtension, RunQueryDsl};
 
 /// In the current session, we have zero or more scopes dropped by different auth
@@ -129,23 +128,27 @@ pub fn create_user(
     let provider_data =
         serde_json::to_string(&serde_json::json!({provider_id: data.clone()})).unwrap();
 
-    let user_id: i64 = diesel::insert_into(fastn_user::table)
-        .values((
-            fastn_user::name.eq(data.name),
-            fastn_user::data.eq(provider_data),
-            fastn_user::identity.eq(data.identity),
-        ))
-        .returning(fastn_user::id)
-        .get_result(conn)
-        .unwrap();
+    conn.transaction(|conn| {
+        let user_id: i64 = diesel::insert_into(fastn_user::table)
+            .values((
+                fastn_user::name.eq(data.name),
+                fastn_user::data.eq(provider_data),
+                fastn_user::identity.eq(data.identity),
+                fastn_user::created_at.eq(ft_sys::env::now()),
+                fastn_user::updated_at.eq(ft_sys::env::now()),
+            ))
+            .returning(fastn_user::id)
+            .get_result(conn)
+            .unwrap();
 
-    match session_id {
-        Some(session_id) => {
-            ft_sdk::auth::session::set_user_id(conn, &session_id, user_id)?;
-            Ok(session_id)
+        match session_id {
+            Some(session_id) => {
+                ft_sdk::auth::session::set_user_id(conn, &session_id, user_id)?;
+                Ok(session_id)
+            }
+            None => Ok(ft_sdk::auth::session::create_with_user(conn, user_id)?),
         }
-        None => Ok(ft_sdk::auth::session::create_with_user(conn, user_id)?),
-    }
+    })
 }
 
 /// persist the user in session and redirect to `next`

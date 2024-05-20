@@ -37,6 +37,8 @@ pub fn create_with_user(
         .values((
             fastn_session::id.eq(&session_id),
             fastn_session::uid.eq(Some(user_id)),
+            fastn_session::created_at.eq(ft_sdk::env::now()),
+            fastn_session::updated_at.eq(ft_sdk::env::now()),
         ))
         .execute(conn)?;
 
