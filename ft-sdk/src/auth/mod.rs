@@ -18,7 +18,7 @@ pub struct SessionID(pub String);
 
 pub const SESSION_KEY: &str = "fastn_sid";
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ProviderData {
     pub identity: String,
     pub username: Option<String>,
@@ -33,8 +33,7 @@ impl ProviderData {
     pub fn get_custom<T: serde::de::DeserializeOwned>(&self, key: &str) -> Option<T> {
         self.custom
             .get(key)
-            .and_then(|v| v.as_str())
-            .and_then(|v| serde_json::from_str(v).ok())
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
     }
 }
 

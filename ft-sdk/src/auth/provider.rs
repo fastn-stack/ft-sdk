@@ -41,6 +41,35 @@ pub enum AuthError {
     IdentityExists,
 }
 
+pub fn user_data_by_verified_email(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    email: &str,
+) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
+    assert_valid_provider_id(provider_id);
+    ft_sdk::auth::utils::user_data_by_query(
+        conn,
+        format!(
+            r#"
+            SELECT
+                id, data -> '{provider_id}' as data
+            FROM
+                fastn_user
+            WHERE
+                EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        json_each(data -> '{provider_id}' -> 'verified_emails')
+                    WHERE value = $1
+                )
+            "#
+        )
+        .as_str(),
+        email,
+    )
+}
+
 pub fn user_data_by_email(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
@@ -52,7 +81,7 @@ pub fn user_data_by_email(
         format!(
             r#"
             SELECT
-                id, data -> '{provider_id}'
+                id, data -> '{provider_id}' as data
             FROM
                 fastn_user
             WHERE
@@ -60,7 +89,7 @@ pub fn user_data_by_email(
                     SELECT
                         1
                     FROM
-                        json_each(data -> '{provider_id}' -> 'verified_emails')
+                        json_each(data -> '{provider_id}' -> 'emails')
                     WHERE value = $1
                 )
             "#
@@ -89,10 +118,10 @@ pub fn user_data_by_identity(
         format!(
             r#"
             SELECT
-                id, data -> '{provider_id}'
+                id, data -> '{provider_id}' as data
             FROM fastn_user
             WHERE
-                 data -> '{provider_id}' -> 'identity' = $1
+                 data -> '{provider_id}' -> 'identity' = json_quote($1)
             "#
         )
         .as_str(),
