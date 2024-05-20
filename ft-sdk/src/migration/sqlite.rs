@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS fastn_user
 (
     id       INTEGER PRIMARY KEY,
     name     TEXT NULL,
-    identity TEXT,
+    identity TEXT UNIQUE NOT NULL,
     -- this stores ft_sdk::auth::UserData
     data     TEXT,
     created_at INTEGER NOT NULL,

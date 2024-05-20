@@ -112,7 +112,6 @@ pub fn create_user(
     conn: &mut ft_sdk::Connection,
     session_id: Option<ft_sdk::auth::SessionID>,
     provider_id: &str,
-
     // GitHub may use username as Identity, as user can understand their username, but have never
     // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
     // show some identity against each, and we will use this identity. Identity is mandatory. It
@@ -291,22 +290,16 @@ fn identity_exists(
 ) -> Result<bool, diesel::result::Error> {
     use diesel::prelude::*;
 
-    #[derive(diesel::QueryableByName)]
-    struct R {
-        #[diesel(sql_type = diesel::sql_types::BigInt)]
-        count: i64,
-    }
-
     match diesel::sql_query(format!(
         r#"
-        SELECT count(*) count
+        SELECT count(*) AS count
         FROM fastn_user
         WHERE
              data -> '{provider_id}' -> 'identity' = $1
         "#
     ))
     .bind::<diesel::sql_types::Text, _>(identity)
-    .get_result::<R>(conn)
+    .get_result::<ft_sdk::auth::utils::Counter>(conn)
     {
         Ok(r) if r.count == 0 => Ok(false),
         Ok(_) => Ok(true),

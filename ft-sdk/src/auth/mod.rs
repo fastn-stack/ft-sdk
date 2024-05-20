@@ -8,6 +8,7 @@ mod session;
 
 use diesel::{QueryDsl, RunQueryDsl};
 pub use schema::{fastn_session, fastn_user};
+pub use utils::Counter;
 
 #[derive(Clone)]
 pub struct UserId(pub i64);
@@ -100,7 +101,7 @@ pub fn ud(
     let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
     let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
 
-    let (UserId(id), data) = ft_sdk::auth::utils::user_data_by_query(
+    let (UserId(id), data) = utils::user_data_by_query(
         conn,
         r#"
             SELECT

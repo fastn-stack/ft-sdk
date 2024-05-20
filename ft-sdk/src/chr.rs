@@ -46,7 +46,8 @@ impl<K: AsRef<str>, V: AsRef<str>> IntoCookie for (K, V) {
     fn into_cookie(self) -> http::HeaderValue {
         let (k, v) = self;
         format!(
-            "{}={}; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000",
+            // "{}={}; Secure; HttpOnly; SameSite=Strict; Max-Age=34560000",
+            "{}={}; HttpOnly; SameSite=Strict; Max-Age=34560000",
             k.as_ref(),
             v.as_ref()
         )
