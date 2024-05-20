@@ -47,19 +47,21 @@ pub fn user_data_by_email(
     provider_id: &str,
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    user_data_by_query(
+    assert_valid_provider_id(provider_id);
+    ft_sdk::auth::utils::user_data_by_query(
         conn,
-        provider_id,
         format!(
             r#"
             SELECT
                 id, data -> '{provider_id}'
-            FROM fastn_user
+            FROM
+                fastn_user
             WHERE
                 EXISTS (
                     SELECT
                         1
-                    FROM json_each(data -> '{provider_id}' -> 'verified_emails')
+                    FROM
+                        json_each(data -> '{provider_id}' -> 'verified_emails')
                     WHERE value = $1
                 )
             "#
@@ -82,9 +84,9 @@ pub fn user_data_by_identity(
     provider_id: &str,
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    user_data_by_query(
+    assert_valid_provider_id(provider_id);
+    ft_sdk::auth::utils::user_data_by_query(
         conn,
-        provider_id,
         format!(
             r#"
             SELECT
@@ -97,38 +99,6 @@ pub fn user_data_by_identity(
         .as_str(),
         identity,
     )
-}
-
-fn user_data_by_query(
-    conn: &mut ft_sdk::Connection,
-    provider_id: &str,
-    query: &str,
-    param: &str,
-) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
-    use diesel::prelude::*;
-
-    #[derive(diesel::QueryableByName)]
-    #[diesel(table_name = ft_sdk::auth::fastn_user)]
-    struct UD {
-        id: i64,
-        data: String,
-    }
-
-    assert_valid_provider_id(provider_id);
-
-    let ud: UD = match diesel::sql_query(query)
-        .bind::<diesel::sql_types::Text, _>(param)
-        .load(conn)
-    {
-        Ok(v) if v.is_empty() => return Err(UserDataError::NoDataFound),
-        Ok(v) if v.len() > 1 => return Err(UserDataError::MultipleRowsFound),
-        Ok(mut v) => v.pop().unwrap(),
-        Err(diesel::result::Error::NotFound) => return Err(UserDataError::NoDataFound),
-        Err(e) => return Err(UserDataError::DatabaseError(e)),
-    };
-
-    let ft_sdk::auth::ProviderData(data) = serde_json::from_str(&ud.data)?;
-    Ok((ft_sdk::auth::UserId(ud.id), data))
 }
 
 #[derive(Debug, thiserror::Error)]

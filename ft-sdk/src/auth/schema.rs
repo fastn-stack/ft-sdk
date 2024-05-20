@@ -22,3 +22,7 @@ diesel::table! {
         created_at -> Timestamptz,
     }
 }
+
+diesel::joinable!(fastn_session -> fastn_user (uid));
+
+diesel::allow_tables_to_appear_in_same_query!(fastn_user, fastn_session,);

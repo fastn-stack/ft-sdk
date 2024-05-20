@@ -5,6 +5,7 @@ mod schema;
 #[cfg(feature = "auth-provider")]
 pub mod provider;
 
+use diesel::{QueryDsl, RunQueryDsl};
 pub use schema::{fastn_session, fastn_user};
 
 #[derive(Clone)]
@@ -183,49 +184,40 @@ pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
 ) -> Option<ft_sys::UserData> {
+    use diesel::prelude::*;
+    use schema::{fastn_session, fastn_user};
+
+    if let Some(v) = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
+        let mut v = v.splitn(4, ' ');
+        return Some(ft_sys::UserData {
+            id: v.next().unwrap().parse().unwrap(),
+            identity: v.next().unwrap_or_default().to_string(),
+            name: v.next().map(|v| v.to_string()).unwrap_or_default(),
+            email: v.next().map(|v| v.to_string()).unwrap_or_default(),
+            verified_email: true,
+        });
+    }
+
+    let session_cookie = cookie.0?;
+    let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
+    let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
+
+    let r = ft_sdk::auth::utils::user_data_by_query(
+        conn,
+        r#"
+            SELECT
+                id, data -> 'email'
+            FROM fastn_user
+            JOIN fastn_session
+            WHERE
+                fastn_session.id = $1
+                AND fastn_user.id = fastn_session.uid
+            "#,
+        session_id,
+    )
+    .ok()?;
+
     todo!()
-    // use diesel::prelude::*;
-    // use schema::{fastn_session, fastn_user};
-    //
-    // let debug_user = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()).map(|v| {
-    //     let v: Vec<&str> = v.splitn(4, ' ').collect();
-    //     ft_sys::UserData {
-    //         id: v[0].parse().unwrap(),
-    //         identity: v[1].to_string(),
-    //         name: v.get(3).map(|v| v.to_string()).unwrap_or_default(),
-    //         email: v.get(2).map(|v| v.to_string()).unwrap_or_default(),
-    //         verified_email: true,
-    //     }
-    // });
-    //
-    // if debug_user.is_some() {
-    //     return debug_user;
-    // }
-    //
-    // let session_cookie = cookie.0?;
-    // let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
-    // let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
-    //
-    // let (user_id, user_data) = conn
-    //     .transaction(|c| {
-    //         let user_id: Option<i64> = fastn_session::table
-    //             .select(fastn_session::uid)
-    //             .filter(fastn_session::id.eq(&session_id))
-    //             .first(c)?;
-    //
-    //         if user_id.is_none() {
-    //             return Err(diesel::result::Error::NotFound);
-    //         }
-    //         let user_id = user_id.unwrap();
-    //
-    //         let data = fastn_user::table
-    //             .select(fastn_user::data)
-    //             .filter(fastn_user::id.eq(&user_id))
-    //             .first::<serde_json::Value>(c)?;
-    //
-    //         Ok((user_id, data))
-    //     })
-    //     .ok()?;
     //
     // let mut ud = ft_sys::UserData {
     //     id: user_id,
