@@ -4,6 +4,7 @@ mod schema;
 
 #[cfg(feature = "auth-provider")]
 pub mod provider;
+mod session;
 
 use diesel::{QueryDsl, RunQueryDsl};
 pub use schema::{fastn_session, fastn_user};
@@ -11,131 +12,20 @@ pub use schema::{fastn_session, fastn_user};
 #[derive(Clone)]
 pub struct UserId(pub i64);
 
+#[derive(Clone)]
+pub struct SessionID(pub String);
+
 pub const SESSION_KEY: &str = "fastn_sid";
 
-/// Any provider can provide any of this information about currently logged-in user,
-/// which is stored against the user in the database. The provider who drops in the
-/// information, if they update it, the value will get updated.
-#[derive(Debug, Clone, PartialEq)]
-pub enum UserData {
-    VerifiedEmail(String),
-    Name(String),
-    Email(String),
-    Phone(String),
-    ProfilePicture(String),
-    /// GitHub may use username as Identity, as user can understand their username, but have never
-    /// seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
-    /// show some identity against each, and we will use this identity.
-    Identity(String),
-
-    Custom {
-        key: String,
-        value: serde_json::Value,
-    },
-}
-
-pub(crate) struct ProviderData(pub(crate) Vec<UserData>);
-
-impl<'de> serde::Deserialize<'de> for ProviderData {
-    fn deserialize<D>(deserializer: D) -> Result<ProviderData, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct UserDataVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for UserDataVisitor {
-            type Value = ProviderData;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a map")
-            }
-
-            fn visit_map<A>(self, mut map: A) -> Result<ProviderData, A::Error>
-            where
-                A: serde::de::MapAccess<'de>,
-            {
-                let mut all = ProviderData(Vec::new());
-                while let Some(k) = map.next_key::<String>()? {
-                    match k.as_str() {
-                        "verified_emails" => {
-                            let emails = map.next_value::<Vec<String>>()?;
-                            for email in emails {
-                                all.0.push(UserData::VerifiedEmail(email));
-                            }
-                        }
-                        "emails" => {
-                            let emails = map.next_value::<Vec<String>>()?;
-                            for email in emails {
-                                all.0.push(UserData::Email(email));
-                            }
-                        }
-                        "identity" => {
-                            let identity = map.next_value::<String>()?;
-                            all.0.push(UserData::Identity(identity));
-                        }
-                        "name" => {
-                            let name = map.next_value::<String>()?;
-                            all.0.push(UserData::Name(name));
-                        }
-                        "phones" => {
-                            let phones = map.next_value::<Vec<String>>()?;
-                            for phone in phones {
-                                all.0.push(UserData::Phone(phone));
-                            }
-                        }
-                        "profile_picture" => {
-                            let profile_picture = map.next_value::<String>()?;
-                            all.0.push(UserData::ProfilePicture(profile_picture));
-                        }
-                        t => {
-                            all.0.push(UserData::Custom {
-                                key: t.to_string(),
-                                value: map.next_value()?,
-                            });
-                        }
-                    }
-                }
-
-                Ok(all)
-            }
-        }
-
-        deserializer.deserialize_map(UserDataVisitor)
-    }
-}
-
-impl UserData {
-    pub fn kind(&self) -> UserDataKind {
-        match self {
-            UserData::VerifiedEmail(_) => UserDataKind::VerifiedEmail,
-            UserData::Name(_) => UserDataKind::Name,
-            UserData::Email(_) => UserDataKind::Email,
-            UserData::Phone(_) => UserDataKind::Phone,
-            UserData::ProfilePicture(_) => UserDataKind::ProfilePicture,
-            UserData::Identity(_) => UserDataKind::Identity,
-            UserData::Custom { key, .. } => UserDataKind::Custom { key: key.clone() },
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum UserDataKind {
-    VerifiedEmail,
-    Username,
-    Name,
-    FirstName,
-    LastName,
-    Email,
-    Age,
-    Phone,
-    ProfilePicture,
-    Identity,
-    Custom { key: String },
-}
-
-pub struct ProviderUserData {
-    pub ud: UserData,
-    pub provider: String,
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct ProviderData {
+    pub identity: String,
+    pub username: Option<String>,
+    pub name: Option<String>,
+    pub emails: Vec<String>,
+    pub verified_emails: Vec<String>,
+    pub profile_picture: Option<String>,
+    pub custom: serde_json::Value,
 }
 
 /// Get the currently logged-in user's userid. Returns `None` if the user is not logged in.
@@ -150,7 +40,7 @@ pub fn username(_provider: &str) -> Option<String> {
 
 /// Get all user data stored against the user in the database. Only allowed if scope
 /// auth:* is granted. Based on permission, whatever you have access to will be given.
-pub fn get_user_data() -> Vec<ProviderUserData> {
+pub fn get_user_data() -> std::collections::HashMap<String, ProviderData> {
     todo!()
 }
 
@@ -216,34 +106,13 @@ pub fn ud(
     )
     .ok()?;
 
-    let mut ud = ft_sys::UserData {
+    Some(ft_sys::UserData {
         id,
         identity: "".to_string(),
         name: "".to_string(),
         email: "".to_string(),
         verified_email: false,
-    };
-
-    for d in data {
-        match d {
-            UserData::VerifiedEmail(email) => {
-                ud.email = email;
-                ud.verified_email = true;
-            }
-            UserData::Name(name) => {
-                ud.name = name;
-            }
-            UserData::Email(email) if ud.email.is_empty() => {
-                ud.email = email;
-            }
-            UserData::Identity(identity) => {
-                ud.identity = identity;
-            }
-            _ => {}
-        }
-    }
-
-    Some(ud)
+    })
 }
 
 #[derive(Debug, thiserror::Error)]
