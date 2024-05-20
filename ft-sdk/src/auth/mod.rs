@@ -118,10 +118,10 @@ pub fn ud(
 
     Some(ft_sys::UserData {
         id,
-        identity: "".to_string(),
-        name: "".to_string(),
-        email: "".to_string(),
-        verified_email: false,
+        identity: data.identity.clone(),
+        name: data.name.unwrap_or_default(),
+        email: data.identity,
+        verified_email: !data.verified_emails.is_empty(),
     })
 }
 
