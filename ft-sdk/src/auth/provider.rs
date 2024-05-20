@@ -46,7 +46,7 @@ pub fn user_data_by_email(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
     email: &str,
-) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
+) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
     ft_sdk::auth::utils::user_data_by_query(
         conn,
@@ -83,7 +83,7 @@ pub fn user_data_by_identity(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
     identity: &str,
-) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
+) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
     ft_sdk::auth::utils::user_data_by_query(
         conn,
@@ -99,18 +99,6 @@ pub fn user_data_by_identity(
         .as_str(),
         identity,
     )
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum UserDataError {
-    #[error("no data found for the provider")]
-    NoDataFound,
-    #[error("multiple rows found")]
-    MultipleRowsFound,
-    #[error("db error: {0:?}")]
-    DatabaseError(#[from] diesel::result::Error),
-    #[error("failed to deserialize data from db: {0:?}")]
-    FailedToDeserializeData(#[from] serde_json::Error),
 }
 
 pub fn create_user(

@@ -185,7 +185,6 @@ pub fn ud(
     conn: &mut ft_sdk::Connection,
 ) -> Option<ft_sys::UserData> {
     use diesel::prelude::*;
-    use schema::{fastn_session, fastn_user};
 
     if let Some(v) = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
         let mut v = v.splitn(4, ' ');
@@ -202,7 +201,7 @@ pub fn ud(
     let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
     let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
 
-    let r = ft_sdk::auth::utils::user_data_by_query(
+    let (UserId(id), data) = ft_sdk::auth::utils::user_data_by_query(
         conn,
         r#"
             SELECT
@@ -217,45 +216,44 @@ pub fn ud(
     )
     .ok()?;
 
-    todo!()
-    //
-    // let mut ud = ft_sys::UserData {
-    //     id: user_id,
-    //     identity: "".to_string(),
-    //     name: "".to_string(),
-    //     email: "".to_string(),
-    //     verified_email: false,
-    // };
-    //
-    // let user_data = ft_sdk::auth::utils::user_data_from_json(user_data);
-    //
-    // construct_user_data_from_provider_data(user_data, &mut ud);
-    //
-    // Some(ud)
-}
+    let mut ud = ft_sys::UserData {
+        id,
+        identity: "".to_string(),
+        name: "".to_string(),
+        email: "".to_string(),
+        verified_email: false,
+    };
 
-/// try to get information from every provider
-/// the last provider encountered with relevant info will be used to fill `ud`
-fn construct_user_data_from_provider_data(
-    user_data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
-    ud: &mut ft_sys::UserData,
-) {
-    user_data.iter().for_each(|(_, pds)| {
-        pds.iter().for_each(|data| match data {
+    for d in data {
+        match d {
             UserData::VerifiedEmail(email) => {
-                ud.email.clone_from(email);
+                ud.email = email;
                 ud.verified_email = true;
             }
             UserData::Name(name) => {
-                ud.name.clone_from(name);
+                ud.name = name;
             }
-            UserData::Email(email) => {
-                ud.email.clone_from(email);
+            UserData::Email(email) if ud.email.is_empty() => {
+                ud.email = email;
             }
             UserData::Identity(identity) => {
-                ud.identity.clone_from(identity);
+                ud.identity = identity;
             }
             _ => {}
-        })
-    });
+        }
+    }
+
+    Some(ud)
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum UserDataError {
+    #[error("no data found for the provider")]
+    NoDataFound,
+    #[error("multiple rows found")]
+    MultipleRowsFound,
+    #[error("db error: {0:?}")]
+    DatabaseError(#[from] diesel::result::Error),
+    #[error("failed to deserialize data from db: {0:?}")]
+    FailedToDeserializeData(#[from] serde_json::Error),
 }

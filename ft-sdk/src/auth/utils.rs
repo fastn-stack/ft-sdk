@@ -1,5 +1,3 @@
-use crate::auth::provider::UserDataError;
-
 pub(crate) fn user_data_from_json(
     data: serde_json::Value,
 ) -> std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>> {
@@ -187,7 +185,7 @@ pub(crate) fn user_data_by_query(
     conn: &mut ft_sdk::Connection,
     query: &str,
     param: &str,
-) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), UserDataError> {
+) -> Result<(ft_sdk::auth::UserId, Vec<ft_sdk::auth::UserData>), ft_sdk::auth::UserDataError> {
     use diesel::prelude::*;
 
     #[derive(diesel::QueryableByName)]
@@ -201,11 +199,13 @@ pub(crate) fn user_data_by_query(
         .bind::<diesel::sql_types::Text, _>(param)
         .load(conn)
     {
-        Ok(v) if v.is_empty() => return Err(UserDataError::NoDataFound),
-        Ok(v) if v.len() > 1 => return Err(UserDataError::MultipleRowsFound),
+        Ok(v) if v.is_empty() => return Err(ft_sdk::auth::UserDataError::NoDataFound),
+        Ok(v) if v.len() > 1 => return Err(ft_sdk::auth::UserDataError::MultipleRowsFound),
         Ok(mut v) => v.pop().unwrap(),
-        Err(diesel::result::Error::NotFound) => return Err(UserDataError::NoDataFound),
-        Err(e) => return Err(UserDataError::DatabaseError(e)),
+        Err(diesel::result::Error::NotFound) => {
+            return Err(ft_sdk::auth::UserDataError::NoDataFound)
+        }
+        Err(e) => return Err(ft_sdk::auth::UserDataError::DatabaseError(e)),
     };
 
     let ft_sdk::auth::ProviderData(data) = serde_json::from_str(&ud.data)?;
