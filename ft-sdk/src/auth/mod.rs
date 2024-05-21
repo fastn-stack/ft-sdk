@@ -78,21 +78,24 @@ pub fn session_providers() -> Vec<String> {
 pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
-) -> Option<ft_sys::UserData> {
+) -> Result<Option<ft_sys::UserData>, UserDataError> {
     if let Some(v) = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
         let mut v = v.splitn(4, ' ');
-        return Some(ft_sys::UserData {
+        return Ok(Some(ft_sys::UserData {
             id: v.next().unwrap().parse().unwrap(),
             identity: v.next().unwrap_or_default().to_string(),
             name: v.next().map(|v| v.to_string()).unwrap_or_default(),
             email: v.next().map(|v| v.to_string()).unwrap_or_default(),
             verified_email: true,
-        });
+        }));
     }
 
     ft_sdk::println!("sid: {cookie}");
 
-    let sid = cookie.0?;
+    let sid = match cookie.0 {
+        Some(v) => v,
+        None => return Ok(None),
+    };
 
     let (UserId(id), data) = utils::user_data_by_query(
         conn,
@@ -106,17 +109,15 @@ pub fn ud(
                 AND fastn_user.id = fastn_session.uid
             "#,
         sid.as_str(),
-    )
-    .inspect_err(|e| ft_sdk::println!("error: {e}"))
-    .ok()?;
+    )?;
 
-    Some(ft_sys::UserData {
+    Ok(Some(ft_sys::UserData {
         id,
         identity: data.identity.clone(),
         name: data.name.unwrap_or_default(),
         email: data.identity,
         verified_email: !data.verified_emails.is_empty(),
-    })
+    }))
 }
 
 #[derive(Debug, thiserror::Error)]
