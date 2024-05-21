@@ -17,7 +17,6 @@ mod email;
 mod error;
 pub mod form;
 pub mod from_request;
-mod into_cookie;
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
@@ -34,14 +33,13 @@ pub use email::{send_email, EmailError};
 pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Cookie, Hidden, Optional, Query, Required};
-pub use from_request::{Form, FromRequest, Mountpoint, Path, WrappedFromRequest};
+pub use from_request::{Form, FromRequest, Host, Mountpoint, Path, WrappedFromRequest};
 pub use ft_derive::{data, form, migration, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, http, println, ConnectionError, UserData};
-pub use into_cookie::IntoCookie;
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")

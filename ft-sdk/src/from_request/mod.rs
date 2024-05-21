@@ -5,6 +5,7 @@ pub mod handler;
 mod headers;
 #[cfg(feature = "field-extractors")]
 mod hidden;
+mod host;
 mod json;
 mod mountpoint;
 #[cfg(feature = "field-extractors")]
@@ -17,6 +18,7 @@ mod required;
 pub mod wrapped_processor;
 
 pub use form::Form;
+pub use host::Host;
 pub use mountpoint::Mountpoint;
 pub use path::Path;
 #[cfg(feature = "field-extractors")]
