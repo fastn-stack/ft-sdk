@@ -6,7 +6,6 @@ mod schema;
 pub mod provider;
 mod session;
 
-use diesel::{QueryDsl, RunQueryDsl};
 pub use ft_sys_shared::SESSION_KEY;
 pub use schema::{fastn_session, fastn_user};
 pub use session::SessionID;
@@ -80,8 +79,6 @@ pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
 ) -> Option<ft_sys::UserData> {
-    use diesel::prelude::*;
-
     if let Some(v) = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
         let mut v = v.splitn(4, ' ');
         return Some(ft_sys::UserData {

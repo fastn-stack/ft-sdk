@@ -22,8 +22,6 @@
 //! username etc. The UI will have been provided by the auth provider, or some other generic auth
 //! setting package.
 
-use diesel::{OptionalExtension, RunQueryDsl};
-
 /// In the current session, we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some
 /// APIs that require certain scopes to be present. Before calling those APIs, the
@@ -147,7 +145,6 @@ pub fn create_user(
     // will be stored as UserData::Identity.
     //
     // For the same provider_id, if identity changes, we will only keep the latest identity.
-    identity: &str,
     data: ft_sdk::auth::ProviderData,
 ) -> Result<ft_sdk::auth::SessionID, CreateUserError> {
     use diesel::prelude::*;
@@ -273,7 +270,7 @@ pub enum LoginError {
 //     todo!()
 // }
 
-fn identity_exists(
+pub fn identity_exists(
     conn: &mut ft_sdk::Connection,
     identity: &str,
     provider_id: &str,
@@ -295,36 +292,4 @@ fn identity_exists(
         Ok(_) => Ok(true),
         Err(e) => Err(e),
     }
-
-    // use ft_sdk::auth::schema::fastn_user;
-    //
-    // let query = fastn_user::table.select((fastn_user::id, fastn_user::data));
-    //
-    // let users: Vec<(i64, serde_json::Value)> = query.get_results(conn)?;
-    //
-    // let user = users.iter().find(|(_, ud)| {
-    //     let data = user_data_from_json(ud.clone());
-    //
-    //     data.get(provider_id)
-    //         .map(|v| {
-    //             v.iter().any(|d| match d {
-    //                 ft_sdk::auth::UserData::Identity(i) => i == identity,
-    //                 _ => false,
-    //             })
-    //         })
-    //         .unwrap_or(false)
-    // });
-    //
-    // if user.is_none() {
-    //     return Ok(false);
-    // }
-    //
-    // if let Some(user_id) = user_id {
-    //     let user = user.unwrap();
-    //     if user.0 == user_id.0 {
-    //         return Ok(false);
-    //     }
-    // }
-    //
-    // Ok(true)
 }
