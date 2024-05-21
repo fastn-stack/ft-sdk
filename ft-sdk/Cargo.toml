@@ -21,6 +21,7 @@ field-extractors = []
 [dependencies]
 anyhow.workspace = true
 ft-sys = { path = "../ft-sys", version = "0.1.2", default-features = false }
+ft-sys-shared = { path = "../ft-sys-shared", version = "0.1.1-alpha.4" }
 ft-derive = { path = "../ft-derive", version = "0.1.0" }
 serde.workspace = true
 serde_json.workspace = true

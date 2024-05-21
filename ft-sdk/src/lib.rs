@@ -17,6 +17,7 @@ mod email;
 mod error;
 pub mod form;
 pub mod from_request;
+mod into_cookie;
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
@@ -28,7 +29,6 @@ pub mod utils;
 
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
-pub use chr::IntoCookie;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use email::{send_email, EmailError};
 pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
@@ -41,6 +41,7 @@ pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, http, println, ConnectionError, UserData};
+pub use into_cookie::IntoCookie;
 #[cfg(all(
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")

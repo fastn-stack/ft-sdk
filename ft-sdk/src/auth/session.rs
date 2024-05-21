@@ -1,3 +1,6 @@
+#[derive(Clone)]
+pub struct SessionID(pub String);
+
 #[derive(Debug, thiserror::Error)]
 pub enum SetUserIDError {
     #[error("session not found")]

@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 21st May 2024
+
+### ft-sys-shared: `0.1.1-alpha.4`
+
+- added `SESSION_KEY`
+
 ## 18th May 2024
 
 ### ft-sys-shared: `0.1.1-alpha.3`

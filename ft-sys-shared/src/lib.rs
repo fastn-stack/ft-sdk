@@ -6,6 +6,8 @@
 mod sqlite;
 pub use sqlite::{SqliteRawValue, SqliteType};
 
+pub const SESSION_KEY: &str = "fastn-sid";
+
 /// Request acts as both a request and a response, and is only used for the
 /// communication between guest and host. It is not exposed via ft-sdk.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]

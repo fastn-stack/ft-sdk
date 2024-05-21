@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 // pub(crate) fn user_data_from_json(
 //     data: serde_json::Value,
 // ) -> std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>> {

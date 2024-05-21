@@ -7,16 +7,13 @@ pub mod provider;
 mod session;
 
 use diesel::{QueryDsl, RunQueryDsl};
+pub use ft_sys_shared::SESSION_KEY;
 pub use schema::{fastn_session, fastn_user};
+pub use session::SessionID;
 pub use utils::Counter;
 
 #[derive(Clone)]
 pub struct UserId(pub i64);
-
-#[derive(Clone)]
-pub struct SessionID(pub String);
-
-pub const SESSION_KEY: &str = "fastn_sid";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ProviderData {
