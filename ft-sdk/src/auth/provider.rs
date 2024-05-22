@@ -183,10 +183,9 @@ pub fn login(
         Some(session_id) if session_id.0 == "hello" => {
             Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?)
         }
-        Some(session_id) => {
-            ft_sdk::auth::session::set_user_id(conn, &session_id, *user_id)?;
-            Ok(session_id)
-        }
+        Some(session_id) => Ok(ft_sdk::auth::session::set_user_id(
+            conn, session_id, *user_id,
+        )?),
         None => Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?),
     }
 }

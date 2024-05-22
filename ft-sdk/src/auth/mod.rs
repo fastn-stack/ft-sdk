@@ -97,7 +97,7 @@ pub fn ud(
         None => return Ok(None),
     };
 
-    let (UserId(id), data) = utils::user_data_by_query(
+    let (UserId(id), data) = match utils::user_data_by_query(
         conn,
         r#"
             SELECT
@@ -109,7 +109,11 @@ pub fn ud(
                 AND fastn_user.id = fastn_session.uid
             "#,
         sid.as_str(),
-    )?;
+    ) {
+        Ok(v) => v,
+        Err(UserDataError::NoDataFound) => return Ok(None),
+        Err(e) => return Err(e),
+    };
 
     Ok(Some(ft_sys::UserData {
         id,

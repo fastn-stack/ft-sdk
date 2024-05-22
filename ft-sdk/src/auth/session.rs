@@ -15,22 +15,20 @@ pub enum SetUserIDError {
 #[cfg(feature = "auth-provider")]
 pub fn set_user_id(
     conn: &mut ft_sdk::Connection,
-    SessionID(session_id): &SessionID,
+    SessionID(session_id): SessionID,
     user_id: i64,
-) -> Result<(), SetUserIDError> {
+) -> Result<SessionID, SetUserIDError> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_session;
 
-    match diesel::update(fastn_session::table.filter(fastn_session::id.eq(session_id)))
+    match diesel::update(fastn_session::table.filter(fastn_session::id.eq(session_id.as_str())))
         .set(fastn_session::uid.eq(Some(user_id)))
         .execute(conn)?
     {
-        0 => return Err(SetUserIDError::SessionNotFound),
-        1 => {}
+        0 => return Ok(create_with_user(conn, user_id)?),
+        1 => Ok(SessionID(session_id)),
         _ => return Err(SetUserIDError::MultipleSessionsFound),
     }
-
-    Ok(())
 }
 
 #[cfg(feature = "auth-provider")]
