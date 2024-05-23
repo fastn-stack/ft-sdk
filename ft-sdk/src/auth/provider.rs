@@ -163,8 +163,7 @@ pub fn create_user(
                 fastn_user::updated_at.eq(ft_sys::env::now()),
             ))
             .returning(fastn_user::id)
-            .get_result(conn)
-            .unwrap();
+            .get_result(conn)?;
 
         login(conn, &ft_sdk::UserId(user_id), session_id).map_err(Into::into)
     })
