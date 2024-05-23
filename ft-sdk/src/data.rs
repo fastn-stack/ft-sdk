@@ -3,6 +3,7 @@ pub type Result = std::result::Result<ft_sdk::chr::CHR<Output>, ft_sdk::Error>;
 #[derive(Debug)]
 pub enum Output {
     Json(serde_json::Value),
+    Zip((String, bytes::Bytes)),
 }
 
 impl From<ft_sdk::chr::CHR<Output>>
@@ -17,9 +18,17 @@ impl From<ft_sdk::chr::CHR<Output>>
     ) -> Self {
         let response = match response {
             Output::Json(j) => crate::json(j),
+            Output::Zip((filename, content)) => crate::zip(filename.as_str(), content),
         }?;
         ft_sdk::chr::chr(cookies, headers, response)
     }
+}
+
+pub fn zip(filename: &str, content: bytes::Bytes) -> Result {
+    Ok(ft_sdk::chr::CHR::new(Output::Zip((
+        filename.to_string(),
+        content,
+    ))))
 }
 
 pub fn json<T: serde::Serialize>(t: T) -> Result {
@@ -29,9 +38,13 @@ pub fn json<T: serde::Serialize>(t: T) -> Result {
 }
 
 pub fn api_ok<T: serde::Serialize>(t: T) -> Result {
-    Ok(ft_sdk::chr::CHR::new(Output::Json(serde_json::json!({"data": serde_json::to_value(t)?, "success": true }))))
+    Ok(ft_sdk::chr::CHR::new(Output::Json(
+        serde_json::json!({"data": serde_json::to_value(t)?, "success": true }),
+    )))
 }
 
 pub fn api_error(errors: std::collections::HashMap<String, String>) -> Result {
-    Ok(ft_sdk::chr::CHR::new(Output::Json(serde_json::json!({"errors": serde_json::to_value(errors)?, "success": true }))))
+    Ok(ft_sdk::chr::CHR::new(Output::Json(
+        serde_json::json!({"errors": serde_json::to_value(errors)?, "success": true }),
+    )))
 }

@@ -106,3 +106,17 @@ pub(crate) fn json<T: serde::Serialize>(
         .header("Content-Type", "application/json")
         .body(d.into())?)
 }
+
+pub(crate) fn zip(
+    filename: &str,
+    content: bytes::Bytes,
+) -> Result<::http::Response<bytes::Bytes>, ft_sdk::Error> {
+    Ok(::http::Response::builder()
+        .status(200)
+        .header("Content-Type", "application/zip")
+        .header(
+            "Content-Disposition",
+            format!("attachment; filename=\"{}.zip\"", filename).as_str(),
+        )
+        .body(content)?)
+}
