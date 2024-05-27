@@ -2,7 +2,7 @@ CREATE TABLE "new__fastn_email_queue"
 (
     id           INTEGER PRIMARY KEY,
     from_address TEXT NOT NULL,
-    from         TEXT NOT NULL,
+    from_name    TEXT NOT NULL,
     reply_to     TEXT NULL,
     to_address   TEXT NOT NULL,
     cc_address   TEXT NULL,
@@ -22,7 +22,7 @@ INSERT INTO "new__fastn_email_queue"
 (
     "id",
     "from_address",
-    "from",
+    "from_name",
     "reply_to",
     "to_address",
     "cc_address",
