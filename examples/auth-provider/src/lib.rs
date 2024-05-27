@@ -52,7 +52,7 @@ fn validate_email(
     email: &str,
     errors: &mut std::collections::HashMap<String, String>,
 ) {
-    if ft_sdk::auth::provider::check_if_verified_email_exists(conn, email, None).unwrap() {
+    if ft_sdk::auth::provider::user_data_by_email(conn, "provider", email).is_ok() {
         errors.insert("email".to_string(), "email already exists".to_string());
     }
 }

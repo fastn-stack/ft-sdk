@@ -31,6 +31,7 @@ pub fn send_email(
 ) -> Result<(), EmailError> {
     use diesel::prelude::*;
 
+    ft_sdk::println!("Try sending email");
     let now = ft_sdk::env::now();
     let from = format!("{} <{}>", from.0, from.1);
 
@@ -38,6 +39,7 @@ pub fn send_email(
     let reply_to = reply_to.map(to_comma_separated_str);
     let cc = cc.map(to_comma_separated_str);
     let bcc = bcc.map(to_comma_separated_str);
+    ft_sdk::println!("to: {to}, reply_to: {reply_to:?}");
 
     let affected = diesel::insert_into(fastn_email_queue::table)
         .values((

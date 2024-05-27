@@ -27,3 +27,11 @@ pub fn json<T: serde::Serialize>(t: T) -> Result {
         t,
     )?)))
 }
+
+pub fn api_ok<T: serde::Serialize>(t: T) -> Result {
+    Ok(ft_sdk::chr::CHR::new(Output::Json(serde_json::json!({"data": serde_json::to_value(t)?, "success": true }))))
+}
+
+pub fn api_error(errors: std::collections::HashMap<String, String>) -> Result {
+    Ok(ft_sdk::chr::CHR::new(Output::Json(serde_json::json!({"errors": serde_json::to_value(errors)?, "success": true }))))
+}

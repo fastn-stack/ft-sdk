@@ -4,65 +4,33 @@ mod schema;
 
 #[cfg(feature = "auth-provider")]
 pub mod provider;
+mod session;
+
+pub use ft_sys_shared::SESSION_KEY;
+pub use schema::{fastn_session, fastn_user};
+pub use session::SessionID;
+pub use utils::Counter;
 
 #[derive(Clone)]
 pub struct UserId(pub i64);
 
-pub const SESSION_KEY: &str = "fastn_sid";
-
-/// Any provider can provide any of this information about currently logged-in user,
-/// which is stored against the user in the database. The provider who drops in the
-/// information, if they update it, the value will get updated.
-#[derive(Debug, Clone, PartialEq)]
-pub enum UserData {
-    VerifiedEmail(String),
-    Name(String),
-    Email(String),
-    Phone(String),
-    ProfilePicture(String),
-    /// GitHub may use username as Identity, as user can understand their username, but have never
-    /// seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
-    /// show some identity against each, and we will use this identity.
-    Identity(String),
-
-    Custom {
-        key: String,
-        value: serde_json::Value,
-    },
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct ProviderData {
+    pub identity: String,
+    pub username: Option<String>,
+    pub name: Option<String>,
+    pub emails: Vec<String>,
+    pub verified_emails: Vec<String>,
+    pub profile_picture: Option<String>,
+    pub custom: serde_json::Value,
 }
 
-impl UserData {
-    pub fn kind(&self) -> UserDataKind {
-        match self {
-            UserData::VerifiedEmail(_) => UserDataKind::VerifiedEmail,
-            UserData::Name(_) => UserDataKind::Name,
-            UserData::Email(_) => UserDataKind::Email,
-            UserData::Phone(_) => UserDataKind::Phone,
-            UserData::ProfilePicture(_) => UserDataKind::ProfilePicture,
-            UserData::Identity(_) => UserDataKind::Identity,
-            UserData::Custom { key, .. } => UserDataKind::Custom { key: key.clone() },
-        }
+impl ProviderData {
+    pub fn get_custom<T: serde::de::DeserializeOwned>(&self, key: &str) -> Option<T> {
+        self.custom
+            .get(key)
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum UserDataKind {
-    VerifiedEmail,
-    Username,
-    Name,
-    FirstName,
-    LastName,
-    Email,
-    Age,
-    Phone,
-    ProfilePicture,
-    Identity,
-    Custom { key: String },
-}
-
-pub struct ProviderUserData {
-    pub ud: UserData,
-    pub provider: String,
 }
 
 /// Get the currently logged-in user's userid. Returns `None` if the user is not logged in.
@@ -77,7 +45,7 @@ pub fn username(_provider: &str) -> Option<String> {
 
 /// Get all user data stored against the user in the database. Only allowed if scope
 /// auth:* is granted. Based on permission, whatever you have access to will be given.
-pub fn get_user_data() -> Vec<ProviderUserData> {
+pub fn get_user_data() -> std::collections::HashMap<String, ProviderData> {
     todo!()
 }
 
@@ -110,87 +78,60 @@ pub fn session_providers() -> Vec<String> {
 pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
-) -> Option<ft_sys::UserData> {
-    use diesel::prelude::*;
-    use schema::{fastn_session, fastn_user};
-
-    let debug_user = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()).map(|v| {
-        let v: Vec<&str> = v.splitn(4, ' ').collect();
-        ft_sys::UserData {
-            id: v[0].parse().unwrap(),
-            identity: v[1].to_string(),
-            name: v.get(3).map(|v| v.to_string()).unwrap_or_default(),
-            email: v.get(2).map(|v| v.to_string()).unwrap_or_default(),
+) -> Result<Option<ft_sys::UserData>, UserDataError> {
+    if let Some(v) = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
+        let mut v = v.splitn(4, ' ');
+        return Ok(Some(ft_sys::UserData {
+            id: v.next().unwrap().parse().unwrap(),
+            identity: v.next().unwrap_or_default().to_string(),
+            name: v.next().map(|v| v.to_string()).unwrap_or_default(),
+            email: v.next().map(|v| v.to_string()).unwrap_or_default(),
             verified_email: true,
-        }
-    });
-
-    if debug_user.is_some() {
-        return debug_user;
+        }));
     }
 
-    let session_cookie = cookie.0?;
-    let session_cookie = serde_json::from_str::<serde_json::Value>(session_cookie.as_str()).ok()?;
-    let session_id = session_cookie.as_object()?.get("id")?.as_str()?;
+    ft_sdk::println!("sid: {cookie}");
 
-    let (user_id, user_data) = conn
-        .transaction(|c| {
-            let user_id: Option<i64> = fastn_session::table
-                .select(fastn_session::uid)
-                .filter(fastn_session::id.eq(&session_id))
-                .first(c)?;
-
-            if user_id.is_none() {
-                return Err(diesel::result::Error::NotFound);
-            }
-            let user_id = user_id.unwrap();
-
-            let data = fastn_user::table
-                .select(fastn_user::data)
-                .filter(fastn_user::id.eq(&user_id))
-                .first::<serde_json::Value>(c)?;
-
-            Ok((user_id, data))
-        })
-        .ok()?;
-
-    let mut ud = ft_sys::UserData {
-        id: user_id,
-        identity: "".to_string(),
-        name: "".to_string(),
-        email: "".to_string(),
-        verified_email: false,
+    let sid = match cookie.0 {
+        Some(v) => v,
+        None => return Ok(None),
     };
 
-    let user_data = ft_sdk::auth::utils::user_data_from_json(user_data);
+    let (UserId(id), data) = match utils::user_data_by_query(
+        conn,
+        r#"
+            SELECT
+                fastn_user.id as id, fastn_user.data -> 'email' as data
+            FROM fastn_user
+            JOIN fastn_session
+            WHERE
+                fastn_session.id = $1
+                AND fastn_user.id = fastn_session.uid
+            "#,
+        sid.as_str(),
+    ) {
+        Ok(v) => v,
+        Err(UserDataError::NoDataFound) => return Ok(None),
+        Err(e) => return Err(e),
+    };
 
-    construct_user_data_from_provider_data(user_data, &mut ud);
-
-    Some(ud)
+    Ok(Some(ft_sys::UserData {
+        id,
+        identity: data.identity.clone(),
+        name: data.name.unwrap_or_default(),
+        email: data.identity,
+        verified_email: !data.verified_emails.is_empty(),
+    }))
 }
 
-/// try to get information from every provider
-/// the last provider encountered with relevant info will be used to fill `ud`
-fn construct_user_data_from_provider_data(
-    user_data: std::collections::HashMap<String, Vec<ft_sdk::auth::UserData>>,
-    ud: &mut ft_sys::UserData,
-) {
-    user_data.iter().for_each(|(_, pds)| {
-        pds.iter().for_each(|data| match data {
-            UserData::VerifiedEmail(email) => {
-                ud.email.clone_from(email);
-                ud.verified_email = true;
-            }
-            UserData::Name(name) => {
-                ud.name.clone_from(name);
-            }
-            UserData::Email(email) => {
-                ud.email.clone_from(email);
-            }
-            UserData::Identity(identity) => {
-                ud.identity.clone_from(identity);
-            }
-            _ => {}
-        })
-    });
+#[derive(Debug, thiserror::Error)]
+pub enum UserDataError {
+    #[error("no data found for the provider")]
+    NoDataFound,
+    #[error("multiple rows found")]
+    MultipleRowsFound,
+    #[error("db error: {0:?}")]
+    DatabaseError(#[from] diesel::result::Error),
+    #[error("failed to deserialize data from db: {0:?}")]
+    FailedToDeserializeData(#[from] serde_json::Error),
 }

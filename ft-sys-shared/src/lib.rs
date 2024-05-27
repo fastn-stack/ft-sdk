@@ -6,6 +6,8 @@
 mod sqlite;
 pub use sqlite::{SqliteRawValue, SqliteType};
 
+pub const SESSION_KEY: &str = "fastn-sid";
+
 /// Request acts as both a request and a response, and is only used for the
 /// communication between guest and host. It is not exposed via ft-sdk.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -109,10 +111,23 @@ pub struct UserData {
     pub verified_email: bool,
 }
 
+// copy from diesel, keeping only the necessary variants
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub enum DatabaseErrorKind {
+    UniqueViolation,
+    ForeignKeyViolation,
+    NotNullViolation,
+    CheckViolation,
+    SerializationFailure,
+    ReadOnlyTransaction,
+    ClosedConnection,
+    Unknown,
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum DbError {
     DatabaseError {
-        code: String,
+        kind: DatabaseErrorKind,
         message: String,
         details: Option<String>,
         hint: Option<String>,

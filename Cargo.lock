@@ -198,6 +198,7 @@ dependencies = [
  "diesel",
  "ft-derive",
  "ft-sys",
+ "ft-sys-shared",
  "http",
  "include_dir",
  "pretty_assertions",
@@ -227,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "ft-sys-shared"
-version = "0.1.1-alpha.2"
+version = "0.1.1-alpha.4"
 dependencies = [
  "bytes",
  "chrono",
