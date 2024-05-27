@@ -33,7 +33,6 @@ pub fn send_email(
 
     ft_sdk::println!("Try sending email");
     let now = ft_sdk::env::now();
-    let from = format!("{} <{}>", from.0, from.1);
 
     let to = to_comma_separated_str(to);
     let reply_to = reply_to.map(to_comma_separated_str);
@@ -43,7 +42,8 @@ pub fn send_email(
 
     let affected = diesel::insert_into(fastn_email_queue::table)
         .values((
-            fastn_email_queue::from_address.eq(from),
+            fastn_email_queue::from_address.eq(from.1),
+            fastn_email_queue::from_name.eq(from.0),
             fastn_email_queue::to_address.eq(to),
             fastn_email_queue::subject.eq(subject),
             fastn_email_queue::body_html.eq(body_html),
@@ -72,6 +72,7 @@ pub fn send_email(
 diesel::table! {
     fastn_email_queue (id) {
         id -> Int8,
+        from_name -> Text,
         from_address -> Text,
         reply_to     -> Nullable<Text>,
         // to_address, cc_address, bcc_address contains comma separated email with
