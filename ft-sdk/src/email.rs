@@ -55,6 +55,7 @@ pub fn send_email(
             fastn_email_queue::status.eq("pending"),
             fastn_email_queue::retry_count.eq(0),
             fastn_email_queue::created_at.eq(now),
+            fastn_email_queue::updated_at.eq(now),
             fastn_email_queue::sent_at.eq(now),
         ))
         .execute(conn)
@@ -84,6 +85,7 @@ diesel::table! {
         body_html    -> Text,
         retry_count  -> Integer,
         created_at   -> Timestamptz,
+        updated_at   -> Timestamptz,
         sent_at      -> Timestamptz,
         // mkind is any string, used for product analytics etc
         mkind        -> Text,
@@ -95,6 +97,7 @@ diesel::table! {
 
 fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
     x.iter().fold(String::new(), |acc, x| {
-        format!("{}, {} <{}>", acc, x.0, x.1)
+        let acc = if acc.is_empty() { acc } else { format!("{acc}, ") };
+        format!("{acc}{} <{}>", x.0, x.1)
     })
 }
