@@ -4,7 +4,8 @@
 
 ### ft-sdk: `0.1.3`
 
-- bringing back `ft_sdk::auth::user_data_by_query` which is used by few things behind feature flag
+- updated `ft-sys` to `0.1.3`
+- bring back `ft_sdk::auth::user_data_by_query`, used by few things behind feature flag
 
 ## ft-sys: `0.1.3`
 
@@ -12,7 +13,7 @@
 
 ### ft-sdk: `0.1.2`
 
-- upgraded `ft-sys` to `0.1.2`
+- updated `ft-sys` to `0.1.2`
 - added migration framework
 - added support for `fastn_user`, `fastn_session`, `fastn_email_queue` tables
 - added auth and auth provider framework
