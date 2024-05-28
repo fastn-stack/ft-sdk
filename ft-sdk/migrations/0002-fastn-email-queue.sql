@@ -40,7 +40,7 @@ INSERT INTO "new__fastn_email_queue"
 SELECT
     "id",
     "from_address",
-    "from_address",
+    '',
     "reply_to",
     "to_address",
     "cc_address",
