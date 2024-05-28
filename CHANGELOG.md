@@ -2,6 +2,29 @@
 
 ## 28th May 2024
 
+### ft-sdk: `0.1.2`
+
+- upgraded `ft-sys` to `0.1.2`
+- added migration framework
+- added support for `fastn_user`, `fastn_session`, `fastn_email_queue` tables
+- added auth and auth provider framework
+- removed `ft_sdk::{CookieExt, Query, QueryExt, JsonBody, JsonBodyExt}`
+- removed `ft_sdk::In`
+- removed `ft_sdk::Layout` framework
+- added `ft_sdk::send_email`
+- added `ft_sdk::server_error!()`, `ft_fdk::not_found!()`, `ft_sdk::unauthorised!()`
+- added from_request extractors for `cookie`, `form`, `headers`, `hidden`, `host`,
+  `path`, `optional`, `mountpoint`, `query`, `required`
+- added `ft_sdk::{processor, form, data}` for handling http requests
+- added `ft-derive`, and re-exported `ft_sdk::{form, processor, wrapped_processor, data, migration}!()`
+- added `ft_sdk::dbg_query`
+- added `ft_sdk::Rng` to generate random numbers
+
+### ft-derive: `0.1.0`
+
+Initial release with these macros: `{form, processor, wrapped_processor, data, migration}!()`. Should
+be used via `ft-sdk`.
+
 ### ft-sys: `0.1.2`
 
 - upgraded `ft-sys-shared` to `0.1.2`
