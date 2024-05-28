@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 28th May 2024
+
+### ft-sys-shared: `0.1.2`
+
+No change, this is good enough for wider use so bumping to `0.1.2`.
+
 ## 21st May 2024
 
 ### ft-sys-shared: `0.1.1-alpha.4`

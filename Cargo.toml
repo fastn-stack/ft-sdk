@@ -40,6 +40,10 @@ serde_urlencoded = "0.7"
 include_dir = "0.7"
 rand_core = "0.6"
 uuid = { version = "1.8", default-features = false, features = ["v8"] }
+ft-sys-shared = { path = "ft-sys-shared", version = "0.1.2" }
+ft-derive = { path = "ft-derive", version = "0.1.0" }
+ft-sys = { path = "ft-sys", version = "0.1.2", default-features = false }
+
 
 [workspace.dependencies.rusqlite]
 version = "0.31"
