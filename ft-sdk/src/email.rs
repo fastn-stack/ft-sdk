@@ -33,7 +33,6 @@ pub fn send_email(
 
     ft_sdk::println!("Try sending email");
     let now = ft_sdk::env::now();
-    let from = format!("{} <{}>", from.0, from.1);
 
     let to = to_comma_separated_str(to);
     let reply_to = reply_to.map(to_comma_separated_str);
@@ -43,7 +42,8 @@ pub fn send_email(
 
     let affected = diesel::insert_into(fastn_email_queue::table)
         .values((
-            fastn_email_queue::from_address.eq(from),
+            fastn_email_queue::from_address.eq(from.1),
+            fastn_email_queue::from_name.eq(from.0),
             fastn_email_queue::to_address.eq(to),
             fastn_email_queue::subject.eq(subject),
             fastn_email_queue::body_html.eq(body_html),
@@ -55,6 +55,7 @@ pub fn send_email(
             fastn_email_queue::status.eq("pending"),
             fastn_email_queue::retry_count.eq(0),
             fastn_email_queue::created_at.eq(now),
+            fastn_email_queue::updated_at.eq(now),
             fastn_email_queue::sent_at.eq(now),
         ))
         .execute(conn)
@@ -71,6 +72,7 @@ pub fn send_email(
 diesel::table! {
     fastn_email_queue (id) {
         id -> Int8,
+        from_name -> Text,
         from_address -> Text,
         reply_to     -> Nullable<Text>,
         // to_address, cc_address, bcc_address contains comma separated email with
@@ -84,6 +86,7 @@ diesel::table! {
         body_html    -> Text,
         retry_count  -> Integer,
         created_at   -> Timestamptz,
+        updated_at   -> Timestamptz,
         sent_at      -> Timestamptz,
         // mkind is any string, used for product analytics etc
         mkind        -> Text,
@@ -95,6 +98,7 @@ diesel::table! {
 
 fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
     x.iter().fold(String::new(), |acc, x| {
-        format!("{}, {} <{}>", acc, x.0, x.1)
+        let acc = if acc.is_empty() { acc } else { format!("{acc}, ") };
+        format!("{acc}{} <{}>", x.0, x.1)
     })
 }

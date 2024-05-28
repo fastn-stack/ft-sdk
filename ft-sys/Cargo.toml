@@ -1,6 +1,6 @@
 [package]
 name = "ft-sys"
-version = "0.1.2"
+version = "0.1.3"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -9,22 +9,17 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-auth-providers = []
-default = ["sqlite-default"]
-postgres-default = ["postgres"]
 postgres = ["diesel/postgres_backend", "diesel", "diesel_derives"]
-sqlite-default = ["sqlite"]
-sqlite = ["diesel", "diesel_derives", "diesel/postgres_backend", "serde_sqlite_jsonb"]
+sqlite = ["diesel", "diesel_derives", "diesel/postgres_backend"]
 
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
 http.workspace = true
 bytes.workspace = true
-ft-sys-shared = { path = "../ft-sys-shared", version = "0.1.1-alpha.1" }
+ft-sys-shared.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
-serde_sqlite_jsonb = { workspace = true, optional = true }
 
 
 [dependencies.diesel]

@@ -1,6 +1,6 @@
 [package]
 name = "ft-sdk"
-version = "0.1.2"
+version = "0.1.3"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -10,9 +10,9 @@ homepage.workspace = true
 
 [features]
 default = ["sqlite-default", "migration"]
-postgres-default = ["ft-sys/postgres-default", "postgres"]
+postgres-default = ["postgres"]
 postgres = ["ft-sys/postgres", "diesel"]
-sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
+sqlite-default = ["sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 migration = [] # only if either sqlite-default or postgres-default is activated
 auth-provider = []
@@ -20,9 +20,9 @@ field-extractors = []
 
 [dependencies]
 anyhow.workspace = true
-ft-sys = { path = "../ft-sys", version = "0.1.2", default-features = false }
-ft-sys-shared = { path = "../ft-sys-shared", version = "0.1.1-alpha.4" }
-ft-derive = { path = "../ft-derive", version = "0.1.0" }
+ft-sys.workspace = true
+ft-sys-shared.workspace = true
+ft-derive.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 chrono.workspace = true

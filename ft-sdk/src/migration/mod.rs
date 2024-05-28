@@ -3,7 +3,7 @@ mod sqlite;
 
 use diesel::prelude::*;
 #[cfg(feature = "sqlite-default")]
-use sqlite::{EMAIL_TABLE, MIGRATION_TABLE, SESSION_TABLE, USER_TABLE};
+use sqlite::MIGRATION_TABLE;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MigrationError {
@@ -33,7 +33,36 @@ pub fn migrate(
     // check if the migration table exists, if not create it
     create_migration_table(conn).map_err(MigrationError::CanNotCreateMigrationTable)?;
 
+    // Migration for fastn app
+    migrate_fastn(conn, now)?;
+
     // find the latest applied migration number from the table
+    migrate_app(conn, app_name, migration_sqls, migration_functions, now)?;
+
+    Ok(())
+}
+
+// Migration for fastn app
+fn migrate_fastn(
+    conn: &mut ft_sdk::Connection,
+    now: chrono::DateTime<chrono::Utc>,
+) -> Result<(), MigrationError> {
+    migrate_app(
+        conn,
+        "fastn",
+        include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
+        vec![],
+        now,
+    )
+}
+
+fn migrate_app(
+    conn: &mut ft_sdk::Connection,
+    app_name: &str,
+    migration_sqls: include_dir::Dir,
+    migration_functions: Vec<FnMigration>,
+    now: chrono::DateTime<chrono::Utc>,
+) -> Result<(), MigrationError> {
     let latest_applied_migration_number = find_latest_applied_migration_number(conn, app_name)
         .map_err(MigrationError::CanNotFindLatestAppliedMigrationNumber)?;
 
@@ -44,23 +73,24 @@ pub fn migrate(
     )?;
 
     for cmd in migrations {
-        match cmd {
+        conn.transaction::<_, ApplyMigrationError, _>(|conn| match cmd {
             Cmd::Sql { id, name, sql } => {
-                apply_sql_migration(conn, app_name, id, name.as_str(), sql.as_str(), &now)?
+                apply_sql_migration(conn, app_name, id, name.as_str(), sql.as_str(), &now)
             }
-            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, app_name, id, name, r#fn, &now)?,
-        }
+            Cmd::Fn { id, name, r#fn } => apply_fn_migration(conn, app_name, id, name, r#fn, &now),
+        })?;
     }
 
     Ok(())
 }
-
 #[derive(Debug, thiserror::Error)]
 pub enum ApplyMigrationError {
     #[error("failed to apply migration: {0}")]
-    FailedToApplyMigration(diesel::result::Error),
+    ApplyMigration(diesel::result::Error),
     #[error("failed to apply migration: {0}")]
-    FailedToRecordMigration(diesel::result::Error),
+    RecordMigration(diesel::result::Error),
+    #[error("failed to commit transaction: {0}")]
+    CommitTransaction(#[from] diesel::result::Error),
 }
 
 fn apply_sql_migration(
@@ -72,9 +102,9 @@ fn apply_sql_migration(
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), ApplyMigrationError> {
     diesel::connection::SimpleConnection::batch_execute(conn, sql)
-        .map_err(ApplyMigrationError::FailedToApplyMigration)?;
+        .map_err(ApplyMigrationError::ApplyMigration)?;
     mark_migration_applied(conn, app_name, id, name, now)
-        .map_err(ApplyMigrationError::FailedToRecordMigration)
+        .map_err(ApplyMigrationError::RecordMigration)
 }
 
 fn apply_fn_migration(
@@ -85,9 +115,9 @@ fn apply_fn_migration(
     r#fn: fn(&mut ft_sdk::Connection) -> Result<(), diesel::result::Error>,
     now: &chrono::DateTime<chrono::Utc>,
 ) -> Result<(), ApplyMigrationError> {
-    r#fn(conn).map_err(ApplyMigrationError::FailedToApplyMigration)?;
+    r#fn(conn).map_err(ApplyMigrationError::ApplyMigration)?;
     mark_migration_applied(conn, app_name, id, name, now)
-        .map_err(ApplyMigrationError::FailedToRecordMigration)
+        .map_err(ApplyMigrationError::RecordMigration)
 }
 
 table! {
@@ -121,9 +151,6 @@ pub fn mark_migration_applied(
 
 fn create_migration_table(conn: &mut ft_sdk::Connection) -> Result<(), diesel::result::Error> {
     diesel::dsl::sql_query(MIGRATION_TABLE).execute(conn)?;
-    diesel::dsl::sql_query(EMAIL_TABLE).execute(conn)?;
-    diesel::dsl::sql_query(USER_TABLE).execute(conn)?;
-    diesel::dsl::sql_query(SESSION_TABLE).execute(conn)?;
     Ok(())
 }
 

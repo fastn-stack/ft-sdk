@@ -26,15 +26,6 @@ pub use ft_sys_shared::{DecryptionError, UserData};
 #[cfg(feature = "sqlite")]
 pub use diesel_sqlite::Sqlite;
 
-#[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
-compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
-
-#[cfg(feature = "sqlite-default")]
-pub type Connection = SqliteConnection;
-
-#[cfg(feature = "postgres-default")]
-pub type Connection = PgConnection;
-
 pub use env::now;
 
 #[derive(Debug, thiserror::Error)]

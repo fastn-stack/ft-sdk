@@ -25,9 +25,9 @@ pub fn set_user_id(
         .set(fastn_session::uid.eq(Some(user_id)))
         .execute(conn)?
     {
-        0 => return Ok(create_with_user(conn, user_id)?),
+        0 => Ok(create_with_user(conn, user_id)?),
         1 => Ok(SessionID(session_id)),
-        _ => return Err(SetUserIDError::MultipleSessionsFound),
+        _ => Err(SetUserIDError::MultipleSessionsFound),
     }
 }
 
