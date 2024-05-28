@@ -2,6 +2,14 @@
 
 ## 28th May 2024
 
+### ft-sdk: `0.1.3`
+
+- bringing back `ft_sdk::auth::user_data_by_query` which is used by few things behind feature flag
+
+## ft-sys: `0.1.3`
+
+- removed `auth-providers`, `sqlite-default` and `postgres-default` features and `ft_sys::Connection`
+
 ### ft-sdk: `0.1.2`
 
 - upgraded `ft-sys` to `0.1.2`

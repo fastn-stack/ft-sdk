@@ -1,5 +1,3 @@
-use crate::SqliteConnection;
-
 pub struct PgConnection {
     conn: i32,
     metadata_cache: diesel::pg::PgMetadataCache,

@@ -9,11 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-auth-providers = []
-default = ["sqlite-default"]
-postgres-default = ["postgres"]
+default = []
 postgres = ["diesel/postgres_backend", "diesel", "diesel_derives"]
-sqlite-default = ["sqlite"]
 sqlite = ["diesel", "diesel_derives", "diesel/postgres_backend"]
 
 [dependencies]

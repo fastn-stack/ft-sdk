@@ -10,9 +10,9 @@ homepage.workspace = true
 
 [features]
 default = ["sqlite-default", "migration"]
-postgres-default = ["ft-sys/postgres-default", "postgres"]
+postgres-default = ["postgres"]
 postgres = ["ft-sys/postgres", "diesel"]
-sqlite-default = ["ft-sys/sqlite-default", "sqlite"]
+sqlite-default = ["sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 migration = [] # only if either sqlite-default or postgres-default is activated
 auth-provider = []
