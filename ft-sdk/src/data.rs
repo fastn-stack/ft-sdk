@@ -33,5 +33,5 @@ pub fn api_ok<T: serde::Serialize>(t: T) -> Result {
 }
 
 pub fn api_error(errors: std::collections::HashMap<String, String>) -> Result {
-    Ok(ft_sdk::chr::CHR::new(Output::Json(serde_json::json!({"errors": serde_json::to_value(errors)?, "success": true }))))
+    Ok(ft_sdk::chr::CHR::new(Output::Json(serde_json::json!({"errors": serde_json::to_value(errors)?, "success": false }))))
 }

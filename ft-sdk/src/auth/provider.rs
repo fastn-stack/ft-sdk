@@ -169,6 +169,33 @@ pub fn create_user(
     })
 }
 
+pub fn update_user(
+    conn: &mut ft_sdk::Connection,
+    id: &ft_sdk::UserId,
+    provider_id: &str,
+    data: ft_sdk::auth::ProviderData,
+) -> Result<ft_sdk::auth::UserId, CreateUserError> {
+    use diesel::prelude::*;
+    use ft_sdk::auth::fastn_user;
+
+    let provider_data =
+        serde_json::to_string(&serde_json::json!({provider_id: data.clone()})).unwrap();
+
+    ft_sdk::println!("update_user:: {data:?}, {}", id.0);
+
+    diesel::update(
+        fastn_user::table.filter(
+            fastn_user::id.eq(&id.0)
+        )).set((
+        fastn_user::name.eq(data.name),
+        fastn_user::identity.eq(data.identity),
+        fastn_user::data.eq(&provider_data),
+        fastn_user::updated_at.eq(ft_sys::env::now()),
+    )).execute(conn)?;
+
+    Ok(id.clone())
+}
+
 /// persist the user in session and redirect to `next`
 ///
 /// `identity`: Eg for GitHub, it could be the username. This is stored in the cookie so can be
