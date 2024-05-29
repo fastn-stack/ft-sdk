@@ -24,7 +24,6 @@ impl From<ft_sdk::chr::CHR<Output>>
     }
 }
 
-
 /// Creates a binary response for serving binary data over HTTP.
 ///
 /// # Parameters
@@ -54,11 +53,7 @@ impl From<ft_sdk::chr::CHR<Output>>
 ///     }
 /// }
 /// ```
-pub fn binary(
-    file_name: Option<String>,
-    content: bytes::Bytes,
-    content_type: String
-) -> Result {
+pub fn binary(file_name: Option<String>, content: bytes::Bytes, content_type: String) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Binary(ft_sdk::Binary {
         file_name,
         content,
@@ -80,6 +75,6 @@ pub fn api_ok<T: serde::Serialize>(t: T) -> Result {
 
 pub fn api_error(errors: std::collections::HashMap<String, String>) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Json(
-        serde_json::json!({"errors": serde_json::to_value(errors)?, "success": true }),
+        serde_json::json!({"errors": serde_json::to_value(errors)?, "success": false }),
     )))
 }
