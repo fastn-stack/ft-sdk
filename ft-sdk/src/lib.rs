@@ -106,29 +106,3 @@ pub(crate) fn json<T: serde::Serialize>(
         .header("Content-Type", "application/json")
         .body(d.into())?)
 }
-
-
-#[derive(Debug)]
-pub struct Binary {
-    pub file_name: Option<String>,
-    pub content: bytes::Bytes,
-    pub content_type: String
-}
-
-pub(crate) fn binary(
-    binary: ft_sdk::Binary,
-) -> Result<::http::Response<bytes::Bytes>, ft_sdk::Error> {
-    let mut response_builder = ::http::Response::builder()
-        .status(200)
-        .header("Content-Type", binary.content_type.as_str());
-
-    // Add the binary as attachment, indicating it should be downloaded
-    if let Some(filename) = binary.file_name {
-        response_builder = response_builder.header(
-            "Content-Disposition",
-            format!("attachment; filename=\"{filename}\"").as_str()
-        )
-    }
-
-    Ok(response_builder.body(binary.content)?)
-}
