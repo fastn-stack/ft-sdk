@@ -109,9 +109,9 @@ pub(crate) fn json<T: serde::Serialize>(
 
 
 #[derive(Debug)]
-pub(crate) struct Binary {
+pub struct Binary {
     pub file_name: Option<String>,
-    pub data: bytes::Bytes,
+    pub content: bytes::Bytes,
     pub content_type: String
 }
 
@@ -130,5 +130,5 @@ pub(crate) fn binary(
         )
     }
 
-    Ok(response_builder.body(content)?)
+    Ok(response_builder.body(binary.content)?)
 }
