@@ -1,7 +1,7 @@
 pub type Result = std::result::Result<ft_sdk::chr::CHR<Output>, ft_sdk::Error>;
 
 #[derive(Debug)]
-pub(crate) enum Output {
+pub enum Output {
     Json(serde_json::Value),
     Binary(ft_sdk::Binary),
 }
@@ -55,13 +55,13 @@ impl From<ft_sdk::chr::CHR<Output>>
 /// }
 /// ```
 pub fn binary(
-    filename: Option<String>,
+    file_name: Option<String>,
     content: bytes::Bytes,
     content_type: String
 ) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Binary(ft_sdk::Binary {
         file_name,
-        data,
+        content,
         content_type,
     })))
 }
