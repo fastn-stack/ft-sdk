@@ -36,22 +36,12 @@ impl From<ft_sdk::chr::CHR<Output>>
 ///
 /// # Example
 /// ```rust
-/// use bytes::Bytes;
-/// use ft_sdk::binary;
 ///
 /// let filename = Some(String::from("example.txt"));
-/// let content = Bytes::from("This is the content of the file.");
+/// let content = bytes::Bytes::from("This is the content of the file.");
 /// let content_type = String::from("text/plain");
 ///
-/// match binary(filename, content, content_type) {
-///     Ok(response) => {
-///         // Process the response, such as sending it over HTTP
-///         println!("Binary response created successfully!");
-///     },
-///     Err(e) => {
-///         eprintln!("Failed to create binary response: {:?}", e);
-///     }
-/// }
+/// ft_sdk::data::binary(filename, content, content_type).unwrap();
 /// ```
 pub fn binary(file_name: Option<String>, content: bytes::Bytes, content_type: String) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Binary(ft_sdk::Binary {
