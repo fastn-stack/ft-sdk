@@ -49,30 +49,54 @@ impl From<ft_sdk::chr::CHR<Output>>
     }
 }
 
-/// Creates a binary response for serving binary data over HTTP.
+/// Creates a response that instructs browser to store in downloads the binary content provided.
 ///
 /// # Parameters
 /// - `filename`: An optional `String` representing the name of the file. If provided, the response
 ///   will add `Content-Disposition: attachment; filename="{filename}"` as header, indicating the
 ///   binary should be downloaded and this name will be used as the filename for the download.
 /// - `content`: A `bytes::Bytes` object containing the binary content.
-/// - `content_type`: A `String` specifying the MIME type of the content (e.g., `application/pdf`,
-///   `image/png`).
+/// - `content_type`: An `AsRef<str>` (&str/String) specifying the MIME type of the content
+///    (e.g., `application/pdf`, `image/png`).
 ///
 /// # Example
+///
 /// ```rust
-///
-/// let filename = Some(String::from("example.txt"));
 /// let content = bytes::Bytes::from("This is the content of the file.");
-/// let content_type = String::from("text/plain");
 ///
-/// ft_sdk::data::binary(filename, content, content_type).unwrap();
+/// ft_sdk::data::download("example.txt", content, "text/plain").unwrap();
 /// ```
-pub fn binary(file_name: Option<String>, content: bytes::Bytes, content_type: String) -> Result {
+pub fn download<S1: AsRef<str>, S2: AsRef<str>>(
+    file_name: S1,
+    content: bytes::Bytes,
+    content_type: S2,
+) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Binary(Binary {
-        file_name,
+        file_name: Some(file_name.as_ref().to_string()),
         content,
-        content_type,
+        content_type: content_type.as_ref().to_string(),
+    })))
+}
+
+/// Creates a binary response for serving binary data over HTTP.
+///
+/// # Parameters
+/// - `content`: A `bytes::Bytes` object containing the binary content.
+/// - `content_type`: An `AsRef<str>` (&str/String) specifying the MIME type of the content
+///    (e.g., `application/pdf`, `image/png`).
+///
+/// # Example
+///
+/// ```rust
+/// let content = bytes::Bytes::from("This is the content of the file.");
+///
+/// ft_sdk::data::binary(content, "text/plain").unwrap();
+/// ```
+pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
+    Ok(ft_sdk::chr::CHR::new(Output::Binary(Binary {
+        file_name: None,
+        content,
+        content_type: content_type.as_ref().to_string(),
     })))
 }
 
