@@ -1,5 +1,14 @@
 # ChangeLog
 
+## 30th May 2024
+
+### ft-sdk: `0.1.4`
+
+- added `ft_sdk::auth_provider::updated_user()`
+- `ft_sdk::auth_provider::create_user()` does not return session id, but the user id. also it  
+  does not automatically log user in, call to `ft_sdk::auth_provider::login()` is required.
+- added `ft_sdk::data::binary()` and `ft_sdk::data::download()`
+
 ## 28th May 2024
 
 ### ft-sdk: `0.1.3`

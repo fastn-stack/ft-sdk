@@ -135,9 +135,90 @@ pub enum CreateUserError {
     Login(#[from] LoginError),
 }
 
+/// Error that is returned when update_user is called
+#[derive(Debug, thiserror::Error)]
+pub enum UpdateUserDataError {
+    #[error("provider input data is not valid json {0}")]
+    ProviderDataNotJson(serde_json::Error),
+    #[error("cant read user data from db {0}")]
+    CantReadUserData(diesel::result::Error),
+    #[error("db data is not valid json {0}")]
+    DbDataNotJson(serde_json::Error),
+    #[error("data in db is not a map")]
+    DbDataIsNotMap,
+    #[error("cant serialise merged data {0}")]
+    CantSerialiseMergedData(serde_json::Error),
+    #[error("cant store user data {0}")]
+    CantStoreUserData(diesel::result::Error),
+    #[error("failed to commit transaction {0}")]
+    FailedToCommitTransaction(#[from] diesel::result::Error),
+}
+
+/// update the data for a user
+///
+/// each provider only updates their own `data`. some data, `name` and `identity` are global
+/// data, and if `update_identity` is passed, those bits are also updated.
+pub fn update_user(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    user_id: &ft_sdk::auth::UserId,
+    data: ft_sdk::auth::ProviderData,
+    update_identity: bool,
+) -> Result<(), UpdateUserDataError> {
+    use diesel::prelude::*;
+    use ft_sdk::auth::fastn_user;
+
+    let data_value =
+        serde_json::to_value(&data).map_err(UpdateUserDataError::ProviderDataNotJson)?;
+
+    conn.transaction::<_, UpdateUserDataError, _>(|conn| {
+        let existing_data = fastn_user::table
+            .select(fastn_user::data)
+            .filter(fastn_user::id.eq(user_id.0))
+            .first::<String>(conn)
+            .map_err(UpdateUserDataError::CantReadUserData)?;
+
+        let mut existing_data: serde_json::Value =
+            serde_json::from_str(&existing_data).map_err(UpdateUserDataError::DbDataNotJson)?;
+
+        match existing_data {
+            serde_json::Value::Object(ref mut m) => {
+                m.insert(provider_id.to_string(), data_value);
+            }
+            _ => {
+                return Err(UpdateUserDataError::DbDataIsNotMap);
+            }
+        }
+
+        let merged_data = serde_json::to_string(&existing_data)
+            .map_err(UpdateUserDataError::CantSerialiseMergedData)?;
+
+        if update_identity {
+            diesel::update(fastn_user::table.filter(fastn_user::id.eq(user_id.0)))
+                .set((
+                    fastn_user::data.eq(merged_data),
+                    fastn_user::identity.eq(data.identity),
+                    fastn_user::name.eq(data.name),
+                    fastn_user::updated_at.eq(ft_sdk::env::now()),
+                ))
+                .execute(conn)
+                .map_err(UpdateUserDataError::CantStoreUserData)
+        } else {
+            diesel::update(fastn_user::table.filter(fastn_user::id.eq(user_id.0)))
+                .set((
+                    fastn_user::data.eq(merged_data),
+                    fastn_user::updated_at.eq(ft_sdk::env::now()),
+                ))
+                .execute(conn)
+                .map_err(UpdateUserDataError::CantStoreUserData)
+        }
+    })?;
+
+    Ok(())
+}
+
 pub fn create_user(
     conn: &mut ft_sdk::Connection,
-    session_id: Option<ft_sdk::auth::SessionID>,
     provider_id: &str,
     // GitHub may use username as Identity, as user can understand their username, but have never
     // seen their GitHub user id. If we show that user is logged in twice via GitHub, we have to
@@ -146,27 +227,25 @@ pub fn create_user(
     //
     // For the same provider_id, if identity changes, we will only keep the latest identity.
     data: ft_sdk::auth::ProviderData,
-) -> Result<ft_sdk::auth::SessionID, CreateUserError> {
+) -> Result<ft_sdk::auth::UserId, CreateUserError> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_user;
 
     let provider_data =
         serde_json::to_string(&serde_json::json!({provider_id: data.clone()})).unwrap();
 
-    conn.transaction(|conn| {
-        let user_id: i64 = diesel::insert_into(fastn_user::table)
-            .values((
-                fastn_user::name.eq(data.name),
-                fastn_user::data.eq(provider_data),
-                fastn_user::identity.eq(data.identity),
-                fastn_user::created_at.eq(ft_sys::env::now()),
-                fastn_user::updated_at.eq(ft_sys::env::now()),
-            ))
-            .returning(fastn_user::id)
-            .get_result(conn)?;
+    let user_id: i64 = diesel::insert_into(fastn_user::table)
+        .values((
+            fastn_user::name.eq(data.name),
+            fastn_user::data.eq(provider_data),
+            fastn_user::identity.eq(data.identity),
+            fastn_user::created_at.eq(ft_sdk::env::now()),
+            fastn_user::updated_at.eq(ft_sdk::env::now()),
+        ))
+        .returning(fastn_user::id)
+        .get_result(conn)?;
 
-        login(conn, &ft_sdk::UserId(user_id), session_id).map_err(Into::into)
-    })
+    Ok(ft_sdk::auth::UserId(user_id))
 }
 
 /// persist the user in session and redirect to `next`
