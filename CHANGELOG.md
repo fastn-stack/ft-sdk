@@ -2,6 +2,10 @@
 
 ## 30th May 2024
 
+### Unreleased
+
+- `ft_sdk::auth::provider::user_data_by_custom_attribute`: Get users that match the provided key-value.
+
 ### ft-sdk: `0.1.4`
 
 - added `ft_sdk::auth_provider::updated_user()`

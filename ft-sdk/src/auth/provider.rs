@@ -97,6 +97,40 @@ pub fn user_data_by_email(
     )
 }
 
+/// Get users that match the provided key-value.
+///
+/// [UserDataError::MultipleRowsFound](ft_sdk::auth::UserDataError) is returned if more than one
+/// user is found. This may happen if the key-value pair is not unique for a user.
+pub fn user_data_by_custom_attribute(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    key: &str,
+    value: &str,
+) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
+    assert_valid_provider_id(provider_id);
+    ft_sdk::auth::utils::user_data_by_query(
+        conn,
+        format!(
+            r#"
+            SELECT
+                id, data -> '{provider_id}' as data
+            FROM
+                fastn_user
+            WHERE
+                EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        json_each(data -> '{provider_id}' -> 'custom' -> '{key}')
+                    WHERE value = $1
+                )
+            "#
+        )
+        .as_str(),
+        value,
+    )
+}
+
 pub fn assert_valid_provider_id(provider_id: &str) {
     provider_id.chars().for_each(|c| {
         if !c.is_ascii_alphanumeric() {
