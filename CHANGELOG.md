@@ -1,11 +1,15 @@
 # ChangeLog
 
+## 31st May 2024
+
+### ft-sdk: `0.1.5`
+
+- `ft_sdk::auth::provider::user_data_by_custom_attribute`: Get users that match the provided
+  key-value.
+- make `fastn_user::identity` nullable, `fastn_user::data` non-nullable and `fastn_session::data`
+  non-nullable.
+
 ## 30th May 2024
-
-### Unreleased
-
-- `ft_sdk::auth::provider::user_data_by_custom_attribute`: Get users that match the provided key-value.
-- make `fastn_user::identity` nullable, `fastn_user::data` non-nullable and `fastn_session::data` non-nullable.
 
 ### ft-sdk: `0.1.4`
 
