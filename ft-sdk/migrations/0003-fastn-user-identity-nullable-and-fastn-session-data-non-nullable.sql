@@ -58,5 +58,6 @@ ALTER TABLE "new__fastn_session" RENAME TO fastn_session;
 
 
 
--- Re-enable foreign key constraint enforcement (if necessary)
+-- Re-enable foreign key constraint enforcement (if necessary).
+-- Though this is no-op but keeping it explicitly stated for clarity
 PRAGMA defer_foreign_keys = OFF;

@@ -5,6 +5,8 @@
 ### Unreleased
 
 - `ft_sdk::auth::provider::user_data_by_custom_attribute`: Get users that match the provided key-value.
+- Added migration `0003-fastn-user-identity-nullable-and-fastn-session-data-non-nullable.sql`. This 
+  migration makes fastn_user::identity nullable and fastn_session::data not nullable
 
 ### ft-sdk: `0.1.4`
 
