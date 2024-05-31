@@ -1,6 +1,9 @@
 -- Disable foreign key constraint enforcement (if necessary)
 PRAGMA defer_foreign_keys = ON;
 
+-- Update NULL or empty `data` entries in the old table
+UPDATE fastn_user SET data = '{}' WHERE data IS NULL OR data = '';
+
 -- Create a new table with the desired schema
 CREATE TABLE IF NOT EXISTS "new__fastn_user"
 (
