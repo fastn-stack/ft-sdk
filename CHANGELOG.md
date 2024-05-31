@@ -8,6 +8,7 @@
   key-value.
 - make `fastn_user::identity` nullable, `fastn_user::data` non-nullable and `fastn_session::data`
   non-nullable.
+- updated `diesel` requirement to `">=2, <2.2"`, we do not yet work with recently released diesel-2.2
 
 ## 30th May 2024
 
