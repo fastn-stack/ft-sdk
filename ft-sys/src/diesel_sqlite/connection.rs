@@ -1,6 +1,7 @@
 pub struct SqliteConnection {
     conn: i32,
     transaction_manager: diesel::connection::AnsiTransactionManager,
+    instrumentation: Option<Box<dyn diesel::connection::Instrumentation>>,
 }
 
 impl SqliteConnection {
@@ -14,6 +15,7 @@ impl SqliteConnection {
         Ok(SqliteConnection {
             conn: unsafe { sqlite_connect(ptr, len) },
             transaction_manager: Default::default(),
+            instrumentation: None,
         })
     }
 }
@@ -109,6 +111,10 @@ impl diesel::connection::Connection for SqliteConnection {
         &mut self,
     ) -> &mut <Self::TransactionManager as diesel::connection::TransactionManager<Self>>::TransactionStateData{
         &mut self.transaction_manager
+    }
+
+    fn set_instrumentation(&mut self, instrumentation: impl Instrumentation) {
+        self.instrumentation = Some(Box::new(instrumentation));
     }
 }
 
