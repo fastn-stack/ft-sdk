@@ -113,7 +113,11 @@ impl diesel::connection::Connection for SqliteConnection {
         &mut self.transaction_manager
     }
 
-    fn set_instrumentation(&mut self, instrumentation: impl Instrumentation) {
+    fn instrumentation(&mut self) -> &mut dyn diesel::connection::Instrumentation {
+        &mut self.instrumentation
+    }
+
+    fn set_instrumentation(&mut self, instrumentation: impl diesel::connection::Instrumentation) {
         self.instrumentation = Some(Box::new(instrumentation));
     }
 }
