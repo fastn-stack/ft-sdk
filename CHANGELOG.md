@@ -4,20 +4,21 @@
 
 ### ft-sdk: `0.1.5`
 
-- `ft_sdk::auth::provider::user_data_by_custom_attribute`: Get users that match the provided
-  key-value.
+- `ft_sdk::auth::provider::user_data_by_custom_attribute`: get the user that matching the provided
+  custom key.
 - make `fastn_user::identity` nullable, `fastn_user::data` non-nullable and `fastn_session::data`
   non-nullable.
-- updated `diesel` requirement to `">=2, <2.2"`, we do not yet work with recently released diesel-2.2
+- updated `diesel` requirement to `">=2, <2.2"`, we do not yet work with recently released diesel-2.2.
 
 ## 30th May 2024
 
 ### ft-sdk: `0.1.4`
 
-- added `ft_sdk::auth_provider::updated_user()`
-- `ft_sdk::auth_provider::create_user()` does not return session id, but the user id. also it  
-  does not automatically log user in, call to `ft_sdk::auth_provider::login()` is required.
-- added `ft_sdk::data::binary()` and `ft_sdk::data::download()`
+- added `ft_sdk::auth_provider::update_user()`
+- `ft_sdk::auth_provider::create_user()` no longer returns `session id`, instead returns the `user id`
+  of the created user. also it does not automatically log user in, call to `ft_sdk::auth_provider::login()`
+  is now required to explicitly log user in.
+- added `ft_sdk::data::binary()` and `ft_sdk::data::download()` helpers to construct http responses.
 
 ## 28th May 2024
 
