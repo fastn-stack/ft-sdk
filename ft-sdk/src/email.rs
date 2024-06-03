@@ -4,18 +4,28 @@ pub enum EmailError {
     EnqueueError(String),
 }
 
-/// add a email sending request to the queue
-/// requests get picked up by the email worker
+/// add an email to the offline email queue, so that the email can be sent later. these emails
+/// get picked up by the email worker.
 ///
 /// # Arguments
+///
+/// * `conn`: a database connection.
 /// * `from` - (name, email)
 /// * `to` - Vec<(name, email)>
 /// * `subject` - email subject
 /// * `body_html` - email body in html format
 /// * `body_text` - email body in text format
 /// * `reply_to` - (name, email)
-/// * `mkind` - mail kind, used for logical logging purposes
+/// * `mkind` - mkind is any string, used for product analytics, etc. the value should be dot
+///    separated, e.g. x.y.z to capture hierarchy. ideally you should use `marketing.` as the
+///    prefix for all marketing related emails, and anything else for transaction mails, so your
+///    mailer can use appropriate channels
 /// * `cc`, `bcc` - Vec<(name, email)>
+///
+/// Not on transaction: sometimes you would want to call this function from inside the transaction
+/// that handles the original action that triggered this email, e.g. for creating an account, the
+/// user creation transaction should also call this function. this is because the email should be
+/// only sent if user is actually created.
 #[allow(clippy::too_many_arguments)]
 pub fn send_email(
     conn: &mut ft_sdk::Connection,
@@ -31,7 +41,7 @@ pub fn send_email(
 ) -> Result<(), EmailError> {
     use diesel::prelude::*;
 
-    ft_sdk::println!("Try sending email");
+    ft_sdk::println!("trying to send email");
     let now = ft_sdk::env::now();
 
     let to = to_comma_separated_str(to);
@@ -62,7 +72,7 @@ pub fn send_email(
         .map_err(|e| EmailError::EnqueueError(e.to_string()))?;
 
     ft_sdk::println!(
-        "email_queue_request_sucess: {} request registered",
+        "email_queue_request_success: {} request registered",
         affected
     );
 
