@@ -75,9 +75,9 @@ diesel::table! {
         from_name -> Text,
         from_address -> Text,
         reply_to     -> Nullable<Text>,
-        // to_address, cc_address, bcc_address contains comma separated email with
-        // names https://users.rust-lang.org/t/80813/11
-        // Alice <test1@gmail.com>, Bob <test2@ocr-inc.com>
+        // to_address, cc_address, bcc_address contains comma separated email with names, e.g.:
+        // "Alice <test1@gmail.com>, Bob <test2@ocr-inc.com>"
+        // see: https://users.rust-lang.org/t/80813/11
         to_address   -> Text,
         cc_address   -> Nullable<Text>,
         bcc_address  -> Nullable<Text>,
@@ -88,24 +88,30 @@ diesel::table! {
         created_at   -> Timestamptz,
         updated_at   -> Timestamptz,
         sent_at      -> Timestamptz,
-        // mkind is any string, used for product analytics etc
-        // the value should be dot separated, eg x.y.z to capture hierarchy. ideally you
-        // should use `marketing.` as the prefix for all marketing related emails, and
-        // anything else for transaction mails, so your mailer can use appropriate channels
+        // mkind is any string, used for product analytics, etc. the value should be dot separated,
+        // eg x.y.z to capture hierarchy. ideally you should use `marketing.` as the prefix for all
+        // marketing related emails, and anything else for transaction mails, so your mailer can use
+        // appropriate channels
         mkind        -> Text,
-        // status: pending, sent, failed. sent and failed items may removed from
-        // the queue every so often
+        // status: pending, sent, failed. sent and failed items may be removed from the queue every
+        // so often
         status       -> Text,
     }
 }
 
 fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
-    x.iter().fold(String::new(), |acc, x| {
-        let acc = if acc.is_empty() {
+    let len = x
+        .iter()
+        .fold(0, |acc, (name, email)| acc + name.len() + email.len() + 5);
+    x.iter()
+        .fold(String::with_capacity(len), |mut acc, (name, email)| {
+            if !acc.is_empty() {
+                acc.push_str(", ");
+            };
+            acc.push_str(name);
+            acc.push_str(" <");
+            acc.push_str(email);
+            acc.push('>');
             acc
-        } else {
-            format!("{acc}, ")
-        };
-        format!("{acc}{} <{}>", x.0, x.1)
-    })
+        })
 }
