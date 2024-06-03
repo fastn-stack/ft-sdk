@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 3rd June 2024
+
+### ft-sdk: `0.1.6`
+
+- added `#[serde(default)]` to `ft_sdk::auth::ProviderData`
+- added `#[derive(Default)` to `ft_sdk::auth::ProviderData`
+- added `#[derive(Debug)` to `ft_sdk::auth::{UserId, SessionID, Counter}`
+
 ## 31st May 2024
 
 ### ft-sdk: `0.1.5`

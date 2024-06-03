@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SessionID(pub String);
 
 #[cfg(feature = "auth-provider")]

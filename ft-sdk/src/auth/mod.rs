@@ -11,10 +11,11 @@ pub use schema::{fastn_session, fastn_user};
 pub use session::SessionID;
 pub use utils::Counter;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct UserId(pub i64);
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
+#[serde(default)]
 pub struct ProviderData {
     pub identity: String,
     pub username: Option<String>,

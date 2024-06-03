@@ -29,7 +29,7 @@ pub(crate) fn user_data_by_query(
     Ok((ft_sdk::auth::UserId(ud.id), serde_json::from_str(&ud.data)?))
 }
 
-#[derive(diesel::QueryableByName)]
+#[derive(diesel::QueryableByName, Debug)]
 pub struct Counter {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub count: i64,
