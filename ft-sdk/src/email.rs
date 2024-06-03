@@ -115,3 +115,18 @@ fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
             acc
         })
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn to_comma_separated_str() {
+        assert_eq!(
+            super::to_comma_separated_str(vec![("Alice", "alice@a.com")]),
+            "Alice <alice@a.com>"
+        );
+        assert_eq!(
+            super::to_comma_separated_str(vec![("Alice", "alice@a.com"), ("Bob", "bob@a.com")]),
+            "Alice <alice@a.com>, Bob <bob@a.com>"
+        );
+    }
+}
