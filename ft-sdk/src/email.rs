@@ -89,6 +89,9 @@ diesel::table! {
         updated_at   -> Timestamptz,
         sent_at      -> Timestamptz,
         // mkind is any string, used for product analytics etc
+        // the value should be dot separated, eg x.y.z to capture hierarchy. ideally you
+        // should use `marketing.` as the prefix for all marketing related emails, and
+        // anything else for transaction mails, so your mailer can use appropriate channels
         mkind        -> Text,
         // status: pending, sent, failed. sent and failed items may removed from
         // the queue every so often
@@ -98,7 +101,11 @@ diesel::table! {
 
 fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
     x.iter().fold(String::new(), |acc, x| {
-        let acc = if acc.is_empty() { acc } else { format!("{acc}, ") };
+        let acc = if acc.is_empty() {
+            acc
+        } else {
+            format!("{acc}, ")
+        };
         format!("{acc}{} <{}>", x.0, x.1)
     })
 }
