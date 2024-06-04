@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SessionID(pub String);
 
 #[cfg(feature = "auth-provider")]
@@ -47,6 +47,7 @@ pub fn create_with_user(
             fastn_session::uid.eq(Some(user_id)),
             fastn_session::created_at.eq(ft_sdk::env::now()),
             fastn_session::updated_at.eq(ft_sdk::env::now()),
+            fastn_session::data.eq("{}"),
         ))
         .execute(conn)?;
 
