@@ -17,7 +17,8 @@ pub struct UserId(pub i64);
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
 #[serde(default)]
 pub struct ProviderData {
-    pub identity: String,
+    // identity can be None which indicates that this data is imported from somewhere
+    pub identity: Option<String>,
     pub username: Option<String>,
     pub name: Option<String>,
     pub emails: Vec<String>,
@@ -84,9 +85,9 @@ pub fn ud(
         let mut v = v.splitn(4, ' ');
         return Ok(Some(ft_sys::UserData {
             id: v.next().unwrap().parse().unwrap(),
-            identity: v.next().unwrap_or_default().to_string(),
+            identity: v.next().map(|v| v.to_string()),
             name: v.next().map(|v| v.to_string()).unwrap_or_default(),
-            email: v.next().map(|v| v.to_string()).unwrap_or_default(),
+            email: v.next().map(|v| v.to_string()),
             verified_email: true,
         }));
     }
@@ -120,7 +121,7 @@ pub fn ud(
         id,
         identity: data.identity.clone(),
         name: data.name.unwrap_or_default(),
-        email: data.identity,
+        email: data.verified_emails.first().cloned(),
         verified_email: !data.verified_emails.is_empty(),
     }))
 }
