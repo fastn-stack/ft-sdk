@@ -21,7 +21,6 @@ pub mod from_request;
     feature = "migration",
     any(feature = "postgres-default", feature = "sqlite-default")
 ))]
-mod migration;
 pub mod processor;
 mod rng;
 pub mod utils;
@@ -40,11 +39,6 @@ pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, http, println, ConnectionError, UserData};
-#[cfg(all(
-    feature = "migration",
-    any(feature = "postgres-default", feature = "sqlite-default")
-))]
-pub use migration::{migrate, MigrationError};
 pub use rng::Rng;
 
 pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;

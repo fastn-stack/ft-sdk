@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Unreleased
+
+### ft-sdk
+
+- removed migration framework. we are adding migration feature to fastn core itself, so no need to
+  maintain it here.
+
 ## 3rd June 2024
 
 ### ft-sdk: `0.1.6`
