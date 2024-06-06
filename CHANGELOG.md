@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### ft-derive
+
+- removed migration proc macro
+
 ### ft-sdk
 
 - removed migration framework. we are adding migration feature to fastn core itself, so no need to
