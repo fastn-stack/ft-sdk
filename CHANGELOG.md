@@ -1,5 +1,9 @@
 # ChangeLog
 
+## Unreleased
+
+- support for optional query parameters in `ft_sdk::Query`.
+
 ## 3rd June 2024
 
 ### ft-sdk: `0.1.6`
