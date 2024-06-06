@@ -1,16 +1,16 @@
 # ChangeLog
 
-## Unreleased
+## 6th June 2024
 
-### ft-derive
-
-- removed migration proc macro
-
-### ft-sdk
+### ft-sdk: `0.1.7`
 
 - removed migration framework. we are adding migration feature to fastn core itself, so no need to
   maintain it here.
 - support for optional query parameters in `ft_sdk::Query`.
+
+### ft-derive: `0.1.1`
+
+- removed migration proc macro
 
 ## 3rd June 2024
 
