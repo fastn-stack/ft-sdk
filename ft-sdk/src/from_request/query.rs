@@ -7,7 +7,7 @@
 ///
 /// If both request body and query string contain the parameter, the value from the request body is
 /// returned.
-pub struct Query<const KEY: &'static str, T>(pub T)
+pub struct Query<const KEY: &'static str, T = String>(pub T)
 where
     T: Into<Option<String>>;
 

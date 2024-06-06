@@ -2,6 +2,11 @@
 
 ## 6th June 2024
 
+### ft-sdk: `0.1.8`
+
+- added default `String` to `ft_sdk::Query<const KEY: &'static str, T = String>` so its easy to
+  migrate from `ft-sdk: 0.1.6`.
+
 ### ft-sdk: `0.1.7`
 
 - removed migration framework. we are adding migration feature to fastn core itself, so no need to
