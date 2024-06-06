@@ -7,6 +7,7 @@
 - removed migration framework. we are adding migration feature to fastn core itself, so no need to
   maintain it here.
 - support for optional query parameters in `ft_sdk::Query`.
+- ft-derive 0.1.1
 
 ### ft-derive: `0.1.1`
 
