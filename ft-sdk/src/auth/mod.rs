@@ -116,11 +116,17 @@ pub fn ud(
         Err(e) => return Err(e),
     };
 
+    let email = data
+        .verified_emails
+        .first()
+        .cloned()
+        .unwrap_or_else(|| data.emails.first().cloned().unwrap());
+
     Ok(Some(ft_sys::UserData {
         id,
         identity: data.identity.clone(),
         name: data.name.unwrap_or_default(),
-        email: data.identity,
+        email,
         verified_email: !data.verified_emails.is_empty(),
     }))
 }
