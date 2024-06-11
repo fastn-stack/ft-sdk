@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 11th June 2024
+
+### ft-sdk: `0.1.9`
+
+- removed `ft_sdk::processor::redirect()` in favor of `ft_sdk::processor::{temporary,permanent}_redirect()`
+- the `ft_sdk::processor::*_redirect` helpers return redirect response instead of json response
+
 ## 6th June 2024
 
 ### ft-sdk: `0.1.8`
