@@ -1,3 +1,4 @@
+#[cfg(not(feature = "test"))]
 diesel::table! {
     use diesel::sql_types::*;
 
@@ -8,6 +9,20 @@ diesel::table! {
         data -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+    }
+}
+
+#[cfg(feature = "test")]
+diesel::table! {
+    use diesel::sql_types::*;
+
+    fastn_user (id) {
+        id -> Int8,
+        name -> Nullable<Text>,
+        identity -> Nullable<Text>,
+        data -> Text,
+        created_at -> Int8,
+        updated_at -> Int8,
     }
 }
 
