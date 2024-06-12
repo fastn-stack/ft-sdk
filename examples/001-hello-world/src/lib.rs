@@ -6,5 +6,5 @@ fn hello_world(path: ft_sdk::Path) -> ft_sdk::processor::Result {
 
 #[ft_sdk::processor]
 fn redirect() -> ft_sdk::processor::Result {
-    ft_sdk::processor::redirect("/redirected/")
+    ft_sdk::processor::permanent_redirect("/redirected/")
 }
