@@ -17,12 +17,10 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for Cookie<KEY> {
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| {
                     v.split(';')
-                        .find(|v| v.trim_start().eq(KEY))
+                        .find(|v| v.trim_start().starts_with(&format!("{KEY}=")))
                         .map(|v| {
                             v.trim_start()
-                                .strip_prefix(KEY)
-                                .unwrap()
-                                .strip_prefix('=')
+                                .strip_prefix(&format!("{KEY}="))
                                 .unwrap()
                                 .trim_start()
                                 .to_string()
