@@ -17,7 +17,7 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for Cookie<KEY> {
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| {
                     v.split(';')
-                        .find(|v| v.trim_start().starts_with(KEY))
+                        .find(|v| v.trim_start().eq(KEY))
                         .map(|v| {
                             v.trim_start()
                                 .strip_prefix(KEY)
