@@ -98,11 +98,11 @@ pub fn ud(
         None => return Ok(None),
     };
 
-    let (UserId(id), data) = match utils::user_data_by_query(
+    let (UserId(id), identity, data) = match utils::user_data_by_query(
         conn,
         r#"
             SELECT
-                fastn_user.id as id, fastn_user.data -> 'email' as data
+                fastn_user.id as id, identity, fastn_user.data -> 'email' as data
             FROM fastn_user
             JOIN fastn_session
             WHERE
@@ -124,7 +124,7 @@ pub fn ud(
 
     Ok(Some(ft_sys::UserData {
         id,
-        identity: data.identity.clone(),
+        identity: identity.expect("user fetched from session cookie must have identity"),
         name: data.name.unwrap_or_default(),
         email,
         verified_email: !data.verified_emails.is_empty(),

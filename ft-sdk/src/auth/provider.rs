@@ -45,7 +45,7 @@ pub fn user_data_by_verified_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
         conn,
         format!(
             r#"
@@ -65,7 +65,9 @@ pub fn user_data_by_verified_email(
         )
         .as_str(),
         email,
-    )
+    )?;
+
+    Ok((id, data))
 }
 
 pub fn user_data_by_email(
@@ -74,7 +76,7 @@ pub fn user_data_by_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
         conn,
         format!(
             r#"
@@ -94,7 +96,9 @@ pub fn user_data_by_email(
         )
         .as_str(),
         email,
-    )
+    )?;
+
+    Ok((id, data))
 }
 
 /// Get users that match the provided key-value.
@@ -108,7 +112,7 @@ pub fn user_data_by_custom_attribute(
     value: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
         conn,
         format!(
             r#"
@@ -128,7 +132,9 @@ pub fn user_data_by_custom_attribute(
         )
         .as_str(),
         value,
-    )
+    )?;
+
+    Ok((id, data))
 }
 
 pub fn assert_valid_provider_id(provider_id: &str) {
@@ -145,7 +151,7 @@ pub fn user_data_by_identity(
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
         conn,
         format!(
             r#"
@@ -158,7 +164,9 @@ pub fn user_data_by_identity(
         )
         .as_str(),
         identity,
-    )
+    )?;
+
+    Ok((id, data))
 }
 
 #[derive(Debug, thiserror::Error)]

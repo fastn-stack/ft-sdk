@@ -3,13 +3,21 @@ pub(crate) fn user_data_by_query(
     conn: &mut ft_sdk::Connection,
     query: &str,
     param: &str,
-) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
+) -> Result<
+    (
+        ft_sdk::auth::UserId,
+        Option<String>,
+        ft_sdk::auth::ProviderData,
+    ),
+    ft_sdk::auth::UserDataError,
+> {
     use diesel::prelude::*;
 
     #[derive(diesel::QueryableByName)]
     #[diesel(table_name = ft_sdk::auth::fastn_user)]
     struct UD {
         id: i64,
+        identity: Option<String>,
         data: String,
     }
 
@@ -26,7 +34,11 @@ pub(crate) fn user_data_by_query(
         Err(e) => return Err(ft_sdk::auth::UserDataError::DatabaseError(e)),
     };
 
-    Ok((ft_sdk::auth::UserId(ud.id), serde_json::from_str(&ud.data)?))
+    Ok((
+        ft_sdk::auth::UserId(ud.id),
+        ud.identity,
+        serde_json::from_str(&ud.data)?,
+    ))
 }
 
 #[derive(diesel::QueryableByName, Debug)]
