@@ -50,7 +50,7 @@ pub fn user_data_by_verified_email(
         format!(
             r#"
             SELECT
-                id, data -> '{provider_id}' as data
+                id, identity, data -> '{provider_id}' as data
             FROM
                 fastn_user
             WHERE
@@ -81,7 +81,7 @@ pub fn user_data_by_email(
         format!(
             r#"
             SELECT
-                id, data -> '{provider_id}' as data
+                id, identity, data -> '{provider_id}' as data
             FROM
                 fastn_user
             WHERE
@@ -117,7 +117,7 @@ pub fn user_data_by_custom_attribute(
         format!(
             r#"
             SELECT
-                id, data -> '{provider_id}' as data
+                id, identity, data -> '{provider_id}' as data
             FROM
                 fastn_user
             WHERE
@@ -156,7 +156,7 @@ pub fn user_data_by_identity(
         format!(
             r#"
             SELECT
-                id, data -> '{provider_id}' as data
+                id, identity, data -> '{provider_id}' as data
             FROM fastn_user
             WHERE
                  data -> '{provider_id}' -> 'identity' = json_quote($1)
