@@ -1,5 +1,11 @@
 # ChangeLog
 
+## Unreleased
+
+### ft-sdk
+
+- Bug fix: `fastn-sid-1` cookie was found when we try `ft_sdk::Cookie<"fastn-sid">`.
+
 ## 11th June 2024
 
 ### ft-sdk: `0.1.9`
