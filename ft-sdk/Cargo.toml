@@ -16,6 +16,7 @@ sqlite-default = ["sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 auth-provider = []
 field-extractors = []
+test = ["diesel/sqlite", "diesel/postgres"]
 
 [dependencies]
 anyhow.workspace = true
