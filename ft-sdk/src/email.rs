@@ -79,6 +79,17 @@ pub fn send_email(
     Ok(())
 }
 
+/// Get sender's name and email from environment variables.
+/// return: (name, email)
+pub fn sender_info_from_env() -> (String, String) {
+    let email = ft_sdk::env::var("FASTN_SMTP_SENDER_EMAIL".to_string())
+        .unwrap_or_else(|| "support@fifthtry.com".to_string());
+    let name = ft_sdk::env::var("FASTN_SMTP_SENDER_NAME".to_string())
+        .unwrap_or_else(|| "FifthTry Team".to_string());
+
+    (name, email)
+}
+
 diesel::table! {
     fastn_email_queue (id) {
         id -> Int8,
