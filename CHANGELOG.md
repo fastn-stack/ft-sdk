@@ -1,5 +1,10 @@
 # ChangeLog
 
+## Unreleased
+
+- add `ft_sdk::email::sender_info_from_env` function to get email sender info
+  from environment variables.
+
 ## 12th June 2024
 
 ### ft-sdk: `0.1.11`
