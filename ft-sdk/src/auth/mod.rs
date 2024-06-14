@@ -11,6 +11,8 @@ pub use schema::{fastn_session, fastn_user};
 pub use session::SessionID;
 pub use utils::Counter;
 
+pub use utils::user_data_by_query;
+
 #[derive(Clone, Debug)]
 pub struct UserId(pub i64);
 

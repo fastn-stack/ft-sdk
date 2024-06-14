@@ -45,7 +45,7 @@ pub fn user_data_by_verified_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::user_data_by_query(
         conn,
         format!(
             r#"
@@ -76,7 +76,7 @@ pub fn user_data_by_email(
     email: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::user_data_by_query(
         conn,
         format!(
             r#"
@@ -112,7 +112,7 @@ pub fn user_data_by_custom_attribute(
     value: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::user_data_by_query(
         conn,
         format!(
             r#"
@@ -151,7 +151,7 @@ pub fn user_data_by_identity(
     identity: &str,
 ) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
     assert_valid_provider_id(provider_id);
-    let (id, _, data) = ft_sdk::auth::utils::user_data_by_query(
+    let (id, _, data) = ft_sdk::auth::user_data_by_query(
         conn,
         format!(
             r#"
