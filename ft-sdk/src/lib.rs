@@ -43,11 +43,20 @@ pub type FormError = std::collections::HashMap<String, String>;
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
 compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
 
-#[cfg(feature = "sqlite-default")]
+#[cfg(any(feature = "sqlite-default", not(feature = "test")))]
 pub type Connection = SqliteConnection;
 
-#[cfg(feature = "postgres-default")]
+#[cfg(any(feature = "postgres-default", not(feature = "test")))]
 pub type Connection = PgConnection;
+
+#[cfg(feature = "test")]
+pub type Connection = diesel::sqlite::SqliteConnection;
+
+#[cfg(feature = "test")]
+pub fn default_connection() -> Result<Connection, ConnectionError> {
+    use diesel::prelude::*;
+    Ok(diesel::sqlite::SqliteConnection::establish(":memory:").unwrap())
+}
 
 #[cfg(any(feature = "sqlite-default", feature = "postgres-default"))]
 pub fn default_connection() -> Result<Connection, ConnectionError> {
