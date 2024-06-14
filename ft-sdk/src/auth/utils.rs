@@ -1,4 +1,3 @@
-#[cfg(feature = "field-extractors")]
 pub fn user_data_by_query(
     conn: &mut ft_sdk::Connection,
     query: &str,
