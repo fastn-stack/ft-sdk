@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Unreleased
+
+- fix: fill `UserData::email` with user's verified emails (or unverified emails if
+  no verified email is present).
+- fix: use `fastn_user.identity` column to fill `UserData::identity`.
+- make `ft_sdk::auth::user_data_by_query` public.
+
 ## 12th June 2024
 
 ### ft-sdk: `0.1.11`
@@ -67,7 +74,7 @@
 
 ### ft-sdk: `0.1.3`
 
-- updated `ft-sys` to `0.1.3`
+- updat``ed `ft-sys` to `0.1.3`
 - bring back `ft_sdk::auth::user_data_by_query`, used by few things behind feature flag
 
 ## ft-sys: `0.1.3`

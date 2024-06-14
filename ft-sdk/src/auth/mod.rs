@@ -11,6 +11,8 @@ pub use schema::{fastn_session, fastn_user};
 pub use session::SessionID;
 pub use utils::Counter;
 
+pub use utils::user_data_by_query;
+
 #[derive(Clone, Debug)]
 pub struct UserId(pub i64);
 
@@ -98,11 +100,11 @@ pub fn ud(
         None => return Ok(None),
     };
 
-    let (UserId(id), data) = match utils::user_data_by_query(
+    let (UserId(id), identity, data) = match utils::user_data_by_query(
         conn,
         r#"
             SELECT
-                fastn_user.id as id, fastn_user.data -> 'email' as data
+                fastn_user.id as id, identity, fastn_user.data -> 'email' as data
             FROM fastn_user
             JOIN fastn_session
             WHERE
@@ -116,11 +118,17 @@ pub fn ud(
         Err(e) => return Err(e),
     };
 
+    let email = data
+        .verified_emails
+        .first()
+        .cloned()
+        .unwrap_or_else(|| data.emails.first().cloned().unwrap());
+
     Ok(Some(ft_sys::UserData {
         id,
-        identity: data.identity.clone(),
+        identity: identity.expect("user fetched from session cookie must have identity"),
         name: data.name.unwrap_or_default(),
-        email: data.identity,
+        email,
         verified_email: !data.verified_emails.is_empty(),
     }))
 }
