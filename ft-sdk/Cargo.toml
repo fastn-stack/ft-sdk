@@ -1,6 +1,6 @@
 [package]
 name = "ft-sdk"
-version = "0.1.6"
+version = "0.1.11"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -9,12 +9,11 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["sqlite-default", "migration"]
+default = ["sqlite-default"]
 postgres-default = ["postgres"]
 postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
-migration = [] # only if either sqlite-default or postgres-default is activated
 auth-provider = []
 field-extractors = []
 

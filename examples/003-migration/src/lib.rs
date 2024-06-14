@@ -1,16 +1,5 @@
 use diesel::prelude::*;
 
-#[ft_sdk::migration]
-fn migration(mut conn: ft_sdk::Connection) -> Result<(), ft_sdk::MigrationError> {
-    ft_sdk::println!("running migrations");
-    ft_sdk::migrate(
-        &mut conn,
-        "hello-world",
-        include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations"),
-        vec![],
-    )
-}
-
 table! {
     account_user {
         id -> Integer,

@@ -2,11 +2,45 @@
 
 ## Unreleased
 
-- support for optional query parameters in `ft_sdk::Query`.
 - fix: fill `UserData::email` with user's verified emails (or unverified emails if
   no verified email is present).
 - fix: use `fastn_user.identity` column to fill `UserData::identity`.
 - make `ft_sdk::auth::user_data_by_query` public.
+
+## 12th June 2024
+
+### ft-sdk: `0.1.11`
+
+- Bug fix: Cookie related bug introduced in previous release. 
+
+### ft-sdk: `0.1.10`
+
+- Bug fix: `fastn-sid-1` cookie was found when we try `ft_sdk::Cookie<"fastn-sid">`.
+
+## 11th June 2024
+
+### ft-sdk: `0.1.9`
+
+- removed `ft_sdk::processor::redirect()` in favor of `ft_sdk::processor::{temporary,permanent}_redirect()`
+- the `ft_sdk::processor::*_redirect` helpers return redirect response instead of json response
+
+## 6th June 2024
+
+### ft-sdk: `0.1.8`
+
+- added default `String` to `ft_sdk::Query<const KEY: &'static str, T = String>` so its easy to
+  migrate from `ft-sdk: 0.1.6`.
+
+### ft-sdk: `0.1.7`
+
+- removed migration framework. we are adding migration feature to fastn core itself, so no need to
+  maintain it here.
+- support for optional query parameters in `ft_sdk::Query`.
+- ft-derive 0.1.1
+
+### ft-derive: `0.1.1`
+
+- removed migration proc macro
 
 ## 3rd June 2024
 
