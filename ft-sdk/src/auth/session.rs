@@ -113,7 +113,7 @@ pub fn create_with_user(
 #[cfg(feature = "auth-provider")]
 pub fn set_session_cookie(
     conn: &mut ft_sdk::Connection,
-    session_id: &str,
+    ft_sdk::auth::SessionID(session_id): ft_sdk::auth::SessionID,
     host: ft_sdk::Host,
 ) -> Result<http::HeaderValue, ft_sdk::Error> {
     use diesel::prelude::*;
