@@ -290,10 +290,18 @@ pub fn create_user(
     Ok(ft_sdk::auth::UserId(user_id))
 }
 
-/// persist the user in session and redirect to `next`
+/// Logs in a user and manages session creation or update.
 ///
-/// `identity`: Eg for GitHub, it could be the username. This is stored in the cookie so can be
-/// retrieved without a db call to show a user identifiable information.
+/// # Arguments
+///
+/// * `conn` - Mutable reference to a `ft_sdk::Connection` to interact with the database.
+/// * `user_id` - Reference to a `ft_sdk::UserId` representing the user's ID.
+/// * `session_id` - Optional `ft_sdk::auth::SessionID` representing an existing session ID.
+///
+/// # Returns
+///
+/// A `Result` containing a `ft_sdk::auth::SessionID` if the login operation is successful,
+/// or a `LoginError` if there's an issue with the login process.
 pub fn login(
     conn: &mut ft_sdk::Connection,
     user_id: &ft_sdk::UserId,
@@ -302,6 +310,20 @@ pub fn login(
     login_with_custom_session_expiration(conn, user_id, session_id, None)
 }
 
+
+/// Logs in a user with customizable session expiration and manages session creation or update.
+///
+/// # Arguments
+///
+/// * `conn` - Mutable reference to a `ft_sdk::Connection` to interact with the database.
+/// * `user_id` - Reference to a `ft_sdk::UserId` representing the user's ID.
+/// * `session_id` - Optional `ft_sdk::auth::SessionID` representing an existing session ID.
+/// * `session_expiration_duration` - Optional `chrono::Duration` for custom session expiration.
+///
+/// # Returns
+///
+/// A `Result` containing a `ft_sdk::auth::SessionID` if the login operation is successful,
+/// or a `LoginError` if there's an issue with the login process.
 pub fn login_with_custom_session_expiration(
     conn: &mut ft_sdk::Connection,
     ft_sdk::UserId(user_id): &ft_sdk::UserId,
