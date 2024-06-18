@@ -6,7 +6,9 @@ mod utils;
 
 pub use ft_sys_shared::SESSION_KEY;
 pub use schema::{fastn_session, fastn_user};
-pub use session::{SessionID, set_session_cookie, expire_session_cookie};
+pub use session::{SessionID, SessionIDError};
+#[cfg(feature = "auth-provider")]
+pub use session::{set_session_cookie, expire_session_cookie};
 pub use utils::{user_data_by_query, Counter};
 
 #[derive(Clone, Debug)]

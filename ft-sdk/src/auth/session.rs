@@ -17,23 +17,42 @@ pub enum SetUserIDError {
 #[cfg(feature = "auth-provider")]
 pub fn set_user_id(
     conn: &mut ft_sdk::Connection,
-    SessionID(session_id): SessionID,
-    user_id: i64,
+    session_id: Option<SessionID>,
+    user_id: &ft_sdk::UserId,
     session_expiration_duration: Option<chrono::Duration>,
 ) -> Result<SessionID, SetUserIDError> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_session;
 
-    // Query to check if the session exists and get its expiration time
-    let existing_session_expires_at = fastn_session::table
-        .select(fastn_session::expires_at.nullable())
-        .filter(fastn_session::id.eq(session_id.as_str()))
-        .first::<Option<chrono::DateTime<chrono::Utc>>>(conn)
-        .optional()?;
-
     let now = ft_sdk::env::now();
-    match existing_session_expires_at {
-        Some(Some(expires_at)) if expires_at < now => {
+
+    // Query to check if the session exists and get its expiration time
+    let session = match session_id {
+        Some(session_id) => {
+            let existing_session_expires_at = fastn_session::table
+                .select(fastn_session::expires_at.nullable())
+                .filter(fastn_session::id.eq(session_id.as_str()))
+                .first::<Option<chrono::DateTime<chrono::Utc>>>(conn)
+                .optional()?;
+
+            match existing_session_expires_at {
+                Some(Some(expires_at)) if expires_at < now => Some((session_id, true)),
+                Some(_) => Some((session_id, false)),
+                None => None
+            }
+        },
+        None =>  {
+            match ft_sdk::auth::SessionID::from_user_id(conn, user_id) {
+                Ok(session_id) => Some((session_id, false)),
+                Err(ft_sdk::auth::SessionIDError::SessionExpired(session_id)) => Some((session_id, true)),
+                Err(ft_sdk::auth::SessionIDError::SessionNotFound) => None,
+                Err(e) => return Err(e.into())
+            }
+        }
+    };
+
+    match session {
+        Some((session_id, true)) => {
             // Session is expired, delete it and create a new one
             diesel::delete(fastn_session::table.filter(fastn_session::id.eq(session_id.as_str())))
                 .execute(conn)?;
@@ -43,11 +62,11 @@ pub fn set_user_id(
                 session_expiration_duration,
             )?)
         }
-        Some(_) => {
+        Some((session_id, false)) => {
             // Session is not expired, update the user ID
             diesel::update(fastn_session::table.filter(fastn_session::id.eq(session_id.as_str())))
                 .set((
-                    fastn_session::uid.eq(Some(user_id)),
+                    fastn_session::uid.eq(Some(user_id.0)),
                     fastn_session::updated_at.eq(now),
                 ))
                 .execute(conn)?;
@@ -68,7 +87,7 @@ pub fn set_user_id(
 #[cfg(feature = "auth-provider")]
 pub fn create_with_user(
     conn: &mut ft_sdk::Connection,
-    user_id: i64,
+    ft_sdk::UserId(user_id): &ft_sdk::UserId,
     session_expiration_duration: Option<chrono::Duration>,
 ) -> Result<ft_sdk::auth::SessionID, diesel::result::Error> {
     use diesel::prelude::*;
@@ -81,7 +100,7 @@ pub fn create_with_user(
     diesel::insert_into(fastn_session::table)
         .values((
             fastn_session::id.eq(&session_id),
-            fastn_session::uid.eq(Some(user_id)),
+            fastn_session::uid.eq(Some(*user_id)),
             fastn_session::created_at.eq(ft_sdk::env::now()),
             fastn_session::updated_at.eq(ft_sdk::env::now()),
             fastn_session::expires_at.eq(session_expires_at),
@@ -171,7 +190,7 @@ pub enum SessionIDError {
     #[error("session not found")]
     SessionNotFound,
     #[error("session expired")]
-    SessionExpired,
+    SessionExpired(String),
     #[error("failed to query db: {0:?}")]
     DatabaseError(#[from] diesel::result::Error),
 }
@@ -203,13 +222,13 @@ impl SessionID {
 
         // Query to find the session ID and its expiration time for the given user ID.
         match fastn_session::table
-            .select((fastn_session::id, fastn_session::expires_at))
+            .select((fastn_session::id, fastn_session::expires_at.nullable()))
             .filter(fastn_session::uid.eq(user_id.0))
             .first::<(String, Option<chrono::DateTime<chrono::Utc>>)>(conn)
         {
             // If a session is found and it is expired, return a `SessionExpired` error.
-            Ok((_, Some(expires_at))) if expires_at < now => {
-                return Err(SessionIDError::SessionExpired)
+            Ok((id, Some(expires_at))) if expires_at < now => {
+                return Err(SessionIDError::SessionExpired(id))
             }
             // If a valid session is found, return the session ID.
             Ok((id, _)) => Ok(SessionID(id)),
