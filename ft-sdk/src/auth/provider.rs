@@ -356,7 +356,6 @@ pub enum LoginError {
     DatabaseError(#[from] diesel::result::Error),
     #[error("set user id for session {0}")]
     SetUserIDError(#[from] ft_sdk::auth::session::SetUserIDError),
-
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
 }
