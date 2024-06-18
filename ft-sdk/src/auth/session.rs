@@ -6,6 +6,8 @@ pub struct SessionID(pub String);
 pub enum SetUserIDError {
     #[error("session not found")]
     SessionNotFound,
+    #[error("session expired")]
+    SessionExpired,
     #[error("multiple sessions found")]
     MultipleSessionsFound,
     #[error("failed to query db: {0:?}")]

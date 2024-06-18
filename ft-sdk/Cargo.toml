@@ -33,6 +33,7 @@ diesel = { workspace = true, optional = true }
 include_dir.workspace = true
 rand_core.workspace = true
 uuid.workspace = true
+cookie.workspace = true
 
 [dev-dependencies]
 pretty_assertions = "1"

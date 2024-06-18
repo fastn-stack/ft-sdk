@@ -22,6 +22,9 @@
 //! username etc. The UI will have been provided by the auth provider, or some other generic auth
 //! setting package.
 
+use crate::auth::fastn_session;
+use crate::auth::session::SetUserIDError;
+
 /// In the current session, we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some
 /// APIs that require certain scopes to be present. Before calling those APIs, the
@@ -359,6 +362,93 @@ pub enum LoginError {
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
 }
+
+
+/// Sets a session cookie with an expiration time based on the session's expiration time
+/// in the database. If the session has an expiration time in the future, the cookie's
+/// max age is set to the remaining duration until that time. Otherwise, a default max age
+/// of 400 days is set.
+///
+/// # Arguments
+///
+/// * `conn` - A mutable reference to the database connection.
+/// * `session_id` - A string slice representing the session ID.
+/// * `host` - The host for which the cookie is valid.
+///
+/// # Errors
+///
+/// This function will return an error if:
+/// * The session ID is not found in the database.
+/// * The session ID is found but has expired.
+/// * There is an issue querying the database.
+/// * There is an error creating the `http::HeaderValue`.
+pub fn set_session_cookie(
+    conn: &mut ft_sdk::Connection,
+    session_id: &str,
+    host: ft_sdk::Host
+) -> Result<http::HeaderValue, ft_sdk::Error> {
+    use diesel::prelude::*;
+    use ft_sdk::auth::fastn_session;
+
+    let now = ft_sdk::env::now();
+
+    // Query to check if the session exists and get its expiration time.
+    let max_age = match fastn_session::table
+        .select(fastn_session::expires_at.nullable())
+        .filter(fastn_session::id.eq(session_id))
+        .first::<Option<chrono::DateTime<chrono::Utc>>>(conn)
+    {
+        // If the session has an expiration time and it is in the future.
+        Ok(Some(session_expires_at)) if session_expires_at > now => {
+            let duration = session_expires_at - now;
+            cookie::time::Duration::new(duration.num_seconds(), duration.subsec_nanos())
+        },
+        // If the session does not have an expiration time.
+        Ok(None) => cookie::time::Duration::seconds(34560000),
+        // If the session has an expiration time and it is in the past.
+        Ok(_) => return Err(SetUserIDError::SessionExpired),
+        // If the session is not found.
+        Err(diesel::NotFound) => return Err(SetUserIDError::SessionNotFound),
+        // If there is an error querying the database.
+        Err(e) => return Err(e.into())
+    };
+
+    // Build the cookie with the determined max age
+    let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, session_id))
+        .domain(host.without_port())
+        .path("/")
+        .max_age(max_age)
+        .same_site(cookie::SameSite::Strict)
+        .build();
+
+    // Convert the cookie to an HTTP header value and return it
+    Ok(http::HeaderValue::from_str(cookie.to_string().as_str())?)
+}
+
+/// Expires the session cookie immediately by setting its expiration time to the current time.
+pub fn expire_session_cookie(
+    host: ft_sdk::Host,
+) -> Result<http::HeaderValue, ft_sdk::Error> {
+    let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, ""))
+        .domain(host.without_port())
+        .path("/")
+        .expires(convert_now_to_offsetdatetime())
+        .build();
+
+    Ok(http::HeaderValue::from_str(cookie.to_string().as_str())?)
+}
+
+/// Converts the current time to `cookie::time::OffsetDateTime`.
+fn convert_now_to_offsetdatetime() -> cookie::time::OffsetDateTime {
+    let now = ft_sdk::env::now();
+    let timestamp = now.timestamp();
+    let nanoseconds = now.timestamp_subsec_nanos();
+    cookie::time::OffsetDateTime::from_unix_timestamp_nanos(
+        (timestamp * 1_000_000_000 + nanoseconds as i64) as i128,
+    )
+        .unwrap()
+}
+
 
 // Normalise and save user details
 //
