@@ -17,17 +17,49 @@ pub fn set_user_id(
     conn: &mut ft_sdk::Connection,
     SessionID(session_id): SessionID,
     user_id: i64,
+    session_expiration_duration: Option<chrono::Duration>,
 ) -> Result<SessionID, SetUserIDError> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_session;
 
-    match diesel::update(fastn_session::table.filter(fastn_session::id.eq(session_id.as_str())))
-        .set(fastn_session::uid.eq(Some(user_id)))
-        .execute(conn)?
-    {
-        0 => Ok(create_with_user(conn, user_id)?),
-        1 => Ok(SessionID(session_id)),
-        _ => Err(SetUserIDError::MultipleSessionsFound),
+    // Query to check if the session exists and get its expiration time
+    let existing_session_expires_at = fastn_session::table
+        .select(fastn_session::expires_at.nullable())
+        .filter(fastn_session::id.eq(session_id.as_str()))
+        .first::<Option<chrono::DateTime<chrono::Utc>>>(conn) // Assuming session columns are (id, uid, expires_at)
+        .optional()?;
+
+    let now = ft_sdk::env::now();
+    match existing_session_expires_at {
+        Some(Some(expires_at)) if expires_at < now => {
+            // Session is expired, delete it and create a new one
+            diesel::delete(fastn_session::table.filter(fastn_session::id.eq(session_id.as_str())))
+                .execute(conn)?;
+            Ok(create_with_user(
+                conn,
+                user_id,
+                session_expiration_duration,
+            )?)
+        }
+        Some(_) => {
+            // Session is not expired, update the user ID
+            diesel::update(fastn_session::table.filter(fastn_session::id.eq(session_id.as_str())))
+                .set((
+                    fastn_session::uid.eq(Some(user_id)),
+                    fastn_session::updated_at.eq(now),
+                ))
+                .execute(conn)?;
+
+            Ok(SessionID(session_id))
+        }
+        None => {
+            // Session does not exist, create a new one
+            Ok(create_with_user(
+                conn,
+                user_id,
+                session_expiration_duration,
+            )?)
+        }
     }
 }
 
@@ -35,11 +67,14 @@ pub fn set_user_id(
 pub fn create_with_user(
     conn: &mut ft_sdk::Connection,
     user_id: i64,
+    session_expiration_duration: Option<chrono::Duration>,
 ) -> Result<ft_sdk::auth::SessionID, diesel::result::Error> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_session;
 
     let session_id = generate_new_session_id();
+    let session_expires_at =
+        session_expiration_duration.map(|duration| ft_sdk::env::now().add(duration));
 
     diesel::insert_into(fastn_session::table)
         .values((
@@ -47,6 +82,7 @@ pub fn create_with_user(
             fastn_session::uid.eq(Some(user_id)),
             fastn_session::created_at.eq(ft_sdk::env::now()),
             fastn_session::updated_at.eq(ft_sdk::env::now()),
+            fastn_session::expires_at.eq(session_expires_at),
             fastn_session::data.eq("{}"),
         ))
         .execute(conn)?;

@@ -296,17 +296,35 @@ pub fn create_user(
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
-    ft_sdk::UserId(user_id): &ft_sdk::UserId,
+    user_id: &ft_sdk::UserId,
     session_id: Option<ft_sdk::auth::SessionID>,
 ) -> Result<ft_sdk::auth::SessionID, LoginError> {
+    login_with_custom_session_expiration(conn, user_id, session_id, None)
+}
+
+pub fn login_with_custom_session_expiration(
+    conn: &mut ft_sdk::Connection,
+    ft_sdk::UserId(user_id): &ft_sdk::UserId,
+    session_id: Option<ft_sdk::auth::SessionID>,
+    session_expiration_duration: Option<chrono::Duration>,
+) -> Result<ft_sdk::auth::SessionID, LoginError> {
     match session_id {
-        Some(session_id) if session_id.0 == "hello" => {
-            Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?)
-        }
-        Some(session_id) => Ok(ft_sdk::auth::session::set_user_id(
-            conn, session_id, *user_id,
+        Some(session_id) if session_id.0 == "hello" => Ok(ft_sdk::auth::session::create_with_user(
+            conn,
+            *user_id,
+            session_expiration_duration,
         )?),
-        None => Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?),
+        Some(session_id) => Ok(ft_sdk::auth::session::set_user_id(
+            conn,
+            session_id,
+            *user_id,
+            session_expiration_duration,
+        )?),
+        None => Ok(ft_sdk::auth::session::create_with_user(
+            conn,
+            *user_id,
+            session_expiration_duration,
+        )?),
     }
 }
 
