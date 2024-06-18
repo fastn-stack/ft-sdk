@@ -193,7 +193,7 @@ impl SessionID {
     /// * `Err(SessionIDError)` - If an error occurs, such as session expiration or session not found.
     pub fn from_user_id(
         conn: &mut ft_sdk::Connection,
-        user_id: ft_sdk::auth::UserId,
+        user_id: &ft_sdk::auth::UserId,
     ) -> Result<SessionID, SessionIDError> {
         use diesel::prelude::*;
         use ft_sdk::auth::fastn_session;
