@@ -178,17 +178,6 @@ fn get_debug_ud() -> Option<ft_sys::UserData> {
     }
 }
 
-// This is hack to keep mobile number as email.
-pub fn mobile_to_email(mobile_number: &str) -> String {
-    format!("{mobile_number}@mobile.fifthtry.com")
-}
-// This is hack to keep mobile number as email.
-pub fn mobile_from_email(email: &str) -> Option<String> {
-    email
-        .strip_suffix("@mobile.fifthtry.com")
-        .map(|s| s.to_string())
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum UserDataError {
     #[error("no data found for the provider")]

@@ -8,7 +8,7 @@ pub fn create_customer(
     let user_data = ft_sdk::auth::ud_from_session_key(conn, session_id)?
         .ok_or_else(|| CreateCustomerError::UserNotFound)?;
 
-    let body = match ft_sdk::auth::mobile_from_email(user_data.email.as_str()) {
+    let body = match mobile_from_email(user_data.email.as_str()) {
         Some(phone) => serde_json::json!({"phone": phone}),
         None => serde_json::json!({"email": user_data.email}),
     };
@@ -64,4 +64,11 @@ pub enum CreateCustomerError {
     HttpError(#[from] http::Error),
     #[error("Cannot create customer: {0}")]
     CannotCreateCustomer(String),
+}
+
+// This is hack to keep mobile number as email. We need to soon remove this.
+fn mobile_from_email(email: &str) -> Option<String> {
+    email
+        .strip_suffix("@mobile.fifthtry.com")
+        .map(|s| s.to_string())
 }
