@@ -22,8 +22,6 @@
 //! username etc. The UI will have been provided by the auth provider, or some other generic auth
 //! setting package.
 
-use crate::auth::fastn_session;
-use crate::auth::session::SetUserIDError;
 
 /// In the current session, we have zero or more scopes dropped by different auth
 /// providers that have been used so far. Each auth provider sdk also provides some

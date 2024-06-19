@@ -86,6 +86,10 @@ pub fn ud(
     conn: &mut ft_sdk::Connection,
 ) -> Result<Option<ft_sys::UserData>, UserDataError> {
     ft_sdk::println!("session cookie: {cookie}");
+    // Check if debug user data is available, return it if found.
+    if let Some(ud) = get_debug_ud() {
+        return Ok(Some(ud));
+    }
 
     // Extract the session ID from the cookie.
     let session_id = match cookie.0 {
@@ -150,6 +154,8 @@ pub fn ud_from_session_key(
         verified_email: !data.verified_emails.is_empty(),
     }))
 }
+
+
 
 /// Check if debug user data is available, return it if found.
 fn get_debug_ud() -> Option<ft_sys::UserData> {
