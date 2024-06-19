@@ -3,7 +3,7 @@ pub struct CustomerID(pub String);
 pub fn create_customer(
     conn: &mut ft_sdk::Connection,
     session_id: &ft_sdk::auth::SessionID,
-    token: &str,
+    secret_token: &str,
 ) -> Result<CustomerID, CreateCustomerError> {
     let user_data = ft_sdk::auth::ud_from_session_key(conn, session_id)?
         .ok_or_else(|| CreateCustomerError::UserNotFound)?;
@@ -13,7 +13,7 @@ pub fn create_customer(
         None => serde_json::json!({"email": user_data.email}),
     };
 
-    call_create_customer_api(token, &body)
+    call_create_customer_api(secret_token, &body)
 }
 
 fn call_create_customer_api(

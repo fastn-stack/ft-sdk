@@ -9,7 +9,8 @@ members = [
     "ft-derive",
     "ft-sdk",
     "ft-sys",
-    "ft-sys-shared", "stripe",
+    "ft-sys-shared",
+    "ft-stripe",
 ]
 exclude = ["examples", "f"]
 resolver = "2"

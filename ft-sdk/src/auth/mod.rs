@@ -155,8 +155,6 @@ pub fn ud_from_session_key(
     }))
 }
 
-
-
 /// Check if debug user data is available, return it if found.
 fn get_debug_ud() -> Option<ft_sys::UserData> {
     match ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
