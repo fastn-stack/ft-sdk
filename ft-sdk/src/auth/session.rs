@@ -200,16 +200,6 @@ impl SessionID {
     ///
     /// This method queries the database to find a session associated with the
     /// given user ID.
-    ///
-    /// # Arguments
-    ///
-    /// * `conn` - A mutable reference to the database connection.
-    /// * `user_id` - The user ID for which the session ID needs to be retrieved.
-    ///
-    /// # Returns
-    ///
-    /// * `Ok(SessionID)` - If a valid session ID is found.
-    /// * `Err(SessionIDError)` - If an error occurs, such as session expiration or session not found.
     pub fn from_user_id(
         conn: &mut ft_sdk::Connection,
         user_id: &ft_sdk::auth::UserId,
@@ -232,6 +222,40 @@ impl SessionID {
             }
             // If a valid session is found, return the session ID.
             Ok((id, _)) => Ok(SessionID(id)),
+            // If no session is found for the user ID, return a `SessionNotFound` error.
+            Err(diesel::NotFound) => return Err(SessionIDError::SessionNotFound),
+            // If any other error occurs during the query, return it.
+            Err(e) => return Err(e.into()),
+        }
+    }
+
+    /// Validates if the session is active and not expired.
+    ///
+    /// This function checks the validity of the session associated with the session ID.
+    /// If the session is found and is not expired, it returns `Ok(())`.
+    /// If the session is expired or not found, it returns an appropriate error.
+    pub fn validate_session(
+        &self,
+        conn: &mut ft_sdk::Connection,
+    ) -> Result<(), SessionIDError> {
+        use diesel::prelude::*;
+        use ft_sdk::auth::fastn_session;
+
+        // Get the current time.
+        let now = ft_sdk::env::now();
+
+        // Query to find the session ID and its expiration time for the given user ID.
+        match fastn_session::table
+            .select((fastn_session::id, fastn_session::expires_at.nullable()))
+            .filter(fastn_session::id.eq(&self.0))
+            .first::<(String, Option<chrono::DateTime<chrono::Utc>>)>(conn)
+        {
+            // If a session is found and it is expired, return a `SessionExpired` error.
+            Ok((id, Some(expires_at))) if expires_at < now => {
+                return Err(SessionIDError::SessionExpired(id))
+            }
+            // If a valid session is found, return.
+            Ok((_, _)) => Ok(()),
             // If no session is found for the user ID, return a `SessionNotFound` error.
             Err(diesel::NotFound) => return Err(SessionIDError::SessionNotFound),
             // If any other error occurs during the query, return it.

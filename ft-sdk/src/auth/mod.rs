@@ -75,29 +75,33 @@ pub fn session_providers() -> Vec<String> {
     todo!()
 }
 
+/// Fetches user data based on a given session cookie.
+///
+/// This function fetches user data based on a given session cookie if the
+/// session cookie is found and is valid. If the session cookie not found,
+/// it returns `None`.
 #[cfg(feature = "field-extractors")]
 pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
 ) -> Result<Option<ft_sys::UserData>, UserDataError> {
-    if let Some(v) = ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
-        let mut v = v.splitn(4, ' ');
-        return Ok(Some(ft_sys::UserData {
-            id: v.next().unwrap().parse().unwrap(),
-            identity: v.next().unwrap_or_default().to_string(),
-            name: v.next().map(|v| v.to_string()).unwrap_or_default(),
-            email: v.next().map(|v| v.to_string()).unwrap_or_default(),
-            verified_email: true,
-        }));
+    // Check if debug user data is available, return it if found.
+    if let Some(ud) = get_debug_ud() {
+        return Ok(Some(ud));
     }
 
     ft_sdk::println!("sid: {cookie}");
 
+    // Extract the session ID from the cookie.
     let sid = match cookie.0 {
         Some(v) => v,
         None => return Ok(None),
     };
 
+    // Validate the session using the extracted session ID.
+    ft_sdk::auth::SessionID(sid).validate_session(conn)?;
+
+    // Query the database to get the user data associated with the session ID.
     let (UserId(id), identity, data) = match utils::user_data_by_query(
         conn,
         r#"
@@ -116,6 +120,7 @@ pub fn ud(
         Err(e) => return Err(e),
     };
 
+    // Extract the primary email from the user data, prefer verified emails.
     let email = data
         .verified_emails
         .first()
@@ -124,11 +129,28 @@ pub fn ud(
 
     Ok(Some(ft_sys::UserData {
         id,
-        identity: identity.expect("user fetched from session cookie must have identity"),
+        identity: identity.ok_or_else(|| UserDataError::IdentityNotFound)?,
         name: data.name.unwrap_or_default(),
         email,
         verified_email: !data.verified_emails.is_empty(),
     }))
+}
+
+
+fn get_debug_ud() -> Option<ft_sys::UserData> {
+    match ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
+        Some(debug_logged_in) => {
+            let mut debug_logged_in = debug_logged_in.splitn(4, ' ');
+            Some(ft_sys::UserData {
+                id: debug_logged_in.next().unwrap().parse().unwrap(),
+                identity: debug_logged_in.next().unwrap_or_default().to_string(),
+                name: debug_logged_in.next().map(|v| v.to_string()).unwrap_or_default(),
+                email: debug_logged_in.next().map(|v| v.to_string()).unwrap_or_default(),
+                verified_email: true,
+            })
+        },
+        None => None
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -137,6 +159,10 @@ pub enum UserDataError {
     NoDataFound,
     #[error("multiple rows found")]
     MultipleRowsFound,
+    #[error("session error: {0:?}")]
+    SessionError(#[from] ft_sdk::auth::SessionIDError),
+    #[error("user fetched from session cookie must have identity")]
+    IdentityNotFound,
     #[error("db error: {0:?}")]
     DatabaseError(#[from] diesel::result::Error),
     #[error("failed to deserialize data from db: {0:?}")]
