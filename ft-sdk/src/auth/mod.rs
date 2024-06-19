@@ -78,8 +78,8 @@ pub fn session_providers() -> Vec<String> {
 /// Fetches user data based on a given session cookie.
 ///
 /// This function fetches user data based on a given session cookie if the
-/// session cookie is found and is valid. If the session cookie not found,
-/// it returns `None`.
+/// session cookie is found and is valid and user data is found.
+/// If the session cookie not found, it returns `None`.
 #[cfg(feature = "field-extractors")]
 pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
@@ -100,7 +100,8 @@ pub fn ud(
 /// Fetches user data based on a given session id.
 ///
 /// This function fetches user data based on a given session id if the
-/// session is valid. If the session cookie not found, it returns `None`.
+/// session is valid and user data is found.
+/// If the session cookie not found, it returns `None`.
 #[cfg(feature = "field-extractors")]
 pub fn ud_from_session_key(
     session_id: &ft_sdk::auth::SessionID,
