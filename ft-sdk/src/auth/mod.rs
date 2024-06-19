@@ -85,21 +85,36 @@ pub fn ud(
     cookie: ft_sdk::Cookie<SESSION_KEY>,
     conn: &mut ft_sdk::Connection,
 ) -> Result<Option<ft_sys::UserData>, UserDataError> {
+    ft_sdk::println!("session cookie: {cookie}");
+
+    // Extract the session ID from the cookie.
+    let session_id = match cookie.0 {
+        Some(v) => v,
+        None => return Ok(None),
+    };
+
+    ud_from_session_key(&ft_sdk::auth::SessionID(session_id), conn)
+}
+
+
+/// Fetches user data based on a given session id.
+///
+/// This function fetches user data based on a given session id if the
+/// session is valid. If the session cookie not found, it returns `None`.
+#[cfg(feature = "field-extractors")]
+pub fn ud_from_session_key(
+    session_id: &ft_sdk::auth::SessionID,
+    conn: &mut ft_sdk::Connection,
+) -> Result<Option<ft_sys::UserData>, UserDataError> {
     // Check if debug user data is available, return it if found.
     if let Some(ud) = get_debug_ud() {
         return Ok(Some(ud));
     }
 
-    ft_sdk::println!("sid: {cookie}");
-
-    // Extract the session ID from the cookie.
-    let sid = match cookie.0 {
-        Some(v) => v,
-        None => return Ok(None),
-    };
+    ft_sdk::println!("sid: {}", session_id.0);
 
     // Validate the session using the extracted session ID.
-    ft_sdk::auth::SessionID(sid.clone()).validate_session(conn)?;
+    session_id.validate_session(conn)?;
 
     // Query the database to get the user data associated with the session ID.
     let (UserId(id), identity, data) = match utils::user_data_by_query(
@@ -113,7 +128,7 @@ pub fn ud(
                 fastn_session.id = $1
                 AND fastn_user.id = fastn_session.uid
             "#,
-        sid.as_str(),
+        session_id.0.as_str(),
     ) {
         Ok(v) => v,
         Err(UserDataError::NoDataFound) => return Ok(None),
@@ -137,6 +152,7 @@ pub fn ud(
 }
 
 
+/// Check if debug user data is available, return it if found.
 fn get_debug_ud() -> Option<ft_sys::UserData> {
     match ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
         Some(debug_logged_in) => {
