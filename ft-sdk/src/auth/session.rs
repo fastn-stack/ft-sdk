@@ -140,7 +140,7 @@ pub fn set_session_cookie(
     // Query to check if the session exists and get its expiration time.
     let max_age = match fastn_session::table
         .select(fastn_session::expires_at.nullable())
-        .filter(fastn_session::id.eq(session_id))
+        .filter(fastn_session::id.eq(&session_id))
         .first::<Option<chrono::DateTime<chrono::Utc>>>(conn)
     {
         // If the session has an expiration time and it is in the future.
