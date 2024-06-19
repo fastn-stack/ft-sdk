@@ -4,12 +4,8 @@ pub struct SessionID(pub String);
 #[cfg(feature = "auth-provider")]
 #[derive(Debug, thiserror::Error)]
 pub enum SetUserIDError {
-    #[error("session not found")]
-    SessionNotFound,
-    #[error("session expired")]
-    SessionExpired,
-    #[error("multiple sessions found")]
-    MultipleSessionsFound,
+    #[error("session id error: {0:?}")]
+    SessionIDError(#[from] ft_sdk::auth::SessionIDError),
     #[error("failed to query db: {0:?}")]
     DatabaseError(#[from] diesel::result::Error),
 }
@@ -155,9 +151,9 @@ pub fn set_session_cookie(
         // If the session does not have an expiration time.
         Ok(None) => cookie::time::Duration::seconds(34560000),
         // If the session has an expiration time and it is in the past.
-        Ok(_) => return Err(SetUserIDError::SessionExpired.into()),
+        Ok(_) => return Err(SessionIDError::SessionExpired(session_id.clone()).into()),
         // If the session is not found.
-        Err(diesel::NotFound) => return Err(SetUserIDError::SessionNotFound.into()),
+        Err(diesel::NotFound) => return Err(SessionIDError::SessionNotFound.into()),
         // If there is an error querying the database.
         Err(e) => return Err(e.into()),
     };
