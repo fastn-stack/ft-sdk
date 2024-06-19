@@ -343,7 +343,7 @@ pub fn login_with_custom_session_expiration(
             session_id,
             user_id,
             session_expiration_duration,
-        )?)
+        )?),
     }
 }
 

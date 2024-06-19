@@ -34,17 +34,17 @@ pub fn set_user_id(
             match existing_session_expires_at {
                 Some(Some(expires_at)) if expires_at < now => Some((session_id.0.clone(), true)),
                 Some(_) => Some((session_id.0.clone(), false)),
-                None => None
-            }
-        },
-        None =>  {
-            match ft_sdk::auth::SessionID::from_user_id(conn, user_id) {
-                Ok(session_id) => Some((session_id.0.clone(), false)),
-                Err(ft_sdk::auth::SessionIDError::SessionExpired(session_id)) => Some((session_id, true)),
-                Err(ft_sdk::auth::SessionIDError::SessionNotFound) => None,
-                Err(e) => return Err(e.into())
+                None => None,
             }
         }
+        None => match ft_sdk::auth::SessionID::from_user_id(conn, user_id) {
+            Ok(session_id) => Some((session_id.0.clone(), false)),
+            Err(ft_sdk::auth::SessionIDError::SessionExpired(session_id)) => {
+                Some((session_id, true))
+            }
+            Err(ft_sdk::auth::SessionIDError::SessionNotFound) => None,
+            Err(e) => return Err(e.into()),
+        },
     };
 
     match session {
@@ -231,10 +231,7 @@ impl SessionID {
     /// This function checks the validity of the session associated with the session ID.
     /// If the session is found and is not expired, it returns `Ok(())`.
     /// If the session is expired or not found, it returns an appropriate error.
-    pub fn validate_session(
-        &self,
-        conn: &mut ft_sdk::Connection,
-    ) -> Result<(), SessionIDError> {
+    pub fn validate_session(&self, conn: &mut ft_sdk::Connection) -> Result<(), SessionIDError> {
         use diesel::prelude::*;
         use ft_sdk::auth::fastn_session;
 

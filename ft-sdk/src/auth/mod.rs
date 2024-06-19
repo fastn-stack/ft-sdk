@@ -6,9 +6,9 @@ mod utils;
 
 pub use ft_sys_shared::SESSION_KEY;
 pub use schema::{fastn_session, fastn_user};
-pub use session::{SessionID, SessionIDError};
 #[cfg(feature = "auth-provider")]
-pub use session::{set_session_cookie, expire_session_cookie};
+pub use session::{expire_session_cookie, set_session_cookie};
+pub use session::{SessionID, SessionIDError};
 pub use utils::{user_data_by_query, Counter};
 
 #[derive(Clone, Debug)]
@@ -96,7 +96,6 @@ pub fn ud(
     ud_from_session_key(conn, &ft_sdk::auth::SessionID(session_id))
 }
 
-
 /// Fetches user data based on a given session id.
 ///
 /// This function fetches user data based on a given session id if the
@@ -152,7 +151,6 @@ pub fn ud_from_session_key(
     }))
 }
 
-
 /// Check if debug user data is available, return it if found.
 fn get_debug_ud() -> Option<ft_sys::UserData> {
     match ft_sys::env::var("DEBUG_LOGGED_IN".to_string()) {
@@ -161,15 +159,20 @@ fn get_debug_ud() -> Option<ft_sys::UserData> {
             Some(ft_sys::UserData {
                 id: debug_logged_in.next().unwrap().parse().unwrap(),
                 identity: debug_logged_in.next().unwrap_or_default().to_string(),
-                name: debug_logged_in.next().map(|v| v.to_string()).unwrap_or_default(),
-                email: debug_logged_in.next().map(|v| v.to_string()).unwrap_or_default(),
+                name: debug_logged_in
+                    .next()
+                    .map(|v| v.to_string())
+                    .unwrap_or_default(),
+                email: debug_logged_in
+                    .next()
+                    .map(|v| v.to_string())
+                    .unwrap_or_default(),
                 verified_email: true,
             })
-        },
-        None => None
+        }
+        None => None,
     }
 }
-
 
 // This is hack to keep mobile number as email.
 pub fn mobile_to_email(mobile_number: &str) -> String {
@@ -177,7 +180,9 @@ pub fn mobile_to_email(mobile_number: &str) -> String {
 }
 // This is hack to keep mobile number as email.
 pub fn mobile_from_email(email: &str) -> Option<String> {
-    email.strip_suffix("@mobile.fifthtry.com").map(|s| s.to_string())
+    email
+        .strip_suffix("@mobile.fifthtry.com")
+        .map(|s| s.to_string())
 }
 
 #[derive(Debug, thiserror::Error)]
