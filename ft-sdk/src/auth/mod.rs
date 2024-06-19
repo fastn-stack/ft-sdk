@@ -99,7 +99,7 @@ pub fn ud(
     };
 
     // Validate the session using the extracted session ID.
-    ft_sdk::auth::SessionID(sid).validate_session(conn)?;
+    ft_sdk::auth::SessionID(sid.clone()).validate_session(conn)?;
 
     // Query the database to get the user data associated with the session ID.
     let (UserId(id), identity, data) = match utils::user_data_by_query(
