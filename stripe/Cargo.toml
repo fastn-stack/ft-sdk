@@ -1,0 +1,14 @@
+[package]
+name = "stripe"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+http.workspace = true
+ft-sdk.workspace = true

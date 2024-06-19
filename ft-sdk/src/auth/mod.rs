@@ -93,7 +93,7 @@ pub fn ud(
         None => return Ok(None),
     };
 
-    ud_from_session_key(&ft_sdk::auth::SessionID(session_id), conn)
+    ud_from_session_key(conn, &ft_sdk::auth::SessionID(session_id))
 }
 
 
@@ -104,8 +104,8 @@ pub fn ud(
 /// If the session cookie not found, it returns `None`.
 #[cfg(feature = "field-extractors")]
 pub fn ud_from_session_key(
-    session_id: &ft_sdk::auth::SessionID,
     conn: &mut ft_sdk::Connection,
+    session_id: &ft_sdk::auth::SessionID,
 ) -> Result<Option<ft_sys::UserData>, UserDataError> {
     // Check if debug user data is available, return it if found.
     if let Some(ud) = get_debug_ud() {
@@ -168,6 +168,16 @@ fn get_debug_ud() -> Option<ft_sys::UserData> {
         },
         None => None
     }
+}
+
+
+// This is hack to keep mobile number as email.
+pub fn mobile_to_email(mobile_number: &str) -> String {
+    format!("{mobile_number}@mobile.fifthtry.com")
+}
+// This is hack to keep mobile number as email.
+pub fn mobile_from_email(email: &str) -> Option<String> {
+    email.strip_suffix("@mobile.fifthtry.com").map(|s| s.to_string())
 }
 
 #[derive(Debug, thiserror::Error)]
