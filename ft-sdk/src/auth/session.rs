@@ -31,19 +31,19 @@ pub fn set_user_id(
         Some(session_id) => {
             let existing_session_expires_at = fastn_session::table
                 .select(fastn_session::expires_at.nullable())
-                .filter(fastn_session::id.eq(session_id.as_str()))
+                .filter(fastn_session::id.eq(session_id.0.as_str()))
                 .first::<Option<chrono::DateTime<chrono::Utc>>>(conn)
                 .optional()?;
 
             match existing_session_expires_at {
-                Some(Some(expires_at)) if expires_at < now => Some((session_id, true)),
-                Some(_) => Some((session_id, false)),
+                Some(Some(expires_at)) if expires_at < now => Some((session_id.0.clone(), true)),
+                Some(_) => Some((session_id.0.clone(), false)),
                 None => None
             }
         },
         None =>  {
             match ft_sdk::auth::SessionID::from_user_id(conn, user_id) {
-                Ok(session_id) => Some((session_id, false)),
+                Ok(session_id) => Some((session_id.0.clone(), false)),
                 Err(ft_sdk::auth::SessionIDError::SessionExpired(session_id)) => Some((session_id, true)),
                 Err(ft_sdk::auth::SessionIDError::SessionNotFound) => None,
                 Err(e) => return Err(e.into())
@@ -92,6 +92,7 @@ pub fn create_with_user(
 ) -> Result<ft_sdk::auth::SessionID, diesel::result::Error> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_session;
+    use std::ops::Add;
 
     let session_id = generate_new_session_id();
     let session_expires_at =
