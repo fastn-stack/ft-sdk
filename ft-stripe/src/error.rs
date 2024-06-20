@@ -1,4 +1,3 @@
-use crate::params::to_snakecase;
 use serde::{Deserialize, Serialize};
 use std::num::ParseIntError;
 
@@ -364,4 +363,24 @@ impl std::error::Error for WebhookError {
             WebhookError::BadParse(ref err) => Some(err),
         }
     }
+}
+
+
+fn to_snakecase(camel: &str) -> String {
+    let mut i = 0;
+    let mut snake = String::new();
+    let mut chars = camel.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch.is_uppercase() {
+            if i > 0 && !chars.peek().unwrap_or(&'A').is_uppercase() {
+                snake.push('_');
+            }
+            snake.push(ch.to_lowercase().next().unwrap_or(ch));
+        } else {
+            snake.push(ch);
+        }
+        i += 1;
+    }
+
+    snake
 }
