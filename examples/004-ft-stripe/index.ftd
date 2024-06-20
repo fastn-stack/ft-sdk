@@ -1,0 +1,9 @@
+-- import: fastn/processors as pr
+
+-- ftd.text: this is in ftd file
+-- ftd.text: $message
+
+-- string message:
+$processor$: pr.http
+url: /wasm/hello-world/
+
