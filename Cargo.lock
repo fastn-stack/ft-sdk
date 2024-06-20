@@ -215,21 +215,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ft-stripe"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "ft-sdk",
- "ft-sys",
- "http",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "smol_str",
- "thiserror",
-]
-
-[[package]]
 name = "ft-sys"
 version = "0.1.3"
 dependencies = [
@@ -534,15 +519,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "smol_str"
-version = "0.1.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fad6c857cbab2627dcf01ec85a623ca4e7dcb5691cbaa3d7fb7653671f0d09c9"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "syn"
