@@ -3,17 +3,15 @@ extern crate self as ft_stripe;
 mod client;
 mod error;
 mod customer;
-mod params;
-
-mod config {
-    pub type Client = ft_stripe::client::Client;
-    pub type Response<T> = Result<T, ft_stripe::error::StripeError>;
-}
-
-pub use self::config::Client;
-pub use self::config::Response;
-
-pub use stripe::{CreateCustomer, Customer, CustomerId, List, ListCustomers, UpdateCustomer};
-use stripe::*;
+mod async_stripe;
+pub(crate) use async_stripe::{ids, resources, params};
 
 
+pub use crate::client::*;
+pub use crate::error::{ErrorCode, ErrorType, RequestError, StripeError, WebhookError};
+pub use crate::async_stripe::ids::*;
+pub use crate::async_stripe::params::{
+    Expandable, Headers, IdOrCreate, List, Metadata, Object, RangeBounds, RangeQuery, SearchList,
+    Timestamp,
+};
+pub use crate::async_stripe::resources::*;

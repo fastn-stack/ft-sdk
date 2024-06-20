@@ -1,4 +1,3 @@
-// Code taken from https://github.com/wyyerd/stripe-rs/tree/c2f03f8dec41e20b66f9bbe902b8384096ac653c
 use http_types::Url;
 
 use serde::de::DeserializeOwned;
@@ -6,7 +5,7 @@ use crate::Headers;
 use crate::Response;
 use http::header::{HeaderMap, HeaderName, HeaderValue};
 use crate::{AccountId, ApplicationId};
-use crate::RequestStrategy;
+use crate::client::request_strategy::RequestStrategy;
 use crate::generated::core::version::VERSION;
 use crate::error::{StripeError, RequestError, ErrorResponse};
 
