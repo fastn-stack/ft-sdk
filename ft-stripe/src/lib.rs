@@ -1,19 +1,36 @@
+// Code taken from https://github.com/wyyerd/stripe-rs/tree/c2f03f8dec41e20b66f9bbe902b8384096ac653c
+extern crate self as ft_stripe;
+
+mod resources;
+pub use ft_stripe::resources::*;
+mod ids;
+mod params;
+pub use crate::ids::*;
+pub use crate::params::{
+    Expandable, Headers, IdOrCreate, List, Metadata, Object, RangeBounds, RangeQuery, Timestamp,
+};
+
+
+mod client;
+mod config {
+    pub type Client = crate::client::Client;
+    pub type Response<T> = Result<T, ft_sdk::Error>;
+}
+
+pub use self::config::Client;
+pub use self::config::Response;
+
+
+
+
 pub struct CustomerID(pub String);
 
 pub fn create_customer(
-    conn: &mut ft_sdk::Connection,
-    session_id: &ft_sdk::auth::SessionID,
-    secret_token: &str,
-) -> Result<CustomerID, CreateCustomerError> {
-    let user_data = ft_sdk::auth::ud_from_session_key(conn, session_id)?
-        .ok_or_else(|| CreateCustomerError::UserNotFound)?;
-
-    let body = match mobile_from_email(user_data.email.as_str()) {
-        Some(phone) => serde_json::json!({"phone": phone}),
-        None => serde_json::json!({"email": user_data.email}),
-    };
-
-    call_create_customer_api(secret_token, &body)
+    secret_key: &str,
+) -> Response<Customer> {
+    let client = Client::new(secret_key);
+    let create_customer = CreateCustomer::new();
+    Customer::create(&client, create_customer)
 }
 
 fn call_create_customer_api(
