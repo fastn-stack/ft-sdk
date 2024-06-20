@@ -10,6 +10,7 @@ members = [
     "ft-sdk",
     "ft-sys",
     "ft-sys-shared",
+    "ft-stripe",
 ]
 exclude = ["examples", "f"]
 resolver = "2"
@@ -35,6 +36,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
+cookie = "0.18"
 diesel = { version = ">=2, <2.2", features = ["serde_json"] }
 serde_urlencoded = "0.7"
 include_dir = "0.7"
@@ -43,6 +45,7 @@ uuid = { version = "1.8", default-features = false, features = ["v8"] }
 ft-sys-shared = { path = "ft-sys-shared", version = "0.1.2" }
 ft-derive = { path = "ft-derive", version = "0.1.1" }
 ft-sys = { path = "ft-sys", version = "0.1.3" }
+ft-sdk = { path = "ft-sdk", version = "0.1.12" }
 
 
 [workspace.dependencies.rusqlite]
