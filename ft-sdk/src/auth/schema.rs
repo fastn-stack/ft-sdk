@@ -20,6 +20,7 @@ diesel::table! {
         data -> Text,
         updated_at -> Timestamptz,
         created_at -> Timestamptz,
+        expires_at -> Nullable<Timestamptz>,
     }
 }
 
