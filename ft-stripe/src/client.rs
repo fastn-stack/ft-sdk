@@ -5,6 +5,7 @@ use crate::params::{AppInfo, Headers};
 use crate::resources::ApiVersion;
 use crate::config::Response;
 use http::header::{HeaderMap, HeaderName, HeaderValue};
+use crate::error::{Error, RequestError, ErrorResponse};
 
 #[derive(Clone)]
 pub struct Client {
@@ -60,26 +61,42 @@ impl Client {
     }
 
     /// Make a `GET` http request with just a path
-    pub fn get<T: DeserializeOwned + Send + 'static>(&self, path: &str) -> Response<T> {
-        todo!()
+    pub fn get<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
+        let url = self.url(path);
+        let client = http::Request::builder();
+        let mut request = client
+            .method("GET")
+            .uri(url)
+            .body(bytes::Bytes::new())?;
+
+        *request.headers_mut() = self.headers();
+
+        send(request)
     }
 
     /// Make a `GET` http request with url query parameters
-    pub fn get_query<T: DeserializeOwned + Send + 'static, P: serde::Serialize>(
+    pub fn get_query<T: DeserializeOwned + 'static, P: serde::Serialize>(
         &self,
         path: &str,
         params: P,
     ) -> Response<T> {
-        todo!()
+        let url = match self.url_with_params(path, params) {
+            Err(err) => return Box::pin(future::ready(Err(err))),
+            Ok(ok) => ok,
+        };
+        let mut req =
+            http::Request::builder().method("GET").uri(url).body(hyper::Body::empty()).unwrap();
+        *req.headers_mut() = self.headers();
+        send(&self.client, req)
     }
 
     /// Make a `DELETE` http request with just a path
-    pub fn delete<T: DeserializeOwned + Send + 'static>(&self, path: &str) -> Response<T> {
+    pub fn delete<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
        todo!()
     }
 
     /// Make a `DELETE` http request with url query parameters
-    pub fn delete_query<T: DeserializeOwned + Send + 'static, P: serde::Serialize>(
+    pub fn delete_query<T: DeserializeOwned + 'static, P: serde::Serialize>(
         &self,
         path: &str,
         params: P,
@@ -88,12 +105,12 @@ impl Client {
     }
 
     /// Make a `POST` http request with just a path
-    pub fn post<T: DeserializeOwned + Send + 'static>(&self, path: &str) -> Response<T> {
+    pub fn post<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
         todo!()
     }
 
     /// Make a `POST` http request with urlencoded body
-    pub fn post_form<T: DeserializeOwned + Send + 'static, F: serde::Serialize>(
+    pub fn post_form<T: DeserializeOwned + 'static, F: serde::Serialize>(
         &self,
         path: &str,
         form: F,
@@ -153,6 +170,25 @@ impl Client {
         };
         headers
     }
+}
+
+fn send<T: DeserializeOwned + 'static>(
+    request: http::Request<bytes::Bytes>,
+) -> Result<T, Error> {
+
+    let response = ft_sdk::http::send(request).unwrap(); //todo: remove unwrap()
+    let status = response.status();
+    let bytes = response.body();
+    if !status.is_success() {
+        let mut err = serde_json::from_slice(&bytes).unwrap_or_else(|err| {
+            let mut req = ErrorResponse { error: RequestError::default() };
+            req.error.message = Some(format!("failed to deserialize error: {}", err));
+            req
+        });
+        err.error.http_status = status.as_u16();
+        Err(Error::from(err.error))?;
+    }
+    serde_json::from_slice(&bytes).map_err(Error::deserialize)
 }
 
 

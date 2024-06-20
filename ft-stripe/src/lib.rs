@@ -12,9 +12,12 @@ pub use crate::params::{
 
 
 mod client;
+mod error;
+pub use crate::error::{Error, ErrorCode, ErrorType, RequestError, WebhookError};
+
 mod config {
     pub type Client = crate::client::Client;
-    pub type Response<T> = Result<T, ft_sdk::Error>;
+    pub type Response<T> = Result<T, crate::error::Error>;
 }
 
 pub use self::config::Client;
