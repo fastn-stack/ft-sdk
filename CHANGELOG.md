@@ -5,6 +5,7 @@
 - `ft_sdk::tracker::{create_tracker, set_user_id}` functions for creating/updating tracker entries.
 - `ft_sdk::schema::fastn_tracker` diesel table definition.
 - `ft_sdk::utils::uuid_v8` function to generate uuids.
+- `ft_sdk::tracker::TRACKER_KEY` constant exposed for setting tracker cookie.
 - impl `Display` for `ft_sdk::PlainText`.
 
 ## 14th June 2024

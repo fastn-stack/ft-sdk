@@ -1,3 +1,5 @@
+pub use ft_sys_shared::TRACKER_KEY;
+
 pub struct TrackerID(pub String);
 
 /// create a new tracker entry associated with `user_id` in the `fastn_tracker` table
