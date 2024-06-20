@@ -16,7 +16,41 @@ serde.workspace = true
 serde_json.workspace = true
 serde_urlencoded.workspace = true
 serde_qs.workspace = true
-async-stripe.workspace = true
+#async-stripe.workspace = true
 serde_path_to_error.workspace = true
 http-types.workspace = true
 thiserror.workspace = true
+smart-default.workspace = true
+smol_str.workspace = true
+
+
+
+[features]
+default = ["full"]
+full = [
+    "checkout",
+    "billing",
+    "connect",
+    "fraud",
+    "issuing",
+    "orders",
+    "sigma",
+    "terminal",
+    "webhook-endpoints",
+    "tax-calculation",
+    "products",
+]
+
+# stripe feature groups
+checkout = ["billing"]
+billing = []
+connect = []
+fraud = []
+issuing = []
+orders = []
+sigma = []
+terminal = []
+webhook-endpoints = []
+tax-calculation = []
+products = []
+

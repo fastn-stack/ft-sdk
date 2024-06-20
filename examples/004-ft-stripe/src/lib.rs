@@ -1,7 +1,7 @@
 #[ft_sdk::processor]
 fn stripe_create_customer() -> ft_sdk::processor::Result {
-    ft_sdk::println!("params: {path}");
     let customer = stripe_create_customer_();
+    ft_sdk::println!("customer: {customer:?}");
     ft_sdk::processor::json(customer)
 }
 
