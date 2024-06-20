@@ -1,3 +1,4 @@
+// Code taken from https://github.com/wyyerd/stripe-rs/tree/c2f03f8dec41e20b66f9bbe902b8384096ac653c
 use crate::ids::*;
 use crate::params::Object;
 use serde::{Deserialize, Serialize};
