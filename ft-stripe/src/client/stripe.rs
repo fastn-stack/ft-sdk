@@ -222,16 +222,6 @@ fn send<T: DeserializeOwned + 'static>(
 }
 
 
-fn format_app_info(info: &AppInfo) -> String {
-    let formatted: String = match (&info.version, &info.url) {
-        (Some(a), Some(b)) => format!("{}/{} ({})", &info.name, a, b),
-        (Some(a), None) => format!("{}/{}", &info.name, a),
-        (None, Some(b)) => format!("{}/{}", &info.name, b),
-        _ => info.name.to_string(),
-    };
-    formatted
-}
-
 #[derive(Clone, Default)]
 pub struct AppInfo {
     pub name: String,

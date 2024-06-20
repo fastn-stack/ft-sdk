@@ -4,7 +4,6 @@ use std::fmt::Display;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-use crate::error::StripeError;
 use crate::resources::{ApiVersion, Currency};
 use crate::{
     AccountId, ApplicationId,
