@@ -318,14 +318,12 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "ft-sdk",
- "ft-sys",
  "http 1.1.0",
  "serde",
  "serde_json",
+ "serde_qs",
  "serde_urlencoded",
- "smol_str",
  "stripe-rust",
- "thiserror",
 ]
 
 [[package]]

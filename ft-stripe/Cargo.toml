@@ -1,4 +1,3 @@
-# Code taken from https://github.com/wyyerd/stripe-rs/tree/c2f03f8dec41e20b66f9bbe902b8384096ac653c
 [package]
 name = "ft-stripe"
 version = "0.1.0"
@@ -10,13 +9,11 @@ repository.workspace = true
 homepage.workspace = true
 
 [dependencies]
-thiserror.workspace = true
 http.workspace = true
 ft-sdk.workspace = true
 bytes.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_urlencoded.workspace = true
-ft-sys.workspace = true
-smol_str.workspace = true
-stripe-rust = { git = "https://github.com/wyyerd/stripe-rs.git" }
+serde_qs.workspace = true
+stripe-rust.workspace = true

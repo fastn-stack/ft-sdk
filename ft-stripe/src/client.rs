@@ -1,9 +1,8 @@
 // Code taken from https://github.com/wyyerd/stripe-rs/tree/c2f03f8dec41e20b66f9bbe902b8384096ac653c
 
 use serde::de::DeserializeOwned;
-use crate::params::{AppInfo, Headers};
-use crate::resources::ApiVersion;
-use crate::config::Response;
+use crate::{ApiVersion, Headers};
+use crate::Response;
 use http::header::{HeaderMap, HeaderName, HeaderValue};
 use crate::error::{Error, RequestError, ErrorResponse};
 
@@ -80,19 +79,20 @@ impl Client {
         path: &str,
         params: P,
     ) -> Response<T> {
-        let url = match self.url_with_params(path, params) {
-            Err(err) => return Box::pin(future::ready(Err(err))),
-            Ok(ok) => ok,
-        };
+        let url = self.url_with_params(path, params)?;
         let mut req =
-            http::Request::builder().method("GET").uri(url).body(hyper::Body::empty()).unwrap();
+            http::Request::builder().method("GET").uri(url).body(bytes::Bytes::new()).unwrap();
         *req.headers_mut() = self.headers();
-        send(&self.client, req)
+        send(req)
     }
 
     /// Make a `DELETE` http request with just a path
     pub fn delete<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
-       todo!()
+        let url = self.url(path);
+        let mut req =
+            http::Request::builder().method("DELETE").uri(url).body(bytes::Bytes::new()).unwrap();
+        *req.headers_mut() = self.headers();
+        send(req)
     }
 
     /// Make a `DELETE` http request with url query parameters
@@ -101,12 +101,20 @@ impl Client {
         path: &str,
         params: P,
     ) -> Response<T> {
-        todo!()
+        let url = self.url_with_params(path, params)?;
+        let mut req =
+            http::Request::builder().method("DELETE").uri(url).body(bytes::Bytes::new()).unwrap();
+        *req.headers_mut() = self.headers();
+        send(req)
     }
 
     /// Make a `POST` http request with just a path
     pub fn post<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
-        todo!()
+        let url = self.url(path);
+        let mut req =
+            http::Request::builder().method("POST").uri(url).body(bytes::Bytes::new()).unwrap();
+        *req.headers_mut() = self.headers();
+        send(req)
     }
 
     /// Make a `POST` http request with urlencoded body
@@ -115,7 +123,21 @@ impl Client {
         path: &str,
         form: F,
     ) -> Response<T> {
-        todo!()
+        let url = self.url(path);
+        let mut req = http::Request::builder()
+            .method("POST")
+            .uri(url)
+            .body(match serde_qs::to_string(&form) {
+                Err(err) => return Err(Error::serialize(err)),
+                Ok(body) => bytes::Bytes::from(body),
+            })
+            .unwrap();
+        *req.headers_mut() = self.headers();
+        req.headers_mut().insert(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_str("application/x-www-form-urlencoded").unwrap(),
+        );
+        send(req)
     }
 
     fn url(&self, path: &str) -> String {
@@ -124,8 +146,9 @@ impl Client {
 
     // fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<String, Error> {
     //todo: Result<String, Error>
-    fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<String, String> {
-        todo!()
+    fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<String, Error> {
+        let params = serde_qs::to_string(&params).map_err(Error::serialize)?;
+        Ok(format!("{}/{}?{}", self.host, &path[1..], params))
     }
 
     fn headers(&self) -> HeaderMap {
@@ -200,4 +223,11 @@ fn format_app_info(info: &AppInfo) -> String {
         _ => info.name.to_string(),
     };
     formatted
+}
+
+#[derive(Clone, Default)]
+pub struct AppInfo {
+    pub name: String,
+    pub url: Option<String>,
+    pub version: Option<String>,
 }
