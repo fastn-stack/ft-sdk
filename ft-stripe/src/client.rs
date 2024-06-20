@@ -1,17 +1,24 @@
 // Code taken from https://github.com/wyyerd/stripe-rs/tree/c2f03f8dec41e20b66f9bbe902b8384096ac653c
+use http_types::Url;
 
 use serde::de::DeserializeOwned;
-use crate::{ApiVersion, Headers};
+use crate::Headers;
 use crate::Response;
 use http::header::{HeaderMap, HeaderName, HeaderValue};
-use crate::error::{Error, RequestError, ErrorResponse};
+use crate::{AccountId, ApplicationId};
+use crate::RequestStrategy;
+use crate::generated::core::version::VERSION;
+use crate::error::{StripeError, RequestError, ErrorResponse};
+
 
 #[derive(Clone)]
 pub struct Client {
-    host: String,
     secret_key: String,
     headers: Headers,
+    strategy: RequestStrategy,
     app_info: Option<AppInfo>,
+    api_base: Url,
+    api_root: String,
 }
 
 impl Client {
@@ -20,53 +27,64 @@ impl Client {
         Client::from_url("https://api.stripe.com/", secret_key)
     }
 
-    /// Creates a new client posted to a custom `scheme://host/`
-    pub fn from_url(scheme_host: impl Into<String>, secret_key: impl Into<String>) -> Client {
-        let url = scheme_host.into();
-        let host = if url.ends_with('/') { format!("{}v1", url) } else { format!("{}/v1", url) };
-        let mut headers = Headers::default();
-        // TODO: Automatically determine the latest supported api version in codegen?
-        headers.stripe_version = Some(ApiVersion::V2019_09_09);
-
+    /// Create a new account pointed at a specific URL. This is useful for testing.
+    pub fn from_url<'a>(url: impl Into<&'a str>, secret_key: impl Into<String>) -> Self {
         Client {
-            host,
             secret_key: secret_key.into(),
-            headers,
-            app_info: Some(AppInfo::default()),
+            headers: Headers {
+                stripe_version: VERSION,
+                user_agent: USER_AGENT.to_string(),
+                client_id: None,
+                stripe_account: None,
+            },
+            strategy: RequestStrategy::Once,
+            app_info: None,
+            api_base: Url::parse(url.into()).expect("invalid url"),
+            api_root: "v1".to_string(),
         }
     }
+    /// Set the client id for the client.
+    pub fn with_client_id(mut self, id: ApplicationId) -> Self {
+        self.headers.client_id = Some(id);
+        self
+    }
 
+    /// Set the stripe account for the client.
+    pub fn with_stripe_account(mut self, id: AccountId) -> Self {
+        self.headers.stripe_account = Some(id);
+        self
+    }
 
-    /// Clones a new client with different headers.
+    /// Set the request strategy for the client.
+    pub fn with_strategy(mut self, strategy: RequestStrategy) -> Self {
+        self.strategy = strategy;
+        self
+    }
+
+    /// Set the application info for the client.
     ///
-    /// This is the recommended way to send requests for many different Stripe accounts
-    /// or with different Meta, Extra, and Expand headers while using the same secret key.
-    pub fn with_headers(&self, headers: Headers) -> Client {
-        let mut client = self.clone();
-        client.headers = headers;
-        client
+    /// It is recommended that applications set this so that
+    /// stripe is able to undestand usage patterns from your
+    /// user agent.
+    pub fn with_app_info(
+        mut self,
+        name: String,
+        version: Option<String>,
+        url: Option<String>,
+    ) -> Self {
+        let app_info = AppInfo { name, version, url };
+        self.headers.user_agent = format!("{} {}", USER_AGENT, app_info.to_string());
+        self.app_info = Some(app_info);
+        self
     }
-
-    pub fn set_app_info(&mut self, name: String, version: Option<String>, url: Option<String>) {
-        self.app_info = Some(AppInfo { name, url, version });
-    }
-
-    /// Sets a value for the Stripe-Account header
-    ///
-    /// This is recommended if you are acting as only one Account for the lifetime of the client.
-    /// Otherwise, prefer `client.with(Headers{stripe_account: "acct_ABC", ..})`.
-    pub fn set_stripe_account<S: Into<String>>(&mut self, account_id: S) {
-        self.headers.stripe_account = Some(account_id.into());
-    }
-
     /// Make a `GET` http request with just a path
     pub fn get<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
-        let url = self.url(path);
+        let url = self.url(path).to_string();
         let client = http::Request::builder();
         let mut request = client
             .method("GET")
             .uri(url)
-            .body(bytes::Bytes::new())?;
+            .body(bytes::Bytes::new()).unwrap();
 
         *request.headers_mut() = self.headers();
 
@@ -79,7 +97,7 @@ impl Client {
         path: &str,
         params: P,
     ) -> Response<T> {
-        let url = self.url_with_params(path, params)?;
+        let url = self.url_with_params(path, params)?.to_string();
         let mut req =
             http::Request::builder().method("GET").uri(url).body(bytes::Bytes::new()).unwrap();
         *req.headers_mut() = self.headers();
@@ -88,7 +106,7 @@ impl Client {
 
     /// Make a `DELETE` http request with just a path
     pub fn delete<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
-        let url = self.url(path);
+        let url = self.url(path).to_string();
         let mut req =
             http::Request::builder().method("DELETE").uri(url).body(bytes::Bytes::new()).unwrap();
         *req.headers_mut() = self.headers();
@@ -101,7 +119,7 @@ impl Client {
         path: &str,
         params: P,
     ) -> Response<T> {
-        let url = self.url_with_params(path, params)?;
+        let url = self.url_with_params(path, params)?.to_string();
         let mut req =
             http::Request::builder().method("DELETE").uri(url).body(bytes::Bytes::new()).unwrap();
         *req.headers_mut() = self.headers();
@@ -110,7 +128,7 @@ impl Client {
 
     /// Make a `POST` http request with just a path
     pub fn post<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
-        let url = self.url(path);
+        let url = self.url(path).to_string();
         let mut req =
             http::Request::builder().method("POST").uri(url).body(bytes::Bytes::new()).unwrap();
         *req.headers_mut() = self.headers();
@@ -123,15 +141,22 @@ impl Client {
         path: &str,
         form: F,
     ) -> Response<T> {
-        let url = self.url(path);
+        let url = self.url(path).to_string();
+        let mut params_buffer = Vec::new();
+        let qs_ser = &mut serde_qs::Serializer::new(&mut params_buffer);
+        if let Err(qs_ser_err) = serde_path_to_error::serialize(&form, qs_ser) {
+            return Err(StripeError::QueryStringSerialize(qs_ser_err));
+        }
+        let body = std::str::from_utf8(params_buffer.as_slice())
+            .expect("Unable to extract string from params_buffer")
+            .to_string();
+
         let mut req = http::Request::builder()
             .method("POST")
             .uri(url)
-            .body(match serde_qs::to_string(&form) {
-                Err(err) => return Err(Error::serialize(err)),
-                Ok(body) => bytes::Bytes::from(body),
-            })
+            .body(bytes::Bytes::from(body))
             .unwrap();
+
         *req.headers_mut() = self.headers();
         req.headers_mut().insert(
             HeaderName::from_static("content-type"),
@@ -140,64 +165,46 @@ impl Client {
         send(req)
     }
 
-    fn url(&self, path: &str) -> String {
-        format!("{}/{}", self.host, path.trim_start_matches('/'))
+    fn url(&self, path: &str) -> Url {
+        let mut url = self.api_base.clone();
+        url.set_path(&format!("{}/{}", self.api_root, path.trim_start_matches('/')));
+        url
     }
 
     // fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<String, Error> {
     //todo: Result<String, Error>
-    fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<String, Error> {
-        let params = serde_qs::to_string(&params).map_err(Error::serialize)?;
-        Ok(format!("{}/{}?{}", self.host, &path[1..], params))
+    fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<Url, StripeError> {
+        let mut url = self.url(path);
+
+        let mut params_buffer = Vec::new();
+        let qs_ser = &mut serde_qs::Serializer::new(&mut params_buffer);
+        serde_path_to_error::serialize(&params, qs_ser).map_err(StripeError::from)?;
+
+        let params = std::str::from_utf8(params_buffer.as_slice())
+            .expect("Unable to extract string from params_buffer")
+            .to_string();
+
+        url.set_query(Some(&params));
+        Ok(url)
     }
 
     fn headers(&self) -> HeaderMap {
+        use std::str::FromStr;
+
         let mut headers = HeaderMap::new();
-        headers.insert(
-            HeaderName::from_static("authorization"),
-            HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap(),
-        );
-        if let Some(account) = &self.headers.stripe_account {
-            headers.insert(
-                HeaderName::from_static("stripe-account"),
-                HeaderValue::from_str(account).unwrap(),
-            );
+        headers.insert(HeaderName::from_static("authorization"), HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap());
+
+        for (key, value) in self.headers.to_array().iter().filter_map(|(k, v)| v.map(|v| (k.to_string(), v))) {
+            headers.insert(HeaderName::from_str(key.as_str()).unwrap(), HeaderValue::from_str(value).unwrap());
         }
-        if let Some(client_id) = &self.headers.client_id {
-            headers.insert(
-                HeaderName::from_static("client-id"),
-                HeaderValue::from_str(client_id).unwrap(),
-            );
-        }
-        if let Some(stripe_version) = &self.headers.stripe_version {
-            headers.insert(
-                HeaderName::from_static("stripe-version"),
-                HeaderValue::from_str(stripe_version.as_str()).unwrap(),
-            );
-        }
-        const CRATE_VERSION: &str = env!("CARGO_PKG_VERSION");
-        let user_agent: String = format!("Stripe/v3 RustBindings/{}", CRATE_VERSION);
-        if let Some(app_info) = &self.app_info {
-            let formatted: String = format_app_info(app_info);
-            let user_agent_app_info: String =
-                format!("{} {}", user_agent, formatted).trim().to_owned();
-            headers.insert(
-                HeaderName::from_static("user-agent"),
-                HeaderValue::from_str(user_agent_app_info.as_str()).unwrap(),
-            );
-        } else {
-            headers.insert(
-                HeaderName::from_static("user-agent"),
-                HeaderValue::from_str(user_agent.as_str()).unwrap(),
-            );
-        };
+
         headers
     }
 }
 
 fn send<T: DeserializeOwned + 'static>(
     request: http::Request<bytes::Bytes>,
-) -> Result<T, Error> {
+) -> Result<T, StripeError> {
 
     let response = ft_sdk::http::send(request).unwrap(); //todo: remove unwrap()
     let status = response.status();
@@ -209,9 +216,10 @@ fn send<T: DeserializeOwned + 'static>(
             req
         });
         err.error.http_status = status.as_u16();
-        Err(Error::from(err.error))?;
+        Err(StripeError::from(err.error))?;
     }
-    serde_json::from_slice(&bytes).map_err(Error::deserialize)
+    let json_deserializer = &mut serde_json::Deserializer::from_slice(&bytes);
+    serde_path_to_error::deserialize(json_deserializer).map_err(StripeError::from)
 }
 
 
@@ -231,3 +239,19 @@ pub struct AppInfo {
     pub url: Option<String>,
     pub version: Option<String>,
 }
+
+impl ToString for AppInfo {
+    /// Formats a plugin's 'App Info' into a string that can be added to the end of an User-Agent string.
+    ///
+    /// This formatting matches that of other libraries, and if changed then it should be changed everywhere.
+    fn to_string(&self) -> String {
+        match (&self.version, &self.url) {
+            (Some(a), Some(b)) => format!("{}/{} ({})", &self.name, a, b),
+            (Some(a), None) => format!("{}/{}", &self.name, a),
+            (None, Some(b)) => format!("{} ({})", &self.name, b),
+            _ => self.name.to_string(),
+        }
+    }
+}
+
+static USER_AGENT: &str = concat!("Stripe/v1 RustBindings/", env!("CARGO_PKG_VERSION"));

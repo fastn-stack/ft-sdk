@@ -5,7 +5,7 @@ mod error;
 
 mod config {
     pub type Client = crate::client::Client;
-    pub type Response<T> = Result<T, crate::error::Error>;
+    pub type Response<T> = Result<T, crate::error::StripeError>;
 }
 
 pub use self::config::Client;
