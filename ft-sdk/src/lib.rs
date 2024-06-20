@@ -20,6 +20,8 @@ pub mod from_request;
 pub mod processor;
 mod rng;
 pub mod utils;
+pub mod schema;
+pub mod tracker;
 
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;

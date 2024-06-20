@@ -31,3 +31,12 @@ pub fn dbg_query<T: diesel::query_builder::QueryFragment<B>, B: diesel::backend:
     #[cfg(feature = "debug")]
     ft_sdk::println!("{:?}", diesel::debug_query::<B, _>(_query));
 }
+
+/// Generate a new uuid v8 using the uuid crate
+pub fn uuid_v8() -> String {
+    use rand_core::RngCore;
+
+    let mut rand_buf: [u8; 16] = Default::default();
+    ft_sdk::Rng::fill_bytes(&mut ft_sdk::Rng {}, &mut rand_buf);
+    uuid::Uuid::new_v8(rand_buf).to_string()
+}

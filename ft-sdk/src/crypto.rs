@@ -63,3 +63,9 @@ impl From<PlainText> for String {
         val.0
     }
 }
+
+impl std::fmt::Display for PlainText {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0.as_str())
+    }
+}

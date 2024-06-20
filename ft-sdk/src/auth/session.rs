@@ -32,6 +32,7 @@ pub fn set_user_id(
 }
 
 #[cfg(feature = "auth-provider")]
+/// Create a new session entry with the given user ID.
 pub fn create_with_user(
     conn: &mut ft_sdk::Connection,
     user_id: i64,
@@ -39,7 +40,7 @@ pub fn create_with_user(
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_session;
 
-    let session_id = generate_new_session_id();
+    let session_id = ft_sdk::utils::uuid_v8();
 
     diesel::insert_into(fastn_session::table)
         .values((
@@ -54,11 +55,3 @@ pub fn create_with_user(
     Ok(ft_sdk::auth::SessionID(session_id))
 }
 
-#[cfg(feature = "auth-provider")]
-fn generate_new_session_id() -> String {
-    use rand_core::RngCore;
-
-    let mut rand_buf: [u8; 16] = Default::default();
-    ft_sdk::Rng::fill_bytes(&mut ft_sdk::Rng {}, &mut rand_buf);
-    uuid::Uuid::new_v8(rand_buf).to_string()
-}
