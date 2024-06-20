@@ -13,6 +13,5 @@ fn stripe_create_customer_() -> ft_stripe::Customer {
         create_customer.email = Some("jennyrosen@example.com");
         create_customer
     };
-
-    client.create_customer(create_customer).unwrap()
+    ft_stripe::Customer::create(&client, create_customer).unwrap()
 }
