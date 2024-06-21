@@ -21,7 +21,7 @@ pub mod processor;
 mod rng;
 pub mod utils;
 pub mod schema;
-pub mod tracker;
+pub mod session;
 
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;

@@ -297,16 +297,13 @@ pub fn create_user(
 pub fn login(
     conn: &mut ft_sdk::Connection,
     ft_sdk::UserId(user_id): &ft_sdk::UserId,
-    session_id: Option<ft_sdk::auth::SessionID>,
-) -> Result<ft_sdk::auth::SessionID, LoginError> {
+    session_id: Option<ft_sdk::session::SessionID>,
+) -> Result<ft_sdk::session::SessionID, LoginError> {
     match session_id {
-        Some(session_id) if session_id.0 == "hello" => {
-            Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?)
-        }
-        Some(session_id) => Ok(ft_sdk::auth::session::set_user_id(
-            conn, session_id, *user_id,
+        Some(session_id) => Ok(session_id.set_user_id(
+            conn, ft_sdk::auth::UserId(*user_id),
         )?),
-        None => Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?),
+        None => Ok(ft_sdk::session::SessionID::new(conn, Some(*user_id), None)?),
     }
 }
 
@@ -314,11 +311,10 @@ pub fn login(
 pub enum LoginError {
     #[error("db error: {0}")]
     DatabaseError(#[from] diesel::result::Error),
-    #[error("set user id for session {0}")]
-    SetUserIDError(#[from] ft_sdk::auth::session::SetUserIDError),
-
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
+    #[error("session error: {0}")]
+    SessionError(#[from] ft_sdk::Error),
 }
 
 // Normalise and save user details
