@@ -296,14 +296,14 @@ pub fn create_user(
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
-    ft_sdk::UserId(user_id): &ft_sdk::UserId,
+    user_id: &ft_sdk::UserId,
     session_id: Option<ft_sdk::session::SessionID>,
 ) -> Result<ft_sdk::session::SessionID, LoginError> {
     match session_id {
         Some(session_id) => Ok(session_id.set_user_id(
-            conn, ft_sdk::auth::UserId(*user_id),
+            conn, user_id.clone(),
         )?),
-        None => Ok(ft_sdk::session::SessionID::new(conn, Some(*user_id), None)?),
+        None => Ok(ft_sdk::session::SessionID::new(conn, Some(user_id.clone()), None)?),
     }
 }
 

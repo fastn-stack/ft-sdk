@@ -118,6 +118,13 @@ pub fn ud(
         .cloned()
         .unwrap_or_else(|| data.emails.first().cloned().unwrap());
 
+    // if the user has no identity, they are not logged in
+    // a user with no identity exists when it is an imported user or some other app has created
+    // user details but they've not done auth stuff (login/signup)
+    if identity.is_none() {
+        return Ok(None);
+    }
+
     Ok(Some(ft_sys::UserData {
         id,
         identity: identity.expect("user fetched from session cookie must have identity"),
