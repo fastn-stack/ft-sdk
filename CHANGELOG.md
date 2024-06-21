@@ -2,10 +2,11 @@
 
 ## Unreleased
 
-- `ft_sdk::tracker::{create_tracker, set_user_id}` functions for creating/updating tracker entries.
-- `ft_sdk::schema::fastn_tracker` diesel table definition.
+- decoupled session store from `auth-provider` feature
+  `ft_sdk::session` module can be used to interact with the session store
 - `ft_sdk::utils::uuid_v8` function to generate uuids.
 - impl `Display` for `ft_sdk::PlainText`.
+- derive `Clone` for `ft_sdk::Cookie` and `ft_sdk::Host`
 
 ## 14th June 2024
 
