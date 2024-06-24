@@ -1,9 +1,14 @@
 -- import: fastn/processors as pr
 
 -- ftd.text: this is in ftd file
--- ftd.text: $message
+-- ftd.text: $customer.id
 
--- string message:
+-- customer-data customer:
 $processor$: pr.http
-url: /wasm/hello-world/
+url: /wasm/stripe-create-customer/
 
+
+-- record customer-data:
+string id:
+optional string name:
+optional string email:

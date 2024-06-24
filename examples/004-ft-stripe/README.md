@@ -1,4 +1,4 @@
-# hello world - fastn + wasm
+# stripe-example - fastn + wasm
 
 This is a simple example of how to use fastn with wasm. To run this example, you need
 to have fastn installed. You can start the server using:
@@ -21,14 +21,14 @@ cargo build --target wasm32-unknown-unknown --release
 # you may have to run `rustup target add wasm32-unknown-unknown` to add the target
 ```
 
-The above command will build the wasm file in `../../target/wasm32-unknown-unknown/release/hello_world.wasm`.
+The above command will build the wasm file in `../../target/wasm32-unknown-unknown/release/stripe_example.wasm`.
 The target folder in `../../` because this example is part of a cargo workspace, if you are
 following along, the target folder will be in the current folder.
 
 Let's copy the wasm file to current folder:
 
 ```shell
-cp ../../target/wasm32-unknown-unknown/release/hello_world.wasm .
+cp ../../target/wasm32-unknown-unknown/release/stripe_example.wasm .
 ```
 
 You can use the `build.sh` script to build the wasm file and copy it to the current folder:
