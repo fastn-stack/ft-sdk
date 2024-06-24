@@ -108,7 +108,12 @@ pub struct InvoiceSearchParams<'a> {
 
 impl<'a> InvoiceSearchParams<'a> {
     pub fn new() -> InvoiceSearchParams<'a> {
-        InvoiceSearchParams { query: String::new(), limit: None, page: None, expand: &[] }
+        InvoiceSearchParams {
+            query: String::new(),
+            limit: None,
+            page: None,
+            expand: &[],
+        }
     }
 }
 

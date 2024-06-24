@@ -68,6 +68,9 @@ pub struct CreateTerminalConnectionToken<'a> {
 
 impl<'a> CreateTerminalConnectionToken<'a> {
     pub fn new() -> Self {
-        CreateTerminalConnectionToken { expand: Default::default(), location: Default::default() }
+        CreateTerminalConnectionToken {
+            expand: Default::default(),
+            location: Default::default(),
+        }
     }
 }

@@ -11,9 +11,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::resources::{ApiVersion, Currency};
-use crate::{
-    AccountId, ApplicationId,
-};
+use crate::{AccountId, ApplicationId};
 
 #[derive(Clone, Default)]
 pub struct AppInfo {
@@ -228,7 +226,14 @@ impl<T: Paginate + DeserializeOwned + Send + Sync + 'static + Clone + std::fmt::
         has_more: bool,
         total_count: Option<u64>,
     ) -> SearchList<T> {
-        Self { object: "".to_string(), url, has_more, data, next_page: None, total_count }
+        Self {
+            object: "".to_string(),
+            url,
+            has_more,
+            data,
+            next_page: None,
+            total_count,
+        }
     }
 
     fn get_data_mut(&mut self) -> &mut Vec<Self::O> {
@@ -255,7 +260,12 @@ impl<T: Paginate + DeserializeOwned + Send + Sync + 'static + Clone + std::fmt::
     type O = T;
 
     fn new(data: Vec<Self::O>, url: String, has_more: bool, total_count: Option<u64>) -> List<T> {
-        Self { url, has_more, data, total_count }
+        Self {
+            url,
+            has_more,
+            data,
+            total_count,
+        }
     }
 
     fn get_data_mut(&mut self) -> &mut Vec<Self::O> {
@@ -296,7 +306,12 @@ pub struct List<T> {
 
 impl<T> Default for List<T> {
     fn default() -> Self {
-        List { data: Vec::new(), has_more: false, total_count: None, url: String::new() }
+        List {
+            data: Vec::new(),
+            has_more: false,
+            total_count: None,
+            url: String::new(),
+        }
     }
 }
 
@@ -311,7 +326,6 @@ pub struct ListPaginator<T, P> {
     pub page: T,
     pub params: P,
 }
-
 
 pub type CurrencyMap<V> = HashMap<Currency, V>;
 pub type Metadata = HashMap<String, String>;
@@ -328,7 +342,12 @@ pub struct RangeBounds<T> {
 
 impl<T> Default for RangeBounds<T> {
     fn default() -> Self {
-        RangeBounds { gt: None, gte: None, lt: None, lte: None }
+        RangeBounds {
+            gt: None,
+            gte: None,
+            lt: None,
+            lte: None,
+        }
     }
 }
 
@@ -349,22 +368,34 @@ impl<T> RangeQuery<T> {
 
     /// Filter results to be after a given value
     pub fn gt(value: T) -> RangeQuery<T> {
-        RangeQuery::Bounds(RangeBounds { gt: Some(value), ..Default::default() })
+        RangeQuery::Bounds(RangeBounds {
+            gt: Some(value),
+            ..Default::default()
+        })
     }
 
     /// Filter results to be after or equal to a given value
     pub fn gte(value: T) -> RangeQuery<T> {
-        RangeQuery::Bounds(RangeBounds { gte: Some(value), ..Default::default() })
+        RangeQuery::Bounds(RangeBounds {
+            gte: Some(value),
+            ..Default::default()
+        })
     }
 
     /// Filter results to be before to a given value
     pub fn lt(value: T) -> RangeQuery<T> {
-        RangeQuery::Bounds(RangeBounds { lt: Some(value), ..Default::default() })
+        RangeQuery::Bounds(RangeBounds {
+            lt: Some(value),
+            ..Default::default()
+        })
     }
 
     /// Filter results to be before or equal to a given value
     pub fn lte(value: T) -> RangeQuery<T> {
-        RangeQuery::Bounds(RangeBounds { lte: Some(value), ..Default::default() })
+        RangeQuery::Bounds(RangeBounds {
+            lte: Some(value),
+            ..Default::default()
+        })
     }
 }
 

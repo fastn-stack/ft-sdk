@@ -5,8 +5,7 @@
 //      - MIT License (LICENSE-MIT or https://opensource.org/licenses/MIT)
 
 #![allow(ambiguous_glob_reexports)]
-pub mod resources;
+pub mod error;
 pub mod ids;
 pub mod params;
-pub mod error;
-
+pub mod resources;

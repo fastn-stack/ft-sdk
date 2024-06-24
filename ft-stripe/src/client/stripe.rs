@@ -1,14 +1,13 @@
 use http_types::Url;
 
-use serde::de::DeserializeOwned;
+use crate::client::request_strategy::RequestStrategy;
+use crate::error::{ErrorResponse, RequestError, StripeError};
+use crate::generated::core::version::VERSION;
 use crate::Headers;
 use crate::Response;
-use http::header::{HeaderMap, HeaderName, HeaderValue};
 use crate::{AccountId, ApplicationId};
-use crate::client::request_strategy::RequestStrategy;
-use crate::generated::core::version::VERSION;
-use crate::error::{StripeError, RequestError, ErrorResponse};
-
+use http::header::{HeaderMap, HeaderName, HeaderValue};
+use serde::de::DeserializeOwned;
 
 #[derive(Clone)]
 pub struct Client {
@@ -83,7 +82,8 @@ impl Client {
         let mut request = client
             .method("GET")
             .uri(url)
-            .body(bytes::Bytes::new()).unwrap();
+            .body(bytes::Bytes::new())
+            .unwrap();
 
         *request.headers_mut() = self.headers();
 
@@ -97,8 +97,11 @@ impl Client {
         params: P,
     ) -> Response<T> {
         let url = self.url_with_params(path, params)?.to_string();
-        let mut req =
-            http::Request::builder().method("GET").uri(url).body(bytes::Bytes::new()).unwrap();
+        let mut req = http::Request::builder()
+            .method("GET")
+            .uri(url)
+            .body(bytes::Bytes::new())
+            .unwrap();
         *req.headers_mut() = self.headers();
         send(req)
     }
@@ -106,8 +109,11 @@ impl Client {
     /// Make a `DELETE` http request with just a path
     pub fn delete<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
         let url = self.url(path).to_string();
-        let mut req =
-            http::Request::builder().method("DELETE").uri(url).body(bytes::Bytes::new()).unwrap();
+        let mut req = http::Request::builder()
+            .method("DELETE")
+            .uri(url)
+            .body(bytes::Bytes::new())
+            .unwrap();
         *req.headers_mut() = self.headers();
         send(req)
     }
@@ -119,8 +125,11 @@ impl Client {
         params: P,
     ) -> Response<T> {
         let url = self.url_with_params(path, params)?.to_string();
-        let mut req =
-            http::Request::builder().method("DELETE").uri(url).body(bytes::Bytes::new()).unwrap();
+        let mut req = http::Request::builder()
+            .method("DELETE")
+            .uri(url)
+            .body(bytes::Bytes::new())
+            .unwrap();
         *req.headers_mut() = self.headers();
         send(req)
     }
@@ -128,8 +137,11 @@ impl Client {
     /// Make a `POST` http request with just a path
     pub fn post<T: DeserializeOwned + 'static>(&self, path: &str) -> Response<T> {
         let url = self.url(path).to_string();
-        let mut req =
-            http::Request::builder().method("POST").uri(url).body(bytes::Bytes::new()).unwrap();
+        let mut req = http::Request::builder()
+            .method("POST")
+            .uri(url)
+            .body(bytes::Bytes::new())
+            .unwrap();
         *req.headers_mut() = self.headers();
         send(req)
     }
@@ -166,13 +178,21 @@ impl Client {
 
     fn url(&self, path: &str) -> Url {
         let mut url = self.api_base.clone();
-        url.set_path(&format!("{}/{}", self.api_root, path.trim_start_matches('/')));
+        url.set_path(&format!(
+            "{}/{}",
+            self.api_root,
+            path.trim_start_matches('/')
+        ));
         url
     }
 
     // fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<String, Error> {
     //todo: Result<String, Error>
-    fn url_with_params<P: serde::Serialize>(&self, path: &str, params: P) -> Result<Url, StripeError> {
+    fn url_with_params<P: serde::Serialize>(
+        &self,
+        path: &str,
+        params: P,
+    ) -> Result<Url, StripeError> {
         let mut url = self.url(path);
 
         let mut params_buffer = Vec::new();
@@ -191,10 +211,21 @@ impl Client {
         use std::str::FromStr;
 
         let mut headers = HeaderMap::new();
-        headers.insert(HeaderName::from_static("authorization"), HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap());
+        headers.insert(
+            HeaderName::from_static("authorization"),
+            HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap(),
+        );
 
-        for (key, value) in self.headers.to_array().iter().filter_map(|(k, v)| v.map(|v| (k.to_string(), v))) {
-            headers.insert(HeaderName::from_str(key.as_str()).unwrap(), HeaderValue::from_str(value).unwrap());
+        for (key, value) in self
+            .headers
+            .to_array()
+            .iter()
+            .filter_map(|(k, v)| v.map(|v| (k.to_string(), v)))
+        {
+            headers.insert(
+                HeaderName::from_str(key.as_str()).unwrap(),
+                HeaderValue::from_str(value).unwrap(),
+            );
         }
 
         headers
@@ -204,13 +235,14 @@ impl Client {
 fn send<T: DeserializeOwned + 'static>(
     request: http::Request<bytes::Bytes>,
 ) -> Result<T, StripeError> {
-
     let response = ft_sdk::http::send(request).unwrap(); //todo: remove unwrap()
     let status = response.status();
     let bytes = response.body();
     if !status.is_success() {
         let mut err = serde_json::from_slice(&bytes).unwrap_or_else(|err| {
-            let mut req = ErrorResponse { error: RequestError::default() };
+            let mut req = ErrorResponse {
+                error: RequestError::default(),
+            };
             req.error.message = Some(format!("failed to deserialize error: {}", err));
             req
         });
@@ -220,7 +252,6 @@ fn send<T: DeserializeOwned + 'static>(
     let json_deserializer = &mut serde_json::Deserializer::from_slice(&bytes);
     serde_path_to_error::deserialize(json_deserializer).map_err(StripeError::from)
 }
-
 
 #[derive(Clone, Default)]
 pub struct AppInfo {

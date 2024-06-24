@@ -88,7 +88,10 @@ impl SetupIntent {
         params: VerifyMicrodeposits,
     ) -> Response<SetupIntent> {
         #[allow(clippy::needless_borrows_for_generic_args)]
-        client.post_form(&format!("/setup_intents/{}/verify_microdeposits", setup_id), &params)
+        client.post_form(
+            &format!("/setup_intents/{}/verify_microdeposits", setup_id),
+            &params,
+        )
     }
 
     /// A SetupIntent object can be canceled when it is in one of these statuses: requires_payment_method, requires_confirmation, or requires_action.

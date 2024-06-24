@@ -134,7 +134,10 @@ impl Customer {
         params: VerifyBankAccount<'_>,
     ) -> Response<BankAccount> {
         client.post_form(
-            &format!("/customers/{}/sources/{}/verify", customer_id, bank_account_id),
+            &format!(
+                "/customers/{}/sources/{}/verify",
+                customer_id, bank_account_id
+            ),
             params,
         )
     }
@@ -148,7 +151,10 @@ impl Customer {
         params: CustomerPaymentMethodRetrieval<'_>,
     ) -> Response<List<PaymentMethod>> {
         #[allow(clippy::needless_borrows_for_generic_args)]
-        client.get_query(&format!("/customers/{}/payment_methods", customer_id), &params)
+        client.get_query(
+            &format!("/customers/{}/payment_methods", customer_id),
+            &params,
+        )
     }
 
     /// Searches for a customer.
@@ -172,7 +178,10 @@ pub struct VerifyBankAccount<'a> {
 
 impl VerifyBankAccount<'_> {
     pub fn new() -> Self {
-        VerifyBankAccount { amounts: None, verification_method: None }
+        VerifyBankAccount {
+            amounts: None,
+            verification_method: None,
+        }
     }
 }
 

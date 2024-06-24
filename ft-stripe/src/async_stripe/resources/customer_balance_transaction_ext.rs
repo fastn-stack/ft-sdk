@@ -75,7 +75,12 @@ pub struct CreateCustomerBalanceTransaction<'a> {
 
 impl CreateCustomerBalanceTransaction<'_> {
     pub fn new(amount: i64, currency: Currency) -> Self {
-        Self { amount, currency, description: Default::default(), metadata: Default::default() }
+        Self {
+            amount,
+            currency,
+            description: Default::default(),
+            metadata: Default::default(),
+        }
     }
 }
 
@@ -104,7 +109,10 @@ impl Customer {
         params: ListCustomerBalanceTransactions<'_>,
     ) -> Response<List<CustomerBalanceTransaction>> {
         #[allow(clippy::needless_borrows_for_generic_args)]
-        client.get_query(&format!("/customers/{}/balance_transactions", customer_id), &params)
+        client.get_query(
+            &format!("/customers/{}/balance_transactions", customer_id),
+            &params,
+        )
     }
 
     /// Create a new customer balance transaction.
@@ -114,7 +122,10 @@ impl Customer {
         params: CreateCustomerBalanceTransaction<'_>,
     ) -> Response<CustomerBalanceTransaction> {
         #[allow(clippy::needless_borrows_for_generic_args)]
-        client.post_form(&format!("/customers/{}/balance_transactions", customer_id), &params)
+        client.post_form(
+            &format!("/customers/{}/balance_transactions", customer_id),
+            &params,
+        )
     }
 
     /// Retrieve a customer balance transaction.
@@ -140,7 +151,9 @@ impl Customer {
         params: UpdateCustomerBalanceTransaction<'_>,
     ) -> Response<CustomerBalanceTransaction> {
         #[allow(clippy::needless_borrows_for_generic_args)]
-        client
-            .post_form(&format!("/customers/{}/balance_transactions/{}", customer_id, id), &params)
+        client.post_form(
+            &format!("/customers/{}/balance_transactions/{}", customer_id, id),
+            &params,
+        )
     }
 }

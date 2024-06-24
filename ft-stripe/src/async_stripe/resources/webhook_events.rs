@@ -508,7 +508,10 @@ impl Webhook {
     ///  - the provided secret is invalid
     ///  - the signature timestamp is older than 5 minutes
     pub fn construct_event(payload: &str, sig: &str, secret: &str) -> Result<Event, WebhookError> {
-        Self { current_timestamp: Utc::now().timestamp() }.do_construct_event(payload, sig, secret)
+        Self {
+            current_timestamp: Utc::now().timestamp(),
+        }
+        .do_construct_event(payload, sig, secret)
     }
 
     /// Construct an event from a webhook payload and signature, verifying its signature
@@ -529,7 +532,10 @@ impl Webhook {
         secret: &str,
         timestamp: i64,
     ) -> Result<Event, WebhookError> {
-        Self { current_timestamp: timestamp }.do_construct_event(payload, sig, secret)
+        Self {
+            current_timestamp: timestamp,
+        }
+        .do_construct_event(payload, sig, secret)
     }
 
     fn do_construct_event(
@@ -550,7 +556,8 @@ impl Webhook {
 
         let sig = hex::decode(signature.v1).map_err(|_| WebhookError::BadSignature)?;
 
-        mac.verify_slice(sig.as_slice()).map_err(|_| WebhookError::BadSignature)?;
+        mac.verify_slice(sig.as_slice())
+            .map_err(|_| WebhookError::BadSignature)?;
 
         // Get current timestamp to compare to signature timestamp
         if (self.current_timestamp - signature.t).abs() > 300 {
@@ -586,7 +593,10 @@ impl<'r> Signature<'r> {
             .collect();
         let t = headers.get("t").ok_or(WebhookError::BadSignature)?;
         let v1 = headers.get("v1").ok_or(WebhookError::BadSignature)?;
-        Ok(Signature { t: t.parse::<i64>().map_err(WebhookError::BadHeader)?, v1 })
+        Ok(Signature {
+            t: t.parse::<i64>().map_err(WebhookError::BadHeader)?,
+            v1,
+        })
     }
 }
 
@@ -658,7 +668,9 @@ mod tests {
         let secret = "webhook_secret".to_string();
         let signature = format!("t={},v1=82216eca827bcb7b34b8055eb2d2d9e6bc13b9ac39ded14a61e69f70c565f53a,v0=63f3a72374a733066c4be69ed7f8e5ac85c22c9f0a6a612ab9a025a9e4ee7eef", event_timestamp);
 
-        let webhook = super::Webhook { current_timestamp: event_timestamp };
+        let webhook = super::Webhook {
+            current_timestamp: event_timestamp,
+        };
 
         let event = webhook
             .do_construct_event(payload, &signature, &secret)
