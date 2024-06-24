@@ -6,7 +6,6 @@
 
 use std::collections::HashMap;
 
-use chrono::Utc;
 #[cfg(feature = "webhook-events")]
 use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
@@ -509,7 +508,7 @@ impl Webhook {
     ///  - the signature timestamp is older than 5 minutes
     pub fn construct_event(payload: &str, sig: &str, secret: &str) -> Result<Event, WebhookError> {
         Self {
-            current_timestamp: Utc::now().timestamp(),
+            current_timestamp: ft_sdk::env::now().timestamp(),
         }
         .do_construct_event(payload, sig, secret)
     }

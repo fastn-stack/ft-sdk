@@ -23,6 +23,11 @@ thiserror.workspace = true
 smart-default.workspace = true
 smol_str.workspace = true
 
+# webhook support
+chrono = { workspace = true, optional = true }
+hmac = { version = "0.12", optional = true }
+sha2 = { version = "0.10", optional = true }
+hex = { version = "0.4", optional = true }
 
 
 [features]
@@ -53,4 +58,9 @@ terminal = []
 webhook-endpoints = []
 tax-calculation = []
 products = []
+
+
+# deserialize events from webhooks
+webhook-events = ["events", "hmac", "sha2", "chrono", "hex"]
+events = []
 
