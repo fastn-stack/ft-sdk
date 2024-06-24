@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 ft-sdk = { version = "0.1", path = "../../ft-sdk" }
 http = "1"
 bytes = "1"
-ft-stripe = { version = "0.1", path = "../../ft-stripe" }
+ft-stripe = { version = "0.1", path = "../../ft-stripe", features = ["webhook-events"] }

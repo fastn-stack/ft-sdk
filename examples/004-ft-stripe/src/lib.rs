@@ -19,3 +19,14 @@ fn stripe_create_customer_() -> ft_stripe::Customer {
     ft_sdk::println!("response:: {response:?}");
     response.unwrap()
 }
+
+#[ft_sdk::processor]
+fn webhook() -> ft_sdk::processor::Result  {
+    let secret_key = ft_sdk::env::var("STRIPE_SECRET_KEY".to_string()).expect("Missing STRIPE_SECRET_KEY in env");
+    let event = ft_stripe::Webhook::construct_event(
+        "hello",
+        "Stripe-Signature",
+        secret_key.as_str()
+    )?;
+    ft_sdk::processor::json(event.type_)
+}
