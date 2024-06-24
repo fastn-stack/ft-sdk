@@ -547,7 +547,7 @@ impl Webhook {
         let signature = Signature::parse(sig)?;
         let signed_payload = format!("{}.{}", signature.t, payload);
 
-        // Compute HMAC with the SHA256 hash function, using endpoing secret as key
+        // Compute HMAC with the SHA256 hash function, using endpoint secret as key
         // and signed_payload string as the message.
         let mut mac =
             Hmac::<Sha256>::new_from_slice(secret.as_bytes()).map_err(|_| WebhookError::BadKey)?;
