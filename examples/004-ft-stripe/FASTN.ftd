@@ -4,4 +4,4 @@
 
 -- fastn.url-mappings:
 
-/wasm/* -> wasm+proxy://hello_world.wasm/*
+/wasm/* -> wasm+proxy://stripe_example.wasm/*

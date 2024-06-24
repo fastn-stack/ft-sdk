@@ -293,16 +293,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hello-world"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "ft-sdk",
- "ft-stripe",
- "http",
-]
-
-[[package]]
 name = "http"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -636,6 +626,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fad6c857cbab2627dcf01ec85a623ca4e7dcb5691cbaa3d7fb7653671f0d09c9"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "stripe-example"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "ft-sdk",
+ "ft-stripe",
+ "http",
 ]
 
 [[package]]
