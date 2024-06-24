@@ -4,7 +4,7 @@ This is a simple example of how to use fastn with wasm. To run this example, you
 to have fastn installed. You can start the server using:
 
 ```shell
-# make sure you are in hello-world directory
+# make sure you are in 004-ft-stripe directory
 fastn serve --port 8001
 ### Server Started ###
 Go to: http://127.0.0.1:8001
