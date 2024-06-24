@@ -12,7 +12,7 @@ members = [
     "ft-sys-shared",
     "ft-stripe",
 ]
-exclude = ["examples", "f", "ft-stripe-1"]
+exclude = ["examples", "f"]
 resolver = "2"
 
 [workspace.package]
