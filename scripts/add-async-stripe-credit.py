@@ -6,7 +6,7 @@ def prepend_line_to_file(file_path, line):
     with open(file_path, 'r+') as file:
         content = file.read()
         file.seek(0, 0)
-        file.write(line.rstrip('\r\n') + '\n' + content)
+        file.write(line.lstrip('\r\n') + '\n' + content)
 
 # Function to traverse directories and process .rs files
 def add_comment_to_rs_files(root_dir, comment):
@@ -19,8 +19,7 @@ def add_comment_to_rs_files(root_dir, comment):
 directory_path = 'ft-stripe/src/async_stripe'
 
 # Comment to be added
-comment_line = '''
-// This code is taken from [async-stripe](https://github.com/arlyon/async-stripe/tree/0a00d31894191ee0c6b4bda31e0d52d59e8e93b7)
+comment_line = '''// This code is taken from [async-stripe](https://github.com/arlyon/async-stripe/tree/0a00d31894191ee0c6b4bda31e0d52d59e8e93b7)
 // Author: Alexander Lyon
 // License under either of:
 //      - Apache License, Version 2.0, (LICENSE-APACHE or https://www.apache.org/licenses/LICENSE-2.0)
