@@ -136,9 +136,18 @@ mod tests {
     #[test]
     fn test_backoff_strategy() {
         let strategy = RequestStrategy::ExponentialBackoff(3);
-        assert_eq!(strategy.test(None, None, 0), Outcome::Continue(Some(Duration::from_secs(1))));
-        assert_eq!(strategy.test(None, None, 1), Outcome::Continue(Some(Duration::from_secs(2))));
-        assert_eq!(strategy.test(None, None, 2), Outcome::Continue(Some(Duration::from_secs(4))));
+        assert_eq!(
+            strategy.test(None, None, 0),
+            Outcome::Continue(Some(Duration::from_secs(1)))
+        );
+        assert_eq!(
+            strategy.test(None, None, 1),
+            Outcome::Continue(Some(Duration::from_secs(2)))
+        );
+        assert_eq!(
+            strategy.test(None, None, 2),
+            Outcome::Continue(Some(Duration::from_secs(4)))
+        );
         assert_eq!(strategy.test(None, None, 3), Outcome::Stop);
         assert_eq!(strategy.test(None, None, 4), Outcome::Stop);
     }

@@ -24,7 +24,11 @@ pub struct CancelSubscription {
 
 impl CancelSubscription {
     pub fn new() -> CancelSubscription {
-        CancelSubscription { cancellation_details: None, invoice_now: None, prorate: None }
+        CancelSubscription {
+            cancellation_details: None,
+            invoice_now: None,
+            prorate: None,
+        }
     }
 }
 
@@ -40,7 +44,12 @@ pub struct SubscriptionSearchParams<'a> {
 
 impl<'a> SubscriptionSearchParams<'a> {
     pub fn new() -> SubscriptionSearchParams<'a> {
-        SubscriptionSearchParams { query: String::new(), limit: None, page: None, expand: &[] }
+        SubscriptionSearchParams {
+            query: String::new(),
+            limit: None,
+            page: None,
+            expand: &[],
+        }
     }
 }
 

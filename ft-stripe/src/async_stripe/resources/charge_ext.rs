@@ -81,6 +81,11 @@ pub struct ChargeSearchParams<'a> {
 
 impl<'a> ChargeSearchParams<'a> {
     pub fn new() -> ChargeSearchParams<'a> {
-        ChargeSearchParams { query: String::new(), limit: None, page: None, expand: &[] }
+        ChargeSearchParams {
+            query: String::new(),
+            limit: None,
+            page: None,
+            expand: &[],
+        }
     }
 }

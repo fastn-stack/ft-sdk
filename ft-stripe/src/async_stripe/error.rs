@@ -211,7 +211,6 @@ pub enum WebhookError {
     BadParse(#[from] serde_json::Error),
 }
 
-
 fn to_snakecase(camel: &str) -> String {
     let mut i = 0;
     let mut snake = String::new();

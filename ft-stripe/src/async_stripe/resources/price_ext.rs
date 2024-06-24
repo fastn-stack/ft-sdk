@@ -21,7 +21,12 @@ pub struct PriceSearchParams<'a> {
 
 impl<'a> PriceSearchParams<'a> {
     pub fn new() -> PriceSearchParams<'a> {
-        PriceSearchParams { query: String::new(), limit: None, page: None, expand: &[] }
+        PriceSearchParams {
+            query: String::new(),
+            limit: None,
+            page: None,
+            expand: &[],
+        }
     }
 }
 

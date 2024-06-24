@@ -152,7 +152,12 @@ pub struct CreateTaxId<'a> {
 
 impl<'a> CreateTaxId<'a> {
     pub fn new(type_: TaxIdTypeFilter, value: &'a str) -> Self {
-        CreateTaxId { expand: Default::default(), owner: Default::default(), type_, value }
+        CreateTaxId {
+            expand: Default::default(),
+            owner: Default::default(),
+            type_,
+            value,
+        }
     }
 }
 

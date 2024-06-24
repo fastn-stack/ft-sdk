@@ -466,7 +466,10 @@ pub struct UpdateRefund<'a> {
 
 impl<'a> UpdateRefund<'a> {
     pub fn new() -> Self {
-        UpdateRefund { expand: Default::default(), metadata: Default::default() }
+        UpdateRefund {
+            expand: Default::default(),
+            metadata: Default::default(),
+        }
     }
 }
 

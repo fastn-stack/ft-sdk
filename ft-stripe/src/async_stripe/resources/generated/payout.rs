@@ -308,7 +308,10 @@ pub struct UpdatePayout<'a> {
 
 impl<'a> UpdatePayout<'a> {
     pub fn new() -> Self {
-        UpdatePayout { expand: Default::default(), metadata: Default::default() }
+        UpdatePayout {
+            expand: Default::default(),
+            metadata: Default::default(),
+        }
     }
 }
 
