@@ -162,6 +162,8 @@ impl Client {
             .expect("Unable to extract string from params_buffer")
             .to_string();
 
+        ft_sdk::println!("url: {url}");
+
         let mut req = http::Request::builder()
             .method("POST")
             .uri(url)
@@ -212,8 +214,9 @@ impl Client {
 
         let mut headers = HeaderMap::new();
         headers.insert(
-            HeaderName::from_static("authorization"),
-            HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap(),
+            HeaderName::from_str("Authorization").unwrap(),
+            // HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap(),
+            HeaderValue::from_str(format!("Basic {}", self.secret_key).as_str()).unwrap(),
         );
 
         for (key, value) in self
