@@ -2,6 +2,10 @@
 mod stripe;
 
 mod request_strategy;
+
+#[cfg(feature = "events")]
+mod impl_webhook_events;
+
 pub use request_strategy::RequestStrategy;
 
 mod config {
