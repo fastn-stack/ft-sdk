@@ -215,8 +215,8 @@ impl Client {
         let mut headers = HeaderMap::new();
         headers.insert(
             HeaderName::from_str("Authorization").unwrap(),
-            // HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap(),
-            HeaderValue::from_str(format!("Basic {}", self.secret_key).as_str()).unwrap(),
+            HeaderValue::from_str(&format!("Bearer {}", self.secret_key)).unwrap(),
+            // HeaderValue::from_str(format!("Basic {}", self.secret_key).as_str()).unwrap(),
         );
 
         for (key, value) in self
