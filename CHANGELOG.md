@@ -2,11 +2,15 @@
 
 ## Unreleased
 
-- decoupled session store from `auth-provider` feature
-  `ft_sdk::session` module can be used to interact with the session store
+- Decoupled session store from `auth-provider` feature.
+    `ft_sdk::session` module can be used to interact with the session store
+- Move `ft_sdk::auth::SessionID` to `ft_sdk::SessionID`. 
+    The `ft_sdk::session` replaces `ft_sdk::auth::session`
 - `ft_sdk::utils::uuid_v8` function to generate uuids.
-- impl `Display` for `ft_sdk::PlainText`.
-- derive `Clone` for `ft_sdk::Cookie` and `ft_sdk::Host`
+- Impl `Display` for `ft_sdk::PlainText`.
+- Derive `Clone` for `ft_sdk::Cookie` and `ft_sdk::Host`
+- `ft_sdk::auth::provider::user_data_by_id` convenience function to get user
+  data by id.
 
 ## 14th June 2024
 
