@@ -23,6 +23,7 @@ pub mod utils;
 pub mod schema;
 pub mod session;
 
+pub use session::SessionID;
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
