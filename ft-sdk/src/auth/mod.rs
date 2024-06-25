@@ -28,6 +28,15 @@ impl ProviderData {
             .get(key)
             .and_then(|v| serde_json::from_value(v.clone()).ok())
     }
+
+    /// get the first verified or unverified email address
+    pub fn first_email (&self) -> String {
+        self
+        .verified_emails
+        .first()
+        .cloned()
+        .unwrap_or_else(|| self.emails.first().cloned().unwrap())
+    }
 }
 
 /// Get the currently logged-in user's userid. Returns `None` if the user is not logged in.
@@ -112,18 +121,7 @@ pub fn ud(
         Err(e) => return Err(e),
     };
 
-    let email = data
-        .verified_emails
-        .first()
-        .cloned()
-        .unwrap_or_else(|| data.emails.first().cloned().unwrap());
-
-    // if the user has no identity, they are not logged in
-    // a user with no identity exists when it is an imported user or some other app has created
-    // user details but they've not done auth stuff (login/signup)
-    if identity.is_none() {
-        return Ok(None);
-    }
+    let email = data.first_email();
 
     Ok(Some(ft_sys::UserData {
         id,
