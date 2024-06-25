@@ -300,10 +300,12 @@ pub fn login(
     session_id: Option<ft_sdk::session::SessionID>,
 ) -> Result<ft_sdk::session::SessionID, LoginError> {
     match session_id {
-        Some(session_id) => Ok(session_id.set_user_id(
-            conn, user_id.clone(),
+        Some(session_id) => Ok(session_id.set_user_id(conn, user_id.clone())?),
+        None => Ok(ft_sdk::session::SessionID::create(
+            conn,
+            Some(user_id.clone()),
+            None,
         )?),
-        None => Ok(ft_sdk::session::SessionID::new(conn, Some(user_id.clone()), None)?),
     }
 }
 

@@ -6,7 +6,7 @@ pub struct SessionID(pub String);
 impl SessionID {
     /// Create a new session entry with the given user ID.
     /// If the user ID is None, the session will be created without a user ID.
-    pub fn new(
+    pub fn create(
         conn: &mut ft_sdk::Connection,
         user_id: Option<ft_sdk::auth::UserId>,
         data: Option<serde_json::Value>,
@@ -49,13 +49,64 @@ impl SessionID {
         self.update_one(conn, Some(user_id), None)
     }
 
-    /// Set the data for the given session.
-    pub fn set_data(
+    /// Get the session data object.
+    /// Useful for fetching the entire session data in a single db call. Use
+    /// [get_key](SessionID::get_key) instead if you only need a single key
+    pub fn data(
         &self,
         conn: &mut ft_sdk::Connection,
-        data: serde_json::Value,
-    ) -> Result<SessionID, ft_sdk::Error> {
-        self.update_one(conn, None, Some(data))
+    ) -> Result<serde_json::Value, diesel::result::Error> {
+        use diesel::prelude::*;
+        use ft_sdk::schema::fastn_session;
+
+        let data = fastn_session::table
+            .select(fastn_session::data)
+            .filter(fastn_session::id.eq(self.0.as_str()))
+            .first::<String>(conn)?;
+
+        Ok(serde_json::from_str(&data).expect("session data must be serializable json object"))
+    }
+
+    pub fn get_key<S: AsRef<str>>(
+        &self,
+        conn: &mut ft_sdk::Connection,
+        k: S,
+    ) -> Result<serde_json::Value, GetKeyError> {
+        let data = self.data(conn).map_err(GetKeyError::DatabaseError)?;
+
+        let data = data
+            .as_object()
+            .expect("session data must be a serializable json object");
+
+        Ok(data
+            .get(k.as_ref())
+            .ok_or_else(|| GetKeyError::KeyNotFound(k.as_ref().to_string()))?
+            .clone())
+    }
+
+    pub fn set_key<S: AsRef<str>>(
+        &self,
+        conn: &mut ft_sdk::Connection,
+        k: S,
+        v: serde_json::Value,
+    ) -> Result<SessionID, diesel::result::Error> {
+        use diesel::prelude::*;
+        use ft_sdk::schema::fastn_session;
+
+        diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
+            .set(
+                fastn_session::data.eq(diesel::dsl::sql::<diesel::sql_types::Text>(
+                    format!(
+                        "json_set(data, '$.{key}', '{value}')",
+                        key = k.as_ref(),
+                        value = v
+                    )
+                    .as_str(),
+                )),
+            )
+            .execute(conn)?;
+
+        Ok(self.clone())
     }
 
     /// udpate the session entry
@@ -97,18 +148,6 @@ using `SessionID::new`"#
 
         Ok(self.clone())
     }
-
-    pub fn data(&self, conn: &mut ft_sdk::Connection) -> Result<serde_json::Value, ft_sdk::Error> {
-        use diesel::prelude::*;
-        use ft_sdk::schema::fastn_session;
-
-        let data = fastn_session::table
-            .select(fastn_session::data)
-            .filter(fastn_session::id.eq(self.0.as_str()))
-            .first::<String>(conn)?;
-
-        Ok(serde_json::from_str(&data)?)
-    }
 }
 
 #[derive(diesel::AsChangeset)]
@@ -116,4 +155,12 @@ using `SessionID::new`"#
 struct SessionData {
     data: Option<String>,
     uid: Option<i64>,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum GetKeyError {
+    #[error("key `{0}` not found in session data")]
+    KeyNotFound(String),
+    #[error("failed to query db: {0:?}")]
+    DatabaseError(diesel::result::Error),
 }
