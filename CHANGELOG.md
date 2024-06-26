@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Unreleased
+
+### ft-sdk
+
+- Added `ft_sdk::data::redirect()` (redirect and set cookie do not work well together, this can be used
+  to work around that issue).
+
 ## 14th June 2024
 
 ### ft-sdk: `0.1.12`
