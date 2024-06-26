@@ -4,7 +4,7 @@ pub type Result = std::result::Result<ft_sdk::chr::CHR<Output>, ft_sdk::Error>;
 pub enum Output {
     Json(serde_json::Value),
     Binary(Binary),
-    Redirect(String),
+    Redirect(String, http::HeaderValue),
 }
 
 #[derive(Debug)]
@@ -45,8 +45,9 @@ impl From<ft_sdk::chr::CHR<Output>>
         let response = match response {
             Output::Json(json_value) => ft_sdk::json(json_value),
             Output::Binary(binary) => binary_response(binary),
-            Output::Redirect(url) => Ok(http::Response::builder()
+            Output::Redirect(url, cookie) => Ok(http::Response::builder()
                 .status(200)
+                .header("Set-Cookie", cookie)
                 .body(format!("<meta http-equiv='refresh' content='0; url={url}' />").into())?),
         }?;
         ft_sdk::chr::chr(cookies, headers, response)
@@ -116,9 +117,9 @@ pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
 ///         .max_age(cookie::time::Duration::seconds(34560000))
 ///         .same_site(cookie::SameSite::Strict)
 ///         .build();
-/// Ok(ft_sdk::data::redirect("/").unwrap().with_cookie(cookie))
+/// ft_sdk::data::browser_redirect_with_cookie("/", cookie)
 /// ```
-pub fn redirect<S: AsRef<str>>(url: S) -> Result {
+pub fn browser_redirect_with_cookie<S: AsRef<str>>(url: S, c: http::HeaderValue) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Redirect(
         url.as_ref().to_string(),
     )))

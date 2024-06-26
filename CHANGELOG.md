@@ -4,8 +4,8 @@
 
 ### ft-sdk
 
-- Added `ft_sdk::data::redirect()` (redirect and set cookie do not work well together, this can be used
-  to work around that issue).
+- Added `ft_sdk::data::browser_redirect_with_cookie()`: redirect and set-cookie do
+  not work well together, this function be used to work around that issue.
 
 ## 14th June 2024
 
