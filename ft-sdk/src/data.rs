@@ -122,6 +122,7 @@ pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
 pub fn browser_redirect_with_cookie<S: AsRef<str>>(url: S, c: http::HeaderValue) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Redirect(
         url.as_ref().to_string(),
+        c,
     )))
 }
 
