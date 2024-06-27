@@ -1,4 +1,7 @@
+mod session_data;
+
 pub use ft_sys_shared::TRACKER_KEY;
+pub use session_data::SessionData;
 
 #[derive(Clone, Debug)]
 pub struct SessionID(pub String);
@@ -45,8 +48,24 @@ impl SessionID {
         &self,
         conn: &mut ft_sdk::Connection,
         user_id: ft_sdk::auth::UserId,
-    ) -> Result<SessionID, ft_sdk::Error> {
-        self.update_one(conn, Some(user_id), None)
+    ) -> Result<SessionID, diesel::result::Error> {
+        use diesel::prelude::*;
+        use ft_sdk::schema::fastn_session;
+
+        let affected =
+            diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
+                // None means that the field will not be updated
+                .set(fastn_session::uid.eq(Some(user_id.0)))
+                .execute(conn)?;
+
+        assert_eq!(
+            affected, 1,
+            r#"Expected to update exactly one session. SessionID is unique so
+there can't be more than one. Zero is not possible if the SessionID can only be constructed
+using `SessionID::new`"#
+        );
+
+        Ok(self.clone())
     }
 
     /// Get the session data object.
@@ -55,7 +74,7 @@ impl SessionID {
     pub fn data(
         &self,
         conn: &mut ft_sdk::Connection,
-    ) -> Result<serde_json::Value, diesel::result::Error> {
+    ) -> Result<ft_sdk::SessionData, diesel::result::Error> {
         use diesel::prelude::*;
         use ft_sdk::schema::fastn_session;
 
@@ -64,28 +83,15 @@ impl SessionID {
             .filter(fastn_session::id.eq(self.0.as_str()))
             .first::<String>(conn)?;
 
-        Ok(serde_json::from_str(&data).expect("session data must be serializable json object"))
+        let data: std::collections::HashMap<String, serde_json::Value> =
+            serde_json::from_str(&data).expect("session data must be serializable json object");
+
+        Ok(SessionData::new(self.0.as_str(), data))
     }
 
-    pub fn get_key<S: AsRef<str>, V: serde::de::DeserializeOwned>(
-        &self,
-        conn: &mut ft_sdk::Connection,
-        k: S,
-    ) -> Result<V, GetKeyError> {
-        let data = self.data(conn).map_err(GetKeyError::DatabaseError)?;
-
-        let data = data
-            .as_object()
-            .expect("session data must be a serializable json object");
-
-        let value = data
-            .get(k.as_ref())
-            .ok_or_else(|| GetKeyError::KeyNotFound(k.as_ref().to_string()))?
-            .clone();
-
-        serde_json::from_value(value).map_err(GetKeyError::SerdeError)
-    }
-
+    /// Directly store a key-value in the session store. This will overwrite the existing value for
+    /// the given key if it exists.
+    /// This is useful for storing a single key-value pair without fetching the entire session data
     pub fn set_key<S: AsRef<str>, V: serde::Serialize>(
         &self,
         conn: &mut ft_sdk::Connection,
@@ -112,53 +118,6 @@ impl SessionID {
 
         Ok(self.clone())
     }
-
-    /// udpate the session entry
-    fn update_one(
-        &self,
-        conn: &mut ft_sdk::Connection,
-        user_id: Option<ft_sdk::auth::UserId>,
-        data: Option<serde_json::Value>,
-    ) -> Result<SessionID, ft_sdk::Error> {
-        use diesel::prelude::*;
-        use ft_sdk::schema::fastn_session;
-
-        let mut new_data = SessionData {
-            data: None,
-            uid: None,
-        };
-
-        if let Some(d) = data {
-            let d = serde_json::to_string(&d)?;
-            new_data.data = Some(d);
-        }
-
-        if let Some(uid) = user_id {
-            new_data.uid = Some(uid.0);
-        }
-
-        let affected =
-            diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
-                // None means that the field will not be updated
-                .set(&new_data)
-                .execute(conn)?;
-
-        assert_eq!(
-            affected, 1,
-            r#"Expected to update exactly one session. SessionID is unique so
-there can't be more than one. Zero is not possible if the SessionID can only be constructed
-using `SessionID::new`"#
-        );
-
-        Ok(self.clone())
-    }
-}
-
-#[derive(diesel::AsChangeset)]
-#[diesel(table_name = ft_sdk::schema::fastn_session)]
-struct SessionData {
-    data: Option<String>,
-    uid: Option<i64>,
 }
 
 #[derive(thiserror::Error, Debug)]

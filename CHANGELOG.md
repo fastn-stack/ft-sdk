@@ -6,6 +6,8 @@
     `ft_sdk::session` module can be used to interact with the session store
 - Move `ft_sdk::auth::SessionID` to `ft_sdk::SessionID`. 
     The `ft_sdk::session` replaces `ft_sdk::auth::session`
+- add `ft_sdk::SessionData` which can only be constructed through
+  `SessionId::data()` and is used to interact with the session store.
 - `ft_sdk::utils::uuid_v8` function to generate uuids.
 - Impl `Display` for `ft_sdk::PlainText`.
 - Derive `Clone` for `ft_sdk::Cookie` and `ft_sdk::Host`
