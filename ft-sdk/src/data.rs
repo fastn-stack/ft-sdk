@@ -105,10 +105,10 @@ pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
     })))
 }
 
-/// Returns a redirect using 200 response. This is used for setting cookie while redirect.
+/// Set a cookie and redirect using 200 response.
 ///
 /// Adding cookie with redirect headers does not work across browsers. This helper creates
-/// a 200 OK response, with a meta-refresh tag to redirect the browser.
+/// a 200-OK response, with an HTML meta-refresh tag to redirect the browser.
 ///
 /// ```rust
 ///  let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, sid))
