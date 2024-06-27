@@ -11,6 +11,8 @@
 - Derive `Clone` for `ft_sdk::Cookie` and `ft_sdk::Host`
 - `ft_sdk::auth::provider::user_data_by_id` convenience function to get user
   data by id.
+- `ft_sdk::auth::ProviderData::first_email` to get the first email (verified or
+  unverified) of the user.
 
 ## 14th June 2024
 

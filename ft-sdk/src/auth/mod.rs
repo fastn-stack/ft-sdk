@@ -30,12 +30,11 @@ impl ProviderData {
     }
 
     /// get the first verified or unverified email address
-    pub fn first_email (&self) -> String {
-        self
-        .verified_emails
-        .first()
-        .cloned()
-        .unwrap_or_else(|| self.emails.first().cloned().unwrap())
+    pub fn first_email(&self) -> Option<String> {
+        self.verified_emails
+            .first()
+            .cloned()
+            .or_else(|| self.emails.first().cloned())
     }
 }
 
@@ -121,7 +120,9 @@ pub fn ud(
         Err(e) => return Err(e),
     };
 
-    let email = data.first_email();
+    let email = data
+        .first_email()
+        .expect("email provider must have an email");
 
     Ok(Some(ft_sys::UserData {
         id,
