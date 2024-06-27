@@ -67,44 +67,48 @@ impl SessionID {
         Ok(serde_json::from_str(&data).expect("session data must be serializable json object"))
     }
 
-    pub fn get_key<S: AsRef<str>>(
+    pub fn get_key<S: AsRef<str>, V: serde::de::DeserializeOwned>(
         &self,
         conn: &mut ft_sdk::Connection,
         k: S,
-    ) -> Result<serde_json::Value, GetKeyError> {
+    ) -> Result<V, GetKeyError> {
         let data = self.data(conn).map_err(GetKeyError::DatabaseError)?;
 
         let data = data
             .as_object()
             .expect("session data must be a serializable json object");
 
-        Ok(data
+        let value = data
             .get(k.as_ref())
             .ok_or_else(|| GetKeyError::KeyNotFound(k.as_ref().to_string()))?
-            .clone())
+            .clone();
+
+        serde_json::from_value(value).map_err(GetKeyError::SerdeError)
     }
 
-    pub fn set_key<S: AsRef<str>>(
+    pub fn set_key<S: AsRef<str>, V: serde::Serialize>(
         &self,
         conn: &mut ft_sdk::Connection,
         k: S,
-        v: serde_json::Value,
-    ) -> Result<SessionID, diesel::result::Error> {
+        v: V,
+    ) -> Result<SessionID, SetKeyError> {
         use diesel::prelude::*;
         use ft_sdk::schema::fastn_session;
+
+        let value = serde_json::to_string(&v).map_err(SetKeyError::SerdeError)?;
 
         diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
             .set(
                 fastn_session::data.eq(diesel::dsl::sql::<diesel::sql_types::Text>(
                     format!(
-                        "json_set(data, '$.{key}', '{value}')",
+                        "json_set(data, '$.{key}', json('{value}'))",
                         key = k.as_ref(),
-                        value = v
                     )
                     .as_str(),
                 )),
             )
-            .execute(conn)?;
+            .execute(conn)
+            .map_err(SetKeyError::DatabaseError)?;
 
         Ok(self.clone())
     }
@@ -163,4 +167,14 @@ pub enum GetKeyError {
     KeyNotFound(String),
     #[error("failed to query db: {0:?}")]
     DatabaseError(diesel::result::Error),
+    #[error("failed to deserialize session data: {0:?}")]
+    SerdeError(serde_json::Error),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum SetKeyError {
+    #[error("db error: {0:?}")]
+    DatabaseError(diesel::result::Error),
+    #[error("failed to serialize value: {0:?}")]
+    SerdeError(serde_json::Error),
 }
