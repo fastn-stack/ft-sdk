@@ -173,12 +173,12 @@ pub fn user_data_by_id(
     conn: &mut ft_sdk::Connection,
     provider_id: &str,
     user_id: &ft_sdk::UserId,
-) -> Result<(ft_sdk::auth::UserId, ft_sdk::auth::ProviderData), ft_sdk::auth::UserDataError> {
+) -> Result<ft_sdk::auth::ProviderData, ft_sdk::auth::UserDataError> {
     use diesel::prelude::*;
     use ft_sdk::auth::fastn_user;
 
-    let (id, data): (i64, String) = fastn_user::table
-        .select((fastn_user::id, fastn_user::data))
+    let data: String = fastn_user::table
+        .select(fastn_user::data)
         .filter(fastn_user::id.eq(user_id.0))
         .first(conn)?;
 
@@ -194,7 +194,7 @@ pub fn user_data_by_id(
     }
     let data = data.unwrap()?;
 
-    Ok((ft_sdk::UserId(id), data))
+    Ok(data)
 }
 
 #[derive(Debug, thiserror::Error)]
