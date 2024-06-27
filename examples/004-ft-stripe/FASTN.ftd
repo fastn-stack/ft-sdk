@@ -1,0 +1,7 @@
+-- import: fastn
+
+-- fastn.package: hello-world
+
+-- fastn.url-mappings:
+
+/wasm/* -> wasm+proxy://stripe_example.wasm/*

@@ -1,0 +1,66 @@
+[package]
+name = "ft-stripe"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+http.workspace = true
+ft-sdk.workspace = true
+bytes.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_urlencoded.workspace = true
+serde_qs.workspace = true
+#async-stripe.workspace = true
+serde_path_to_error.workspace = true
+http-types.workspace = true
+thiserror.workspace = true
+smart-default.workspace = true
+smol_str.workspace = true
+
+# webhook support
+chrono = { workspace = true, optional = true }
+hmac = { version = "0.12", optional = true }
+sha2 = { version = "0.10", optional = true }
+hex = { version = "0.4", optional = true }
+
+
+[features]
+default = ["full"]
+full = [
+    "checkout",
+    "billing",
+    "connect",
+    "fraud",
+    "issuing",
+    "orders",
+    "sigma",
+    "terminal",
+    "webhook-endpoints",
+    "tax-calculation",
+    "products",
+]
+
+# stripe feature groups
+checkout = ["billing"]
+billing = []
+connect = []
+fraud = []
+issuing = []
+orders = []
+sigma = []
+terminal = []
+webhook-endpoints = []
+tax-calculation = []
+products = []
+
+
+# deserialize events from webhooks
+webhook-events = ["events", "hmac", "sha2", "chrono", "hex"]
+events = []
+

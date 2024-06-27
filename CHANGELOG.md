@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### ft-sdk
+
 - Decoupled session store from `auth-provider` feature.
     `ft_sdk::session` module can be used to interact with the session store
 - Move `ft_sdk::auth::SessionID` to `ft_sdk::SessionID`. 
@@ -15,6 +17,8 @@
   data by id.
 - `ft_sdk::auth::ProviderData::first_email` to get the first email (verified or
   unverified) of the user.
+- Added `ft_sdk::data::browser_redirect_with_cookie()`: redirect and set-cookie do
+  not work well together, this function be used to work around that issue.
 
 ## 14th June 2024
 

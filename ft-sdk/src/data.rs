@@ -4,6 +4,7 @@ pub type Result = std::result::Result<ft_sdk::chr::CHR<Output>, ft_sdk::Error>;
 pub enum Output {
     Json(serde_json::Value),
     Binary(Binary),
+    Redirect(String, http::HeaderValue),
 }
 
 #[derive(Debug)]
@@ -16,7 +17,7 @@ pub struct Binary {
 pub(crate) fn binary_response(
     binary: Binary,
 ) -> std::result::Result<::http::Response<bytes::Bytes>, ft_sdk::Error> {
-    let mut response_builder = ::http::Response::builder()
+    let mut response_builder = http::Response::builder()
         .status(200)
         .header("Content-Type", binary.content_type.as_str());
 
@@ -44,12 +45,16 @@ impl From<ft_sdk::chr::CHR<Output>>
         let response = match response {
             Output::Json(json_value) => ft_sdk::json(json_value),
             Output::Binary(binary) => binary_response(binary),
+            Output::Redirect(url, cookie) => Ok(http::Response::builder()
+                .status(200)
+                .header("Set-Cookie", cookie)
+                .body(format!("<meta http-equiv='refresh' content='0; url={url}' />").into())?),
         }?;
         ft_sdk::chr::chr(cookies, headers, response)
     }
 }
 
-/// Creates a response that instructs browser to store in downloads the binary content provided.
+/// Creates a response that instructs the browser to store in downloads the binary content provided.
 ///
 /// # Parameters
 /// - `filename`: An optional `String` representing the name of the file. If provided, the response
@@ -98,6 +103,27 @@ pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
         content,
         content_type: content_type.as_ref().to_string(),
     })))
+}
+
+/// Set a cookie and redirect using 200 response.
+///
+/// Adding cookie with redirect headers does not work across browsers. This helper creates
+/// a 200-OK response, with an HTML meta-refresh tag to redirect the browser.
+///
+/// ```rust
+///  let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, sid))
+///         .domain(host.without_port())
+///         .path("/")
+///         .max_age(cookie::time::Duration::seconds(34560000))
+///         .same_site(cookie::SameSite::Strict)
+///         .build();
+/// ft_sdk::data::browser_redirect_with_cookie("/", cookie)
+/// ```
+pub fn browser_redirect_with_cookie<S: AsRef<str>>(url: S, c: http::HeaderValue) -> Result {
+    Ok(ft_sdk::chr::CHR::new(Output::Redirect(
+        url.as_ref().to_string(),
+        c,
+    )))
 }
 
 pub fn json<T: serde::Serialize>(t: T) -> Result {
