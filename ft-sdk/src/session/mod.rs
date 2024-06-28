@@ -44,7 +44,6 @@ impl SessionID {
     }
 
     /// Set the user ID for the given session.
-    /// this also clears existing session data
     pub fn set_user_id(
         &self,
         conn: &mut ft_sdk::Connection,
@@ -56,10 +55,7 @@ impl SessionID {
         let affected =
             diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
                 // None means that the field will not be updated
-                .set((
-                    fastn_session::uid.eq(Some(user_id.0)),
-                    fastn_session::data.eq("{}"),
-                ))
+                .set(fastn_session::uid.eq(Some(user_id.0)))
                 .execute(conn)?;
 
         assert_eq!(
