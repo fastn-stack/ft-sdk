@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct Host(pub String);
 
 impl ft_sdk::FromRequest for Host {

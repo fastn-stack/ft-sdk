@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct Cookie<const KEY: &'static str>(pub Option<String>);
 
 impl<const KEY: &'static str> std::fmt::Display for Cookie<KEY> {

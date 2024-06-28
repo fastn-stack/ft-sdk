@@ -1,12 +1,10 @@
 #[cfg(feature = "auth-provider")]
 pub mod provider;
 mod schema;
-mod session;
 mod utils;
 
 pub use ft_sys_shared::SESSION_KEY;
-pub use schema::{fastn_session, fastn_user};
-pub use session::SessionID;
+pub use schema::fastn_user;
 pub use utils::{user_data_by_query, Counter};
 
 #[derive(Clone, Debug)]
@@ -29,6 +27,14 @@ impl ProviderData {
         self.custom
             .get(key)
             .and_then(|v| serde_json::from_value(v.clone()).ok())
+    }
+
+    /// get the first verified or unverified email address
+    pub fn first_email(&self) -> Option<String> {
+        self.verified_emails
+            .first()
+            .cloned()
+            .or_else(|| self.emails.first().cloned())
     }
 }
 
@@ -115,10 +121,8 @@ pub fn ud(
     };
 
     let email = data
-        .verified_emails
-        .first()
-        .cloned()
-        .unwrap_or_else(|| data.emails.first().cloned().unwrap());
+        .first_email()
+        .expect("email provider must have an email");
 
     Ok(Some(ft_sys::UserData {
         id,

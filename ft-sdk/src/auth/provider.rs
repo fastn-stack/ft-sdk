@@ -169,6 +169,34 @@ pub fn user_data_by_identity(
     Ok((id, data))
 }
 
+pub fn user_data_by_id(
+    conn: &mut ft_sdk::Connection,
+    provider_id: &str,
+    user_id: &ft_sdk::UserId,
+) -> Result<ft_sdk::auth::ProviderData, ft_sdk::auth::UserDataError> {
+    use diesel::prelude::*;
+    use ft_sdk::auth::fastn_user;
+
+    let data: String = fastn_user::table
+        .select(fastn_user::data)
+        .filter(fastn_user::id.eq(user_id.0))
+        .first(conn)?;
+
+    let data: serde_json::Value = serde_json::from_str(&data)?;
+
+    let data = data
+        .as_object()
+        .and_then(|m| m.get(provider_id))
+        .map(|v| serde_json::from_value::<ft_sdk::auth::ProviderData>(v.clone()));
+
+    if data.is_none() {
+        return Err(ft_sdk::auth::UserDataError::NoDataFound);
+    }
+    let data = data.unwrap()?;
+
+    Ok(data)
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum CreateUserError {
     #[error("diesel error {0}")]
@@ -296,17 +324,16 @@ pub fn create_user(
 /// retrieved without a db call to show a user identifiable information.
 pub fn login(
     conn: &mut ft_sdk::Connection,
-    ft_sdk::UserId(user_id): &ft_sdk::UserId,
-    session_id: Option<ft_sdk::auth::SessionID>,
-) -> Result<ft_sdk::auth::SessionID, LoginError> {
+    user_id: &ft_sdk::UserId,
+    session_id: Option<ft_sdk::session::SessionID>,
+) -> Result<ft_sdk::session::SessionID, LoginError> {
     match session_id {
-        Some(session_id) if session_id.0 == "hello" => {
-            Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?)
-        }
-        Some(session_id) => Ok(ft_sdk::auth::session::set_user_id(
-            conn, session_id, *user_id,
+        Some(session_id) => Ok(session_id.set_user_id(conn, user_id.clone())?),
+        None => Ok(ft_sdk::session::SessionID::create(
+            conn,
+            Some(user_id.clone()),
+            None,
         )?),
-        None => Ok(ft_sdk::auth::session::create_with_user(conn, *user_id)?),
     }
 }
 
@@ -314,11 +341,10 @@ pub fn login(
 pub enum LoginError {
     #[error("db error: {0}")]
     DatabaseError(#[from] diesel::result::Error),
-    #[error("set user id for session {0}")]
-    SetUserIDError(#[from] ft_sdk::auth::session::SetUserIDError),
-
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
+    #[error("session error: {0}")]
+    SessionError(#[from] ft_sdk::Error),
 }
 
 // Normalise and save user details
