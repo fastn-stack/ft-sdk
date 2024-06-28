@@ -2,6 +2,11 @@
 
 ## 28th June 2024
 
+### ft-sdk: `0.1.14`
+
+- Due to mistake in previous release, the ft-sys and ft-sys-shared were not upgraded
+  to latest versions.
+
 ### ft-sdk: `0.1.13`
 
 - Decoupled session store from `auth-provider` feature. `ft_sdk::session` module can
