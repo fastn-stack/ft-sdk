@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 // This code is taken from [async-stripe](https://github.com/arlyon/async-stripe/tree/0a00d31894191ee0c6b4bda31e0d52d59e8e93b7)
 // Author: Alexander Lyon
 // License under either of:

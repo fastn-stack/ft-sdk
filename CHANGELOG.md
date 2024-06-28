@@ -1,24 +1,35 @@
 # ChangeLog
 
-## Unreleased
+## 28th June 2024
 
-### ft-sdk
+### ft-sdk: `0.1.13`
 
-- Decoupled session store from `auth-provider` feature.
-    `ft_sdk::session` module can be used to interact with the session store
-- Move `ft_sdk::auth::SessionID` to `ft_sdk::SessionID`. 
-    The `ft_sdk::session` replaces `ft_sdk::auth::session`
-- add `ft_sdk::SessionData` which can only be constructed through
-  `SessionId::data()` and is used to interact with the session store.
+- Decoupled session store from `auth-provider` feature. `ft_sdk::session` module can
+  be used to interact with the session store
+- Move `ft_sdk::auth::SessionID` to `ft_sdk::SessionID`. The `ft_sdk::session` replaces
+  `ft_sdk::auth::session`
+- add `ft_sdk::SessionData` which can only be constructed through `SessionId::data()`
+  and is used to interact with the session store.
 - `ft_sdk::utils::uuid_v8` function to generate uuids.
 - Impl `Display` for `ft_sdk::PlainText`.
 - Derive `Clone` for `ft_sdk::Cookie` and `ft_sdk::Host`
-- `ft_sdk::auth::provider::user_data_by_id` convenience function to get user
-  data by id.
-- `ft_sdk::auth::ProviderData::first_email` to get the first email (verified or
+- Added `ft_sdk::auth::provider::user_data_by_id` convenience function to get user data by id.
+- Added `ft_sdk::auth::ProviderData::first_email` to get the first email (verified or
   unverified) of the user.
+- Removed `ft_sdk::auth::provider::LoginError::SetUserIDError` and added
+  `ft_sdk::auth::provider::LoginError::SessionError`
 - Added `ft_sdk::data::browser_redirect_with_cookie()`: redirect and set-cookie do
   not work well together, this function be used to work around that issue.
+- Bumped `ft-sys` to `0.1.4`
+- Bumped `ft-sys-shared` to `0.1.3
+
+### ft-sys: `0.1.4`
+
+- Bumped `ft-sys-shared` to `0.1.3`
+
+### ft-sys-shared: `0.1.3`
+
+- Added `ft_sys_shared::TRACKER_KEY` constant
 
 ## 14th June 2024
 
