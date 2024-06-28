@@ -44,6 +44,7 @@ impl SessionID {
     }
 
     /// Set the user ID for the given session.
+    /// this also clears existing session data
     pub fn set_user_id(
         &self,
         conn: &mut ft_sdk::Connection,
@@ -55,7 +56,10 @@ impl SessionID {
         let affected =
             diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
                 // None means that the field will not be updated
-                .set(fastn_session::uid.eq(Some(user_id.0)))
+                .set((
+                    fastn_session::uid.eq(Some(user_id.0)),
+                    fastn_session::data.eq("{}"),
+                ))
                 .execute(conn)?;
 
         assert_eq!(
@@ -99,20 +103,20 @@ using `SessionID::new`"#
         v: V,
     ) -> Result<SessionID, SetKeyError> {
         use diesel::prelude::*;
+        use diesel::sql_types::Text;
         use ft_sdk::schema::fastn_session;
 
         let value = serde_json::to_string(&v).map_err(SetKeyError::SerdeError)?;
 
+        // json_set(data, '.<key>', json('<value>'))
+        let sql_set = diesel::dsl::sql::<Text>("json_set(data, ")
+            .bind::<Text, _>(format!("$.{}", k.as_ref()))
+            .sql(", json(")
+            .bind::<Text, _>(value)
+            .sql("))");
+
         diesel::update(fastn_session::table.filter(fastn_session::id.eq(self.0.as_str())))
-            .set(
-                fastn_session::data.eq(diesel::dsl::sql::<diesel::sql_types::Text>(
-                    format!(
-                        "json_set(data, '$.{key}', json('{value}'))",
-                        key = k.as_ref(),
-                    )
-                    .as_str(),
-                )),
-            )
+            .set(fastn_session::data.eq(sql_set))
             .execute(conn)
             .map_err(SetKeyError::DatabaseError)?;
 
