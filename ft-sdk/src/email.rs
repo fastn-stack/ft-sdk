@@ -1,7 +1,9 @@
 #[derive(Debug, thiserror::Error)]
 pub enum EmailError {
-    #[error("error enqueueing email: {0}")]
-    EnqueueError(String),
+    #[error("diesel: {0}")]
+    DatabaseError(#[from] diesel::result::Error),
+    #[error("serde: {0}")]
+    SerializeError(#[from] serde_json::Error),
 }
 
 /// add an email to the offline email queue, so that the email can be sent later. these emails
@@ -12,14 +14,18 @@ pub enum EmailError {
 /// * `conn`: a database connection.
 /// * `from` - (name, email)
 /// * `to` - Vec<(name, email)>
-/// * `subject` - email subject
-/// * `body_html` - email body in html format
-/// * `body_text` - email body in text format
+/// * `mid` - folder name inside of which `subject.txt`, `mail.html`, `mail.txt` files are stored
+/// * `mdata` - an object with keys that will be substituted in the templates (subject.txt,
+/// mail.html, mail.txt)
 /// * `reply_to` - (name, email)
 /// * `mkind` - mkind is any string, used for product analytics, etc. the value should be dot
 ///    separated, e.g. x.y.z to capture hierarchy. ideally you should use `marketing.` as the
 ///    prefix for all marketing related emails, and anything else for transaction mails, so your
 ///    mailer can use appropriate channels
+/// * `mountpoint` - the mountpoing is used for fetching template files. This allows for separating
+/// templates on per wasm app basis. The hierarchy in a fastn package will be as follows:
+/// - /emails/{mountpoint}/{mid}/{subject.txt, mail.html, mail.txt}
+/// Design your `mid` accordingly.
 /// * `cc`, `bcc` - Vec<(name, email)>
 ///
 /// Not on transaction: sometimes you would want to call this function from inside the transaction
@@ -27,17 +33,17 @@ pub enum EmailError {
 /// user creation transaction should also call this function. this is because the email should be
 /// only sent if user is actually created.
 #[allow(clippy::too_many_arguments)]
-pub fn send_email(
+pub fn send_email<V: serde::Serialize>(
     conn: &mut ft_sdk::Connection,
     from: (&str, &str),
     to: Vec<(&str, &str)>,
-    subject: &str,
-    body_html: &str,
-    body_text: &str,
+    mid: &str,
+    mdata: V,
     reply_to: Option<Vec<(&str, &str)>>,
     cc: Option<Vec<(&str, &str)>>,
     bcc: Option<Vec<(&str, &str)>>,
     mkind: &str,
+    mountpoint: ft_sdk::Mountpoint,
 ) -> Result<(), EmailError> {
     use diesel::prelude::*;
 
@@ -50,26 +56,27 @@ pub fn send_email(
     let bcc = bcc.map(to_comma_separated_str);
     ft_sdk::println!("to: {to}, reply_to: {reply_to:?}");
 
+    let mdata = serde_json::to_string(&mdata)?;
+
     let affected = diesel::insert_into(fastn_email_queue::table)
         .values((
             fastn_email_queue::from_address.eq(from.1),
             fastn_email_queue::from_name.eq(from.0),
             fastn_email_queue::to_address.eq(to),
-            fastn_email_queue::subject.eq(subject),
-            fastn_email_queue::body_html.eq(body_html),
-            fastn_email_queue::body_text.eq(body_text),
+            fastn_email_queue::mid.eq(mid),
+            fastn_email_queue::mdata.eq(mdata),
             fastn_email_queue::reply_to.eq(reply_to),
             fastn_email_queue::cc_address.eq(cc),
             fastn_email_queue::bcc_address.eq(bcc),
             fastn_email_queue::mkind.eq(mkind),
+            fastn_email_queue::wasm_mountpoint.eq(mountpoint.to_string()),
             fastn_email_queue::status.eq("pending"),
             fastn_email_queue::retry_count.eq(0),
             fastn_email_queue::created_at.eq(now),
             fastn_email_queue::updated_at.eq(now),
             fastn_email_queue::sent_at.eq(now),
         ))
-        .execute(conn)
-        .map_err(|e| EmailError::EnqueueError(e.to_string()))?;
+        .execute(conn)?;
 
     ft_sdk::println!(
         "email_queue_request_success: {} request registered",
@@ -82,6 +89,10 @@ pub fn send_email(
 diesel::table! {
     fastn_email_queue (id) {
         id -> Int8,
+        // folder name inside of which `subject.txt`, `mail.html`, `mail.txt` files are stored
+        mid -> Text,
+        // json string
+        mdata -> Text,
         from_name -> Text,
         from_address -> Text,
         reply_to     -> Nullable<Text>,
@@ -91,9 +102,6 @@ diesel::table! {
         to_address   -> Text,
         cc_address   -> Nullable<Text>,
         bcc_address  -> Nullable<Text>,
-        subject      -> Text,
-        body_text    -> Text,
-        body_html    -> Text,
         retry_count  -> Integer,
         created_at   -> Timestamptz,
         updated_at   -> Timestamptz,
@@ -103,6 +111,8 @@ diesel::table! {
         // marketing related emails, and anything else for transaction mails, so your mailer can use
         // appropriate channels
         mkind        -> Text,
+        // mountpoint stored as is, with / (e.g. /foo/)
+        wasm_mountpoint -> Text,
         // status: pending, sent, failed. sent and failed items may be removed from the queue every
         // so often
         status       -> Text,
