@@ -1,5 +1,15 @@
 # ChangeLog
 
+## Unreleased
+
+## 1st July 2024
+
+- Added `ft_sdk::processor::browser_redirect` which is designed to handle cases where 
+  cookies need to be set, followed by a redirection of the browser.
+
+### ft-sdk
+
+
 ## 28th June 2024
 
 ### ft-sdk: `0.1.14`
