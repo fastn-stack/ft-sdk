@@ -46,7 +46,9 @@ impl From<ft_sdk::chr::CHR<Output>>
                 // taken by the client.
                 .status(202)
                 .header("content-type", "text/html; charset=utf-8")
-                .body(format!("<meta http-equiv='refresh' content='0; url={url}' />").into())?)
+                .body(
+                    format!("<meta http-equiv='refresh' content='0; url={url}' /><link rel='canonical' href='{url}'>").into()
+                )?)
         }?;
         ft_sdk::chr::chr(cookies, headers, response)
     }
