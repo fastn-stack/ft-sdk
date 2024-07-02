@@ -190,5 +190,5 @@ impl VerifyBankAccount<'_> {
 pub enum DetachedSource {
     BankAccount(Deleted<BankAccountId>),
     Card(Deleted<CardId>),
-    Source(Source),
+    Source(Box<Source>),
 }

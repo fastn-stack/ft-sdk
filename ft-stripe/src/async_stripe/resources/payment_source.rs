@@ -39,7 +39,7 @@ pub enum PaymentSourceParams {
 #[serde(tag = "object", rename_all = "snake_case")]
 pub enum PaymentSource {
     Card(Card),
-    Source(Source),
+    Source(Box<Source>),
     Account(Account),
     BankAccount(BankAccount),
 }

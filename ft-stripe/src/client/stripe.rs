@@ -1,4 +1,5 @@
 use http_types::Url;
+use std::fmt::Display;
 
 use crate::client::request_strategy::RequestStrategy;
 use crate::error::{ErrorResponse, RequestError, StripeError};
@@ -71,7 +72,7 @@ impl Client {
         url: Option<String>,
     ) -> Self {
         let app_info = AppInfo { name, version, url };
-        self.headers.user_agent = format!("{} {}", USER_AGENT, app_info.to_string());
+        self.headers.user_agent = format!("{USER_AGENT} {app_info}");
         self.app_info = Some(app_info);
         self
     }
@@ -242,7 +243,7 @@ fn send<T: DeserializeOwned + 'static>(
     let status = response.status();
     let bytes = response.body();
     if !status.is_success() {
-        let mut err = serde_json::from_slice(&bytes).unwrap_or_else(|err| {
+        let mut err = serde_json::from_slice(bytes).unwrap_or_else(|err| {
             let mut req = ErrorResponse {
                 error: RequestError::default(),
             };
@@ -252,7 +253,7 @@ fn send<T: DeserializeOwned + 'static>(
         err.error.http_status = status.as_u16();
         Err(StripeError::from(err.error))?;
     }
-    let json_deserializer = &mut serde_json::Deserializer::from_slice(&bytes);
+    let json_deserializer = &mut serde_json::Deserializer::from_slice(bytes);
     serde_path_to_error::deserialize(json_deserializer).map_err(StripeError::from)
 }
 
@@ -263,17 +264,15 @@ pub struct AppInfo {
     pub version: Option<String>,
 }
 
-impl ToString for AppInfo {
-    /// Formats a plugin's 'App Info' into a string that can be added to the end of an User-Agent string.
-    ///
-    /// This formatting matches that of other libraries, and if changed then it should be changed everywhere.
-    fn to_string(&self) -> String {
-        match (&self.version, &self.url) {
+impl Display for AppInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match (&self.version, &self.url) {
             (Some(a), Some(b)) => format!("{}/{} ({})", &self.name, a, b),
             (Some(a), None) => format!("{}/{}", &self.name, a),
             (None, Some(b)) => format!("{} ({})", &self.name, b),
             _ => self.name.to_string(),
-        }
+        };
+        write!(f, "{}", str)
     }
 }
 

@@ -486,6 +486,7 @@ impl std::default::Default for CreateTokenAccountBusinessType {
 /// Otherwise, if you do not pass in a customer, this is a dictionary containing a user's credit card details, with the options described below.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(untagged, rename_all = "snake_case")]
+#[allow(clippy::large_enum_variant)]
 pub enum CreateTokenCardUnion {
     CreditCardSpecs(CreditCardSpecs),
     String(String),
