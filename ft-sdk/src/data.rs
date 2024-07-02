@@ -50,9 +50,7 @@ impl From<ft_sdk::chr::CHR<Output>>
                 .status(200)
                 .header(http::header::SET_COOKIE, cookie)
                 .header(http::header::CONTENT_TYPE, "text/html; charset=utf-8")
-                .body(
-                    format!("<meta http-equiv='refresh' content='0; url={url}' /><link rel='canonical' href='{url}'>").into()
-                )?),
+                .body(format!("<meta http-equiv='refresh' content='0; url={url}' />").into())?),
         }?;
         ft_sdk::chr::chr(cookies, headers, response)
     }
