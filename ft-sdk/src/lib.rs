@@ -19,11 +19,10 @@ pub mod form;
 pub mod from_request;
 pub mod processor;
 mod rng;
-pub mod utils;
 pub mod schema;
 pub mod session;
+pub mod utils;
 
-pub use session::{SessionID, SessionData};
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
@@ -39,6 +38,7 @@ pub use ft_sys::PgConnection;
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, http, println, ConnectionError, UserData};
 pub use rng::Rng;
+pub use session::{SessionData, SessionID};
 
 pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
 pub type FormError = std::collections::HashMap<String, String>;
