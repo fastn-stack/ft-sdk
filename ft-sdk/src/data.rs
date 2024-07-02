@@ -4,6 +4,7 @@ pub type Result = std::result::Result<ft_sdk::chr::CHR<Output>, ft_sdk::Error>;
 pub enum Output {
     Json(serde_json::Value),
     Binary(Binary),
+    /// This variant is intended for setting cookies and then redirecting the browser.
     Redirect(String, http::HeaderValue),
 }
 
@@ -47,8 +48,11 @@ impl From<ft_sdk::chr::CHR<Output>>
             Output::Binary(binary) => binary_response(binary),
             Output::Redirect(url, cookie) => Ok(http::Response::builder()
                 .status(200)
-                .header("Set-Cookie", cookie)
-                .body(format!("<meta http-equiv='refresh' content='0; url={url}' />").into())?),
+                .header(http::header::SET_COOKIE, cookie)
+                .header(http::header::CONTENT_TYPE, "text/html; charset=utf-8")
+                .body(
+                    format!("<meta http-equiv='refresh' content='0; url={url}' /><link rel='canonical' href='{url}'>").into()
+                )?),
         }?;
         ft_sdk::chr::chr(cookies, headers, response)
     }
