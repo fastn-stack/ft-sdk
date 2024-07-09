@@ -30,8 +30,8 @@ pub use email::{send_email, EmailError};
 pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Cookie, Hidden, Optional, Query, Required};
-pub use from_request::{Form, FromRequest, Host, Mountpoint, Path, WrappedFromRequest};
-pub use ft_derive::{data, form, processor, wrapped_processor};
+pub use from_request::{Form, Text, FromRequest, FromRawRequest, Host, Mountpoint, Path, WrappedFromRequest};
+pub use ft_derive::{data, form, processor, wrapped_processor, raw_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
