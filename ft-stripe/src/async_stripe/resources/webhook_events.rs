@@ -5,6 +5,7 @@
 //      - MIT License (LICENSE-MIT or https://opensource.org/licenses/MIT)
 
 use std::collections::HashMap;
+use hex::ToHex;
 
 #[cfg(feature = "webhook-events")]
 use hmac::{Hmac, Mac};
@@ -430,58 +431,101 @@ pub struct NotificationEventData {
 pub enum EventObject {
     Account(Account),
     #[serde(rename = "capability")]
+    #[cfg(feature = "webhook-events-all")]
     AccountCapabilities(AccountCapabilities),
+    #[cfg(feature = "webhook-events-all")]
     Application(Application),
+    #[cfg(feature = "webhook-events-all")]
     ApplicationFee(ApplicationFee),
     #[serde(rename = "fee_refund")]
+    #[cfg(feature = "webhook-events-all")]
     ApplicationFeeRefund(ApplicationFeeRefund),
+    #[cfg(feature = "webhook-events-all")]
     Balance(Balance),
+    #[cfg(feature = "webhook-events-all")]
     BankAccount(BankAccount),
     #[serde(rename = "billing_portal.configuration")]
+    #[cfg(feature = "webhook-events-all")]
     BillingPortalConfiguration(BillingPortalConfiguration),
+    #[cfg(feature = "webhook-events-all")]
     Card(Card),
+    #[cfg(feature = "webhook-events-all")]
     Charge(Charge),
     #[serde(rename = "checkout.session")]
+    #[cfg(feature = "webhook-events-all")]
     CheckoutSession(CheckoutSession),
+    #[cfg(feature = "webhook-events-all")]
     Coupon(Coupon),
+    #[cfg(feature = "webhook-events-all")]
     Customer(Customer),
+    #[cfg(feature = "webhook-events-all")]
     Discount(Discount),
+    #[cfg(feature = "webhook-events-all")]
     Dispute(Dispute),
+    #[cfg(feature = "webhook-events-all")]
     File(File),
+    #[cfg(feature = "webhook-events-all")]
     Invoice(Invoice),
     #[serde(rename = "invoiceitem")]
+    #[cfg(feature = "webhook-events-all")]
     InvoiceItem(InvoiceItem),
     #[serde(rename = "issuing.authorization")]
+    #[cfg(feature = "webhook-events-all")]
     IssuingAuthorization(IssuingAuthorization),
     #[serde(rename = "issuing.card")]
+    #[cfg(feature = "webhook-events-all")]
     IssuingCard(IssuingCard),
     #[serde(rename = "issuing.cardholder")]
+    #[cfg(feature = "webhook-events-all")]
     IssuingCardholder(IssuingCardholder),
     #[serde(rename = "issuing.dispute")]
+    #[cfg(feature = "webhook-events-all")]
     IssuingDispute(IssuingDispute),
     #[serde(rename = "issuing.transaction")]
+    #[cfg(feature = "webhook-events-all")]
     IssuingTransaction(IssuingTransaction),
+    #[cfg(feature = "webhook-events-all")]
     Mandate(Mandate),
+    #[cfg(feature = "webhook-events-all")]
     PaymentIntent(PaymentIntent),
+    #[cfg(feature = "webhook-events-all")]
     PaymentLink(PaymentLink),
+    #[cfg(feature = "webhook-events-all")]
     PaymentMethod(PaymentMethod),
+    #[cfg(feature = "webhook-events-all")]
     Payout(Payout),
+    #[cfg(feature = "webhook-events-all")]
     Person(Person),
+    #[cfg(feature = "webhook-events-all")]
     Plan(Plan),
+    #[cfg(feature = "webhook-events-all")]
     Price(Price),
+    #[cfg(feature = "webhook-events-all")]
     Product(Product),
+    #[cfg(feature = "webhook-events-all")]
     PromotionCode(PromotionCode),
+    #[cfg(feature = "webhook-events-all")]
     Quote(Quote),
+    #[cfg(feature = "webhook-events-all")]
     Refund(Refund),
+    #[cfg(feature = "webhook-events-all")]
     Review(Review),
+    #[cfg(feature = "webhook-events-all")]
     SetupIntent(SetupIntent),
+    #[cfg(any(feature = "webhook-events-all", feature = "webhook-subscription-events"))]
     Subscription(Subscription),
+    #[cfg(feature = "webhook-events-all")]
     SubscriptionSchedule(SubscriptionSchedule),
+    #[cfg(feature = "webhook-events-all")]
     TaxId(TaxId),
+    #[cfg(feature = "webhook-events-all")]
     TaxRate(TaxRate),
     #[serde(rename = "test_helpers.test_clock")]
+    #[cfg(feature = "webhook-events-all")]
     TestHelpersTestClock(TestHelpersTestClock),
+    #[cfg(feature = "webhook-events-all")]
     Topup(Topup),
+    #[cfg(feature = "webhook-events-all")]
     Transfer(Transfer),
 }
 
@@ -544,7 +588,9 @@ impl Webhook {
         secret: &str,
     ) -> Result<Event, WebhookError> {
         // Get Stripe signature from header
+        ft_sdk::println!("0***signature: sig: {sig}, secret: {secret}");
         let signature = Signature::parse(sig)?;
+        ft_sdk::println!("000***signature: {signature:?}");
         let signed_payload = format!("{}.{}", signature.t, payload);
 
         // Compute HMAC with the SHA256 hash function, using endpoint secret as key
@@ -552,11 +598,17 @@ impl Webhook {
         let mut mac =
             Hmac::<Sha256>::new_from_slice(secret.as_bytes()).map_err(|_| WebhookError::BadKey)?;
         mac.update(signed_payload.as_bytes());
+        let expected_sig = hex::encode(mac.clone().finalize().into_bytes());
+        ft_sdk::println!("01***expected_sig {expected_sig:?}");
+        let out = constant_time_eq(&expected_sig, signature.v1);
+        ft_sdk::println!("01***out {out}");
 
+        ft_sdk::println!("1***signature: {}", signature.v1);
         let sig = hex::decode(signature.v1).map_err(|_| WebhookError::BadSignature)?;
-
+        ft_sdk::println!("2***signature");
         mac.verify_slice(sig.as_slice())
             .map_err(|_| WebhookError::BadSignature)?;
+        ft_sdk::println!("3***signature");
 
         // Get current timestamp to compare to signature timestamp
         if (self.current_timestamp - signature.t).abs() > 300 {
@@ -565,6 +617,19 @@ impl Webhook {
 
         Ok(serde_json::from_str(payload)?)
     }
+}
+
+
+fn constant_time_eq(a: &str, b: &str) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+
+    let mut result = 0u8;
+    for (x, y) in a.bytes().zip(b.bytes()) {
+        result |= x ^ y;
+    }
+    result == 0
 }
 
 #[cfg(feature = "webhook-events")]
