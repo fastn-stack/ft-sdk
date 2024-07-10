@@ -1,17 +1,15 @@
 # ChangeLog
 
-## Unreleased
+## 10th July 2024
 
 ### ft-sdk: `0.1.16`
 
-- bumped ft-sys to 0.1.5
-- bumped ft-sys-shared to 0.1.4
+- bumped `ft-sys` to `0.1.5`
+- bumped `ft-sys-shared` to `0.1.4`
 
 ### ft-sys: `0.1.5`
 
-- bumped ft-sys-shared to 0.1.4
-
-## 10th July 2024
+- bumped `ft-sys-shared` to `0.1.4`
 
 ### ft-sys-shared: `0.1.4`
 
