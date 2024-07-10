@@ -63,4 +63,6 @@ products = []
 # deserialize events from webhooks
 webhook-events = ["events", "hmac", "sha2", "chrono", "hex"]
 events = []
+webhook-subscription-events = []
+webhook-events-all = []
 
