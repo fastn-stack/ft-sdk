@@ -31,7 +31,7 @@ pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialE
 #[cfg(feature = "field-extractors")]
 pub use from_request::{Cookie, Hidden, Optional, Query, Required};
 pub use from_request::{Form, Text, FromRequest, FromRawRequest, Host, Mountpoint, Path, WrappedFromRequest};
-pub use ft_derive::{data, form, processor, wrapped_processor, raw_processor};
+pub use ft_derive::{data, form, processor, wrapped_processor, raw_data};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
