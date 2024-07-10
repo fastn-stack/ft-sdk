@@ -42,9 +42,9 @@ serde_urlencoded = "0.7"
 include_dir = "0.7"
 rand_core = "0.6"
 uuid = { version = "1.8", default-features = false, features = ["v8"] }
-ft-sys-shared = { path = "ft-sys-shared", version = "0.1.2" }
+ft-sys-shared = { path = "ft-sys-shared", version = "0.1.4" }
 ft-derive = { path = "ft-derive", version = "0.1.1" }
-ft-sys = { path = "ft-sys", version = "0.1.3" }
+ft-sys = { path = "ft-sys", version = "0.1.5" }
 ft-sdk = { path = "ft-sdk", version = "0.1.12" }
 serde_qs = "0.10.1"
 serde_path_to_error = "0.1.8"

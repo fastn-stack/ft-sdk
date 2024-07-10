@@ -129,7 +129,8 @@ impl TryFrom<&SqliteRawValue> for Vec<u8> {
     fn try_from(v: &SqliteRawValue) -> Result<Self, Self::Error> {
         match v {
             SqliteRawValue::Blob(b) => Ok(b.clone()),
-            _ => Err("not a blob".to_string()),
+            SqliteRawValue::Text(b) => Ok(b.to_string().into_bytes()),
+            _ => Err(format!("not a blob or string, found: {v:?}")),
         }
     }
 }
