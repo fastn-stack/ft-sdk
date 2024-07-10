@@ -9,11 +9,11 @@ pub fn processor(
 }
 
 #[proc_macro_attribute]
-pub fn raw_processor(
+pub fn raw_data(
     _attr: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    handle(item, "processor", "raw_bytes_handler")
+    handle(item, "data", "raw_bytes_handler")
 }
 
 #[proc_macro_attribute]
