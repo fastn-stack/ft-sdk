@@ -1,7 +1,7 @@
 -- ftd.text: create your account!
 
 -- ftd.string-field $username: username
-$value: admin
+value: admin
 
 -- ftd.text-input:
 placeholder: enter username

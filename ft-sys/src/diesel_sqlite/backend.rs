@@ -86,6 +86,7 @@ impl diesel::backend::SqlDialect for Sqlite {
 
     type ExistsSyntax = diesel::backend::sql_dialect::exists_syntax::AnsiSqlExistsSyntax;
     type ArrayComparison = diesel::backend::sql_dialect::array_comparison::AnsiSqlArrayComparison;
+    type AliasSyntax = diesel::backend::sql_dialect::alias_syntax::AsAliasSyntax;
 }
 
 impl diesel::backend::DieselReserveSpecialization for Sqlite {}
