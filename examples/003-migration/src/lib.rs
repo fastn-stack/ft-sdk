@@ -16,20 +16,24 @@ fn create_account(
         return Err(username.error("username 'admin' is not allowed").into());
     }
 
-    // do a select query to see if username is already taken
-    if diesel::select(diesel::dsl::exists(
-        account_user::table.filter(account_user::username.eq(&username.0)),
-    ))
-    .get_result(&mut conn)?
-    {
-        return Err(username
-            .error(format!("username '{username}' already exists"))
-            .into());
-    }
+    let res = conn.transaction::<_, ft_sdk::Error, _>(|c| {
+        // do a select query to see if username is already taken
+        if diesel::select(diesel::dsl::exists(
+            account_user::table.filter(account_user::username.eq(&username.0)),
+        ))
+        .get_result(c)?
+        {
+            return Err(username
+                .error(format!("username '{username}' already exists"))
+                .into());
+        }
 
-    diesel::insert_into(account_user::table)
-        .values(account_user::username.eq(&username.0))
-        .execute(&mut conn)?;
+        diesel::insert_into(account_user::table)
+            .values(account_user::username.eq(&username.0))
+            .execute(c)?;
+
+        Ok(())
+    })?;
 
     ft_sdk::form::redirect(format!("/foo/?username={username}"))
 }

@@ -7,3 +7,13 @@
 ;; make sure the name of the wasm file is the same as the name in Cargo.toml
 ;; (with - replaced with _)
 /wasm/* -> wasm+proxy://migration.wasm/*
+
+
+-- fastn.migration: Initial
+
+CREATE TABLE "account_user"
+(
+    "id"       INTEGER PRIMARY KEY,
+    "username" TEXT NOT NULL
+);
+
