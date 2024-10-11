@@ -10,9 +10,8 @@ members = [
     "ft-sdk",
     "ft-sys",
     "ft-sys-shared",
-    "ft-stripe",
 ]
-exclude = ["examples", "f"]
+exclude = ["examples", "f", "ft-stripe"]
 resolver = "2"
 
 [workspace.package]
@@ -37,7 +36,7 @@ serde_json = "1"
 thiserror = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 cookie = "0.18"
-diesel = { version = "2.2", features = ["serde_json"] }
+diesel = { version = "2.2.4", features = ["serde_json"] }
 serde_urlencoded = "0.7"
 include_dir = "0.7"
 rand_core = "0.6"
@@ -46,11 +45,10 @@ ft-sys-shared = { path = "ft-sys-shared", version = "0.1.4" }
 ft-derive = { path = "ft-derive", version = "0.1.1" }
 ft-sys = { path = "ft-sys", version = "0.1.5" }
 ft-sdk = { path = "ft-sdk", version = "0.1.12" }
-serde_qs = "0.10.1"
-serde_path_to_error = "0.1.8"
-smart-default = "0.6.0"
-smol_str = "0.1"
-#async-stripe = { version = "0.31", features = ["runtime-async-std-surf"], default-features = false }
+serde_qs = "0.13"
+serde_path_to_error = "0.1"
+smart-default = "0.7"
+smol_str = "0.3"
 
 [workspace.dependencies.http-types]
 version = "2.12.0"

@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 11th Oct 2024
+
+### ft-sdk: `0.1.17`
+
+- bumped `ft-sys` to `0.1.5`
+
+### ft-sys: `0.1.6`
+
 ## 10th July 2024
 
 ### ft-sdk: `0.1.16`
