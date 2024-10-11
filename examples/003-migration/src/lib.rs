@@ -16,7 +16,7 @@ fn create_account(
         return Err(username.error("username 'admin' is not allowed").into());
     }
 
-    let _res = conn.transaction::<_, ft_sdk::Error, _>(|c| {
+    conn.transaction::<_, ft_sdk::Error, _>(|c| {
         // do a select query to see if username is already taken
         if diesel::select(diesel::dsl::exists(
             account_user::table.filter(account_user::username.eq(&username.0)),
