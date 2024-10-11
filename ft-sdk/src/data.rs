@@ -113,13 +113,13 @@ pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
 /// a 200-OK response, with an HTML meta-refresh tag to redirect the browser.
 ///
 /// ```rust
-///  let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, sid))
-///         .domain(host.without_port())
-///         .path("/")
+///  let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, "some-uniq-key"))
+///         .domain("127.0.0.1")
+///         .path("")
 ///         .max_age(cookie::time::Duration::seconds(34560000))
 ///         .same_site(cookie::SameSite::Strict)
 ///         .build();
-/// ft_sdk::data::browser_redirect_with_cookie("/", cookie)
+/// ft_sdk::data::browser_redirect_with_cookie("/", http::HeaderValue::from_str(cookie.to_string().as_str()).unwrap());
 /// ```
 pub fn browser_redirect_with_cookie<S: AsRef<str>>(url: S, c: http::HeaderValue) -> Result {
     Ok(ft_sdk::chr::CHR::new(Output::Redirect(

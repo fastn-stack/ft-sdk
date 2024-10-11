@@ -8,5 +8,5 @@ mod types;
 
 pub use backend::Sqlite;
 pub use connection::SqliteConnection;
-pub use sqlite_value::{Cursor, SqliteValue};
 pub(crate) use no_instrumentation::NoInstrumentation;
+pub use sqlite_value::{Cursor, SqliteValue};
