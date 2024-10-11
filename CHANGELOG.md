@@ -4,9 +4,11 @@
 
 ### ft-sdk: `0.1.17`
 
-- bumped `ft-sys` to `0.1.5`
+- bumped `ft-sys` to `0.1.6`
 
 ### ft-sys: `0.1.6`
+
+- upgraded `diesel` from `2.1` to `2.2`
 
 ## 10th July 2024
 
