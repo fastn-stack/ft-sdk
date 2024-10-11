@@ -19,12 +19,13 @@ authors = [
     "Amit Upadhyay <upadhyay@gmail.com>",
     "Arpita Jaiswal <arpita@fifthtry.com>",
     "Rithik Seth <rithik@fifthtry.com>",
+    "Siddhant Kumar <siddhantk232@gmail.com>",
 ]
 edition = "2021"
 description = "ft-sdk: Rust SDK for fastn and FifthTry Platform"
 license = "BSD-3-Clause"
 repository = "https://github.com/FifthTry/ft-sdk"
-homepage = "https://FifthTry.com"
+homepage = "https://www.FifthTry.com"
 
 
 [workspace.dependencies]
