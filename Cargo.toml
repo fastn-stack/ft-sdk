@@ -44,8 +44,8 @@ rand_core = "0.6"
 uuid = { version = "1.8", default-features = false, features = ["v8"] }
 ft-sys-shared = { path = "ft-sys-shared", version = "0.1.4" }
 ft-derive = { path = "ft-derive", version = "0.1.1" }
-ft-sys = { path = "ft-sys", version = "0.1.5" }
-ft-sdk = { path = "ft-sdk", version = "0.1.12" }
+ft-sys = { path = "ft-sys", version = "0.1.6" }
+ft-sdk = { path = "ft-sdk", version = "0.1.17" }
 serde_qs = "0.13"
 serde_path_to_error = "0.1"
 smart-default = "0.7"
