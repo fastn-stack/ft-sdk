@@ -1,7 +1,6 @@
 //! This crate can only be used when compiled to wasm, and wasm is run by
-//! [www.fifthtry.com](https://www.fifthtry.com), or by `clift`, the command
-//! line tool to use help developers build FifthTry Apps or when self-hosting
-//! FifthTry Apps.
+//! [www.fifthtry.com](https://www.fifthtry.com), or by [`fastn`](https://fastn.com), the command
+//! line tool to use help developers build FifthTry Apps or when self-hosting FifthTry Apps.
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
 #![cfg_attr(feature = "field-extractors", feature(adt_const_params))]
