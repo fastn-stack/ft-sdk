@@ -16,8 +16,11 @@ mod query;
 #[cfg(feature = "field-extractors")]
 mod required;
 pub mod wrapped_processor;
+mod text;
+pub mod raw_bytes_handler;
 
 pub use form::Form;
+pub use text::Text;
 pub use host::Host;
 pub use mountpoint::Mountpoint;
 pub use path::Path;
@@ -28,6 +31,11 @@ pub trait FromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;
 }
 
+
+pub trait FromRawRequest: Sized {
+    fn from_request(req: &http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::Error>;
+}
+
 impl FromRequest for chrono::DateTime<chrono::Utc> {
     fn from_request(_req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         Ok(ft_sdk::env::now())
@@ -36,6 +44,12 @@ impl FromRequest for chrono::DateTime<chrono::Utc> {
 
 impl FromRequest for ft_sdk::Connection {
     fn from_request(_req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
+        Ok(ft_sdk::default_connection()?)
+    }
+}
+
+impl FromRawRequest for ft_sdk::Connection {
+    fn from_request(_req: &http::Request<bytes::Bytes>) -> Result<Self, ft_sdk::Error> {
         Ok(ft_sdk::default_connection()?)
     }
 }
