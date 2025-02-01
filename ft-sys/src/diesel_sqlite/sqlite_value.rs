@@ -2,7 +2,7 @@ pub struct SqliteValue<'a> {
     pub(crate) raw_value: &'a ft_sys_shared::SqliteRawValue,
 }
 
-impl<'a> SqliteValue<'a> {
+impl SqliteValue<'_> {
     pub(crate) fn i32(&self) -> diesel::deserialize::Result<i32> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Integer(i) => Ok(*i as i32),
@@ -67,7 +67,11 @@ pub struct Row {
 impl diesel::row::RowSealed for Row {}
 
 impl<'a> diesel::row::Row<'a, ft_sys::diesel_sqlite::Sqlite> for Row {
-    type Field<'f> = Field<'f> where 'a: 'f, Self: 'f;
+    type Field<'f>
+        = Field<'f>
+    where
+        'a: 'f,
+        Self: 'f;
     type InnerPartialRow = Self;
 
     fn field_count(&self) -> usize {

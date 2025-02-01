@@ -76,7 +76,7 @@ where
     type Out = I::Out;
 }
 
-impl<'a, T> ContainsDefaultableValue for &'a T
+impl<T> ContainsDefaultableValue for &T
 where
     T: ContainsDefaultableValue,
 {

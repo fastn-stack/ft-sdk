@@ -19,7 +19,7 @@ impl ToSql<sql_types::Jsonb, Sqlite> for serde_json::Value {
     }
 }
 
-impl<'a> SqliteValue<'a> {
+impl SqliteValue<'_> {
     pub(crate) fn jsonb(&self) -> diesel::deserialize::Result<serde_json::Value> {
         match self.raw_value {
             ft_sys_shared::SqliteRawValue::Blob(i) => Ok(serde_json::from_slice(i)?),

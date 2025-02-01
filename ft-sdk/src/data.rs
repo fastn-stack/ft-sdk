@@ -64,7 +64,7 @@ impl From<ft_sdk::chr::CHR<Output>>
 ///   binary should be downloaded and this name will be used as the filename for the download.
 /// - `content`: A `bytes::Bytes` object containing the binary content.
 /// - `content_type`: An `AsRef<str>` (&str/String) specifying the MIME type of the content
-///    (e.g., `application/pdf`, `image/png`).
+///   (e.g., `application/pdf`, `image/png`).
 ///
 /// # Example
 ///
@@ -90,7 +90,7 @@ pub fn download<S1: AsRef<str>, S2: AsRef<str>>(
 /// # Parameters
 /// - `content`: A `bytes::Bytes` object containing the binary content.
 /// - `content_type`: An `AsRef<str>` (&str/String) specifying the MIME type of the content
-///    (e.g., `application/pdf`, `image/png`).
+///   (e.g., `application/pdf`, `image/png`).
 ///
 /// # Example
 ///

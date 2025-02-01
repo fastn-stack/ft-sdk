@@ -15,6 +15,7 @@ postgres = ["ft-sys/postgres", "diesel"]
 sqlite-default = ["sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 auth-provider = []
+debug = []
 field-extractors = []
 
 [dependencies]

@@ -4,6 +4,7 @@
 #![forbid(unsafe_code)]
 #![deny(unused_extern_crates)]
 #![cfg_attr(feature = "field-extractors", feature(adt_const_params))]
+#![cfg_attr(feature = "field-extractors", feature(unsized_const_params))]
 #![cfg_attr(feature = "field-extractors", allow(incomplete_features))]
 
 extern crate self as ft_sdk;

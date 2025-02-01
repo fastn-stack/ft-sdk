@@ -17,9 +17,9 @@ pub enum EmailError {
 /// * `body_text` - email body in text format
 /// * `reply_to` - (name, email)
 /// * `mkind` - mkind is any string, used for product analytics, etc. the value should be dot
-///    separated, e.g. x.y.z to capture hierarchy. ideally you should use `marketing.` as the
-///    prefix for all marketing related emails, and anything else for transaction mails, so your
-///    mailer can use appropriate channels
+///   separated, e.g. x.y.z to capture hierarchy. ideally you should use `marketing.` as the prefix
+///   for all marketing related emails, and anything else for transaction mails, so your mailer can
+///   use appropriate channels
 /// * `cc`, `bcc` - Vec<(name, email)>
 ///
 /// Not on transaction: sometimes you would want to call this function from inside the transaction
