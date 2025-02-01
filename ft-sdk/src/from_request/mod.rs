@@ -1,4 +1,6 @@
 #[cfg(feature = "field-extractors")]
+mod app_url;
+#[cfg(feature = "field-extractors")]
 mod cookie;
 mod form;
 pub mod handler;
@@ -7,8 +9,6 @@ mod headers;
 mod hidden;
 mod host;
 mod json;
-#[cfg(feature = "field-extractors")]
-mod mountpoint;
 #[cfg(feature = "field-extractors")]
 mod optional;
 mod path;
@@ -20,7 +20,7 @@ pub mod wrapped_processor;
 
 #[cfg(feature = "field-extractors")]
 pub use {
-    cookie::Cookie, hidden::Hidden, mountpoint::Mountpoint, optional::Optional, query::Query,
+    app_url::AppUrl, cookie::Cookie, hidden::Hidden, optional::Optional, query::Query,
     required::Required,
 };
 pub use {form::Form, host::Host, path::Path};
