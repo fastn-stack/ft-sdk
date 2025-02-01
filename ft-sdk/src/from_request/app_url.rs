@@ -24,8 +24,7 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for AppUrl<KEY> {
             Ok(Self(Some(
                 req.headers()
                     .get(APP_URL_HEADER)
-                    // we are unwrapping because this header must always be present.
-                    .unwrap()
+                    .expect("host always provides this header")
                     .to_str()?
                     .to_string(),
             )))
@@ -34,8 +33,7 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for AppUrl<KEY> {
                 serde_json::from_str::<std::collections::HashMap<String, String>>(
                     req.headers()
                         .get(APP_URLS_HEADER)
-                        // we are unwrapping because this header must always be present.
-                        .unwrap()
+                        .expect("host always provides this header")
                         .to_str()?,
                 )?
                 .remove(KEY),
