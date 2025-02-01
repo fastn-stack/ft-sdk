@@ -7,6 +7,7 @@ mod headers;
 mod hidden;
 mod host;
 mod json;
+#[cfg(feature = "field-extractors")]
 mod mountpoint;
 #[cfg(feature = "field-extractors")]
 mod optional;
@@ -17,12 +18,12 @@ mod query;
 mod required;
 pub mod wrapped_processor;
 
-pub use form::Form;
-pub use host::Host;
-pub use mountpoint::Mountpoint;
-pub use path::Path;
 #[cfg(feature = "field-extractors")]
-pub use {cookie::Cookie, hidden::Hidden, optional::Optional, query::Query, required::Required};
+pub use {
+    cookie::Cookie, hidden::Hidden, mountpoint::Mountpoint, optional::Optional, query::Query,
+    required::Required,
+};
+pub use {form::Form, host::Host, path::Path};
 
 pub trait FromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;

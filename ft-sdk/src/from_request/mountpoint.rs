@@ -12,18 +12,33 @@
 /// Then the `mountpoint` is `/foo/`.
 ///
 /// Implementation note: The `mountpoint` is passed by the host using `x-fastn-mountpoint` header.
-pub struct Mountpoint(pub String);
+pub struct Mountpoint<const KEY: &'static str = CURRENT_APP_KEY>(pub String);
 
-impl ft_sdk::FromRequest for Mountpoint {
-    fn from_request(req: &http::Request<serde_json::Value>) -> Result<Mountpoint, ft_sdk::Error> {
+pub const APP_URL_HEADER: &str = "x-fastn-app-url";
+pub const APP_URLS_HEADER: &str = "x-fastn-app-urls";
+pub const CURRENT_APP_KEY: &str = "current-app";
+
+impl<const KEY: &'static str> ft_sdk::FromRequest for Mountpoint<KEY> {
+    fn from_request(
+        req: &http::Request<serde_json::Value>,
+    ) -> Result<Mountpoint<KEY>, ft_sdk::Error> {
         // we are unwrapping because this header must always be present.
-        Ok(Self(
-            req.headers()
-                .get("x-fastn-mountpoint")
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string(),
-        ))
+        if KEY != CURRENT_APP_KEY {
+            Ok(Self(
+                req.headers()
+                    .get(APP_URL_HEADER)
+                    .unwrap()
+                    .to_str()?
+                    .to_string(),
+            ))
+        } else {
+            Ok(Self(
+                req.headers()
+                    .get(APP_URLS_HEADER)
+                    .unwrap()
+                    .to_str()?
+                    .to_string(),
+            ))
+        }
     }
 }
