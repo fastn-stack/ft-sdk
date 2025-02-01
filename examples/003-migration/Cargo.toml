@@ -7,8 +7,5 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-ft-sdk = { version = "0.1", path = "../../ft-sdk", features = ["field-extractors"] }
-http = "1"
-bytes = "1"
-include_dir = "0.7"
+ft-sdk = { version = "0.2", path = "../../ft-sdk", features = ["field-extractors"] }
 diesel = { version = "2", default-features = false }

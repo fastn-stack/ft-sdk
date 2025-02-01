@@ -1,6 +1,6 @@
 [package]
 name = "ft-sdk"
-version = "0.1.17"
+version = "0.2.0"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -30,10 +30,8 @@ http.workspace = true
 bytes.workspace = true
 serde_urlencoded.workspace = true
 diesel = { workspace = true, optional = true }
-include_dir.workspace = true
 rand_core.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-pretty_assertions = "1"
 cookie.workspace = true

@@ -11,7 +11,7 @@ opt-level = 's'
 crate-type = ["cdylib"]
 
 [dependencies]
-ft-sdk = { version = "0.1", path = "../../ft-sdk", features = ["postgres-default"], default-features = false }
+ft-sdk = { path = "../../ft-sdk", features = ["postgres-default"], default-features = false }
 http = "1"
 bytes = "1"
 chrono = { version = "0.4", features = ["serde"], default-features = false }
@@ -19,4 +19,3 @@ chrono = { version = "0.4", features = ["serde"], default-features = false }
 [dependencies.diesel]
 version = "2"
 default-features = false
-
