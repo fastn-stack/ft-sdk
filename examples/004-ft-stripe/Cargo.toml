@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-ft-sdk = { version = "0.2", path = "../../ft-sdk" }
+ft-sdk = { path = "../../ft-sdk" }
 http = "1"
 bytes = "1"
 ft-stripe = { version = "0.1", path = "../../ft-stripe", features = ["webhook-events"] }

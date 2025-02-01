@@ -7,4 +7,4 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-ft-sdk = { version = "0.2", path = "../../ft-sdk" }
+ft-sdk = { path = "../../ft-sdk" }
