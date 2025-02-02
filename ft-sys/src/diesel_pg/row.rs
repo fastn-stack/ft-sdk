@@ -6,7 +6,11 @@ pub struct PgRow {
 impl diesel::row::RowSealed for PgRow {}
 
 impl<'a> diesel::row::Row<'a, diesel::pg::Pg> for PgRow {
-    type Field<'f> = PgField<'f> where 'a: 'f, Self: 'f;
+    type Field<'f>
+        = PgField<'f>
+    where
+        'a: 'f,
+        Self: 'f;
     type InnerPartialRow = Self;
 
     fn field_count(&self) -> usize {

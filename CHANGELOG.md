@@ -6,6 +6,8 @@
 
 - BREAKING: renamed `ft_sdk::Mountpoint` -> `ft_sdk::AppUrl<KEY="current-app">`,
   the inner value is now an `Option<String>` instead of `String`.
+- Added `ft_sdk::AppUrl::{join, is_set}()`
+- Added `ft_sdk::Result<T>` alias to `Result<T, ft_sdk::Error>`.
 
 ## 11th Oct 2024
 

@@ -42,6 +42,7 @@ pub use session::{SessionData, SessionID};
 
 pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
 pub type FormError = std::collections::HashMap<String, String>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[cfg(all(feature = "sqlite-default", feature = "postgres-default"))]
 compile_error!("Both sqlite and postgres features are enabled. Only one should be enabled.");
@@ -53,7 +54,7 @@ pub type Connection = SqliteConnection;
 pub type Connection = PgConnection;
 
 #[cfg(any(feature = "sqlite-default", feature = "postgres-default"))]
-pub fn default_connection() -> Result<Connection, ConnectionError> {
+pub fn default_connection() -> std::result::Result<Connection, ConnectionError> {
     #[cfg(feature = "sqlite-default")]
     {
         default_sqlite()
@@ -67,7 +68,7 @@ pub fn default_connection() -> Result<Connection, ConnectionError> {
 
 /// Get a connection to the default postgres database.
 #[cfg(feature = "postgres")]
-pub fn default_pg() -> Result<PgConnection, ConnectionError> {
+pub fn default_pg() -> std::result::Result<PgConnection, ConnectionError> {
     PgConnection::connect("default")
 }
 
@@ -75,7 +76,7 @@ pub fn default_pg() -> Result<PgConnection, ConnectionError> {
 ///
 /// Most FifthTry Apps should use this function to get the default connection.
 #[cfg(feature = "sqlite")]
-pub fn default_sqlite() -> Result<SqliteConnection, ConnectionError> {
+pub fn default_sqlite() -> std::result::Result<SqliteConnection, ConnectionError> {
     let db = ft_sys::env::var("DB_FILE".to_string());
     let db_url = db.unwrap_or_else(|| "default".to_string());
 
@@ -84,7 +85,7 @@ pub fn default_sqlite() -> Result<SqliteConnection, ConnectionError> {
 
 pub(crate) fn json<T: serde::Serialize>(
     t: T,
-) -> Result<::http::Response<bytes::Bytes>, ft_sdk::Error> {
+) -> std::result::Result<::http::Response<bytes::Bytes>, ft_sdk::Error> {
     let d = match serde_json::to_string(&t) {
         Ok(d) => d,
         Err(e) => {
