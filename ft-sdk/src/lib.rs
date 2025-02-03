@@ -13,7 +13,6 @@ pub mod auth;
 pub mod chr;
 mod crypto;
 pub mod data;
-pub mod email;
 mod error;
 pub mod form;
 pub mod from_request;
@@ -35,7 +34,7 @@ pub use ft_derive::{data, form, processor, wrapped_processor};
 pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
-pub use ft_sys::{env, http, println, ConnectionError, UserData};
+pub use ft_sys::{email, env, http, println, ConnectionError, UserData};
 pub use ft_sys_shared::{Email, EmailAddress, EmailHandle};
 pub use rng::Rng;
 pub use session::{SessionData, SessionID};
