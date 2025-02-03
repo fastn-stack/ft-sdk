@@ -1,6 +1,6 @@
 [package]
 name = "ft-sys-shared"
-version = "0.1.5"
+version = "0.1.6"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true

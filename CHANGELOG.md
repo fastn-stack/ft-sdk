@@ -17,6 +17,10 @@
 
 ## 3rd Feb 2025
 
+### ft-sys-shared: unreleased (0.1.6)
+
+- Downgrade rusqlite to 0.31 as needed by fastn etc
+
 ### ft-sys-shared: unreleased (0.1.5)
 
 - added `ft_sys_shared::{Email, EmailAddress, EmailHandle}`

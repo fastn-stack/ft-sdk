@@ -48,7 +48,7 @@ ft-sdk = { path = "ft-sdk", version = "0.1.17" }
 
 
 [workspace.dependencies.rusqlite]
-version = "0.33"
+version = "0.31"  # DO NOT UPDATE THIS
 default-features = false
 
 
