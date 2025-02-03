@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 3rd Feb 2025
+## Unreleased
 
 ### ft-sdk: unreleased (0.2.1)
 
@@ -14,6 +14,8 @@
 ### ft-sys: unreleased (0.1.6)
 
 - bump `ft-sys-shared` to 0.1.5
+
+## 3rd Feb 2025
 
 ### ft-sys-shared: unreleased (0.1.5)
 
