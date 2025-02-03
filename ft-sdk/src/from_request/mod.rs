@@ -1,5 +1,6 @@
 #[cfg(feature = "field-extractors")]
 mod app_url;
+mod config;
 #[cfg(feature = "field-extractors")]
 mod cookie;
 mod form;
@@ -24,7 +25,7 @@ pub use {
     app_url::AppUrl, cookie::Cookie, hidden::Hidden, optional::Optional, query::Query,
     required::Required,
 };
-pub use {form::Form, host::Host, path::Path, scheme::Scheme};
+pub use {config::Config, form::Form, host::Host, path::Path, scheme::Scheme};
 
 pub trait FromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;

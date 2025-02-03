@@ -7,6 +7,7 @@
 - BREAKING: removed `ft_sdk::send_email()`, added `ft_sdk::email::{send, 
   cancel}()`. Not moving to 0.3 as 0.2 was just released an hour ago.
 - re-exported `ft_sys_shared::{Email, EmailAddress, EmailHandle}`
+- added `ft_sdk::Config` extractor
 - bump `ft-sys` to 0.1.7
 - bump `ft-sys-shared` to 0.1.5
 
