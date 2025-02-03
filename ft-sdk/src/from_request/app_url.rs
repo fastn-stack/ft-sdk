@@ -52,13 +52,18 @@ pub const CURRENT_APP_KEY: &str = "current-app";
 impl<const KEY: &'static str> AppUrl<KEY> {
     /// use this to combine app relative url with the app-url to construct full url
     /// TODO: this should actually return full URI, including the query params etc
-    pub fn join(&self, path: &str) -> ft_sdk::Result<String> {
+    pub fn join(
+        &self,
+        scheme: &ft_sdk::Scheme,
+        ft_sdk::Host(host): &ft_sdk::Host,
+        path: &str,
+    ) -> ft_sdk::Result<String> {
         let v = match self.0 {
             Some(ref v) => v,
             None => return Err(anyhow::anyhow!("app-url not found for {KEY}")),
         };
 
-        Ok(format!("{}{}/", v, path.trim_matches('/')))
+        Ok(format!("{scheme}://{host}{v}{}/", path.trim_matches('/')))
     }
 
     pub fn is_set(&self) -> bool {

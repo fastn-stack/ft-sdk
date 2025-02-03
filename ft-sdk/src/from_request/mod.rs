@@ -16,6 +16,7 @@ mod path;
 mod query;
 #[cfg(feature = "field-extractors")]
 mod required;
+mod scheme;
 pub mod wrapped_processor;
 
 #[cfg(feature = "field-extractors")]
@@ -23,7 +24,7 @@ pub use {
     app_url::AppUrl, cookie::Cookie, hidden::Hidden, optional::Optional, query::Query,
     required::Required,
 };
-pub use {form::Form, host::Host, path::Path};
+pub use {form::Form, host::Host, path::Path, scheme::Scheme};
 
 pub trait FromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;

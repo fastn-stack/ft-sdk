@@ -8,6 +8,7 @@
   the inner value is now an `Option<String>` instead of `String`.
 - Added `ft_sdk::AppUrl::{join, is_set}()`
 - Added `ft_sdk::Result<T>` alias to `Result<T, ft_sdk::Error>`.
+- Added `ft_sdk::Scheme` extractor.
 
 ## 11th Oct 2024
 
