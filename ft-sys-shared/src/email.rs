@@ -40,6 +40,15 @@ impl From<EmailAddress> for String {
     }
 }
 
+impl From<(String, String)> for EmailAddress {
+    fn from((name, email): (String, String)) -> Self {
+        EmailAddress {
+            name: Some(name),
+            email,
+        }
+    }
+}
+
 impl From<String> for EmailAddress {
     fn from(email: String) -> Self {
         let email = email.trim().to_string();
