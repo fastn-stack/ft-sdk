@@ -9,25 +9,25 @@
 - re-exported `ft_sys_shared::{Email, EmailAddress, EmailHandle}`
 - added `ft_sdk::Config` extractor
 - bump `ft-sys` to 0.1.7
-- bump `ft-sys-shared` to 0.1.5
+- bump `ft-sys-shared` to 0.1.7
 
 ### ft-sys: unreleased (0.1.6)
 
-- bump `ft-sys-shared` to 0.1.5
+- bump `ft-sys-shared` to 0.1.7
 
 ## 3rd Feb 2025
 
-### ft-sys-shared: unreleased (0.1.7)
+### ft-sys-shared: `0.1.7`
 
 - added feature `host-only`, should only be used by host implementations and not
   by wasm app builders.
 - `host-only`: `EmailHandle::new()`
 
-### ft-sys-shared: unreleased (0.1.6)
+### ft-sys-shared: `0.1.6`
 
 - Downgrade rusqlite to 0.31 as needed by fastn etc
 
-### ft-sys-shared: unreleased (0.1.5)
+### ft-sys-shared: `0.1.5`
 
 - added `ft_sys_shared::{Email, EmailAddress, EmailHandle}`
 
