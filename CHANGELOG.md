@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Unreleased
+## 3rd Feb 2025
 
 ### ft-sdk: `0.2.0`
 
