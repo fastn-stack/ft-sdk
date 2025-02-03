@@ -42,6 +42,7 @@
 /// also passes `x-fastn-app-urls` containing app-urls of all the apps that are installed, and this
 /// app has access to. Some apps can be installed but may not be accessible to this app due to
 /// security reasons.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AppUrl<const KEY: &'static str = CURRENT_APP_KEY>(pub Option<String>);
 
 pub const APP_URL_HEADER: &str = "x-fastn-app-url";
@@ -67,7 +68,7 @@ impl<const KEY: &'static str> AppUrl<KEY> {
 
 impl<const KEY: &'static str> ft_sdk::FromRequest for AppUrl<KEY> {
     fn from_request(req: &http::Request<serde_json::Value>) -> ft_sdk::Result<AppUrl<KEY>> {
-        let v = if KEY != CURRENT_APP_KEY {
+        let v = if KEY == CURRENT_APP_KEY {
             Some(
                 req.headers()
                     .get(APP_URL_HEADER)
