@@ -77,6 +77,9 @@ impl EmailHandle {
     pub fn new(handle: String) -> Self {
         Self(handle)
     }
+    pub fn inner(&self) -> &str {
+        &self.0
+    }
 }
 
 // fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {

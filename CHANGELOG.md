@@ -9,13 +9,17 @@
 - re-exported `ft_sys_shared::{Email, EmailAddress, EmailHandle}`
 - added `ft_sdk::Config` extractor
 - bump `ft-sys` to 0.1.7
-- bump `ft-sys-shared` to 0.1.7
+- bump `ft-sys-shared` to 0.1.8
 
 ### ft-sys: unreleased (0.1.6)
 
-- bump `ft-sys-shared` to 0.1.7
+- bump `ft-sys-shared` to 0.1.8
 
 ## 3rd Feb 2025
+
+### ft-sys-shared: `0.1.8`
+
+- `host-only`: `EmailHandle::inner()`
 
 ### ft-sys-shared: `0.1.7`
 
