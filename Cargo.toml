@@ -34,30 +34,21 @@ http = "1"
 bytes = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-thiserror = "1"
+thiserror = "2"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 cookie = "0.18"
 diesel = { version = "2.2.4", features = ["serde_json"] }
 serde_urlencoded = "0.7"
-include_dir = "0.7"
 rand_core = "0.6"
 uuid = { version = "1.8", default-features = false, features = ["v8"] }
-ft-sys-shared = { path = "ft-sys-shared", version = "0.1.4" }
+ft-sys-shared = { path = "ft-sys-shared", version = "0.1.5" }
 ft-derive = { path = "ft-derive", version = "0.1.1" }
 ft-sys = { path = "ft-sys", version = "0.1.6" }
 ft-sdk = { path = "ft-sdk", version = "0.1.17" }
-serde_qs = "0.13"
-serde_path_to_error = "0.1"
-smart-default = "0.7"
-smol_str = "0.3"
-
-[workspace.dependencies.http-types]
-version = "2.12.0"
-default-features = false
 
 
 [workspace.dependencies.rusqlite]
-version = "0.31"
+version = "0.33"
 default-features = false
 
 

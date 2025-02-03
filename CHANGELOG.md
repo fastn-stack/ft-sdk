@@ -2,6 +2,22 @@
 
 ## 3rd Feb 2025
 
+### ft-sdk: unreleased (0.2.1)
+
+- BREAKING: removed `ft_sdk::send_email()`, added `ft_sdk::email::{send, 
+  cancel}()`. Not moving to 0.3 as 0.2 was just released an hour ago.
+- re-exported `ft_sys_shared::{Email, EmailAddress, EmailHandle}`
+- bump `ft-sys` to 0.1.7
+- bump `ft-sys-shared` to 0.1.5
+
+### ft-sys: unreleased (0.1.6)
+
+- bump `ft-sys-shared` to 0.1.5
+
+### ft-sys-shared: unreleased (0.1.5)
+
+- added `ft_sys_shared::{Email, EmailAddress, EmailHandle}`
+
 ### ft-sdk: `0.2.0`
 
 - BREAKING: renamed `ft_sdk::Mountpoint` -> `ft_sdk::AppUrl<KEY="current-app">`,

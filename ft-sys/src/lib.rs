@@ -12,6 +12,7 @@ mod db_error;
 mod diesel_pg;
 #[cfg(feature = "sqlite")]
 mod diesel_sqlite;
+mod email;
 pub mod env;
 pub mod http;
 pub mod memory;

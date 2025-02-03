@@ -13,7 +13,7 @@ pub mod auth;
 pub mod chr;
 mod crypto;
 pub mod data;
-mod email;
+pub mod email;
 mod error;
 pub mod form;
 pub mod from_request;
@@ -26,7 +26,6 @@ pub mod utils;
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
-pub use email::{send_email, EmailError};
 pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{AppUrl, Cookie, Hidden, Optional, Query, Required};
@@ -37,6 +36,7 @@ pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{env, http, println, ConnectionError, UserData};
+pub use ft_sys_shared::{Email, EmailAddress, EmailHandle};
 pub use rng::Rng;
 pub use session::{SessionData, SessionID};
 
