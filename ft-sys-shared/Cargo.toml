@@ -1,6 +1,6 @@
 [package]
 name = "ft-sys-shared"
-version = "0.1.6"
+version = "0.1.7"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -11,6 +11,7 @@ homepage.workspace = true
 
 [features]
 rusqlite = ["dep:rusqlite"]
+host-only = []
 
 [dependencies]
 http.workspace = true

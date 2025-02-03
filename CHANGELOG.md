@@ -17,6 +17,12 @@
 
 ## 3rd Feb 2025
 
+### ft-sys-shared: unreleased (0.1.7)
+
+- added feature `host-only`, should only be used by host implementations and not
+  by wasm app builders.
+- `host-only`: `EmailHandle::new()`
+
 ### ft-sys-shared: unreleased (0.1.6)
 
 - Downgrade rusqlite to 0.31 as needed by fastn etc

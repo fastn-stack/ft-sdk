@@ -72,6 +72,13 @@ impl From<String> for EmailAddress {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EmailHandle(String);
 
+#[cfg(feature = "host-only")]
+impl EmailHandle {
+    pub fn new(handle: String) -> Self {
+        Self(handle)
+    }
+}
+
 // fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
 //     let len = x
 //         .iter()
