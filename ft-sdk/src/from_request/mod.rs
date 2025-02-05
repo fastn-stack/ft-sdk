@@ -1,4 +1,3 @@
-#[cfg(feature = "field-extractors")]
 mod app_url;
 mod config;
 #[cfg(feature = "field-extractors")]

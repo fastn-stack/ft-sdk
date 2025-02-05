@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Unreleased
+## 5th Feb 2024
 
 ### ft-sdk: unreleased (0.2.1)
 
