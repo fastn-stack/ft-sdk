@@ -2,7 +2,7 @@
 
 ## 5th Feb 2024
 
-### ft-sdk: unreleased (0.2.1)
+### ft-sdk: 0.2.1
 
 - BREAKING: removed `ft_sdk::send_email()`, added `ft_sdk::email::{send, 
   cancel}()`. Not moving to 0.3 as 0.2 was just released an hour ago.
@@ -11,7 +11,7 @@
 - bump `ft-sys` to 0.1.7
 - bump `ft-sys-shared` to 0.1.8
 
-### ft-sys: unreleased (0.1.6)
+### ft-sys: 0.1.7
 
 - bump `ft-sys-shared` to 0.1.8
 
