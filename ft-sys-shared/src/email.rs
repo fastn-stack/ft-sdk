@@ -3,28 +3,58 @@
 ///
 /// # Arguments
 ///
-/// * `from` - (name, email)
-/// * `to` - Vec<(name, email)>
-/// * `subject` - email subject
-/// * `body_html` - email body in html format
-/// * `body_text` - email body in text format
-/// * `reply_to` - (name, email)
-/// * `mkind` - mkind is any string, used for product analytics, etc. the value should be dot
-///   separated, e.g. x.y.z to capture hierarchy. ideally you should use `marketing.` as the prefix
-///   for all marketing related emails, and anything else for transaction mails, so your mailer can
+/// * `from` - `ft_sys_shared::EmailAddress`
+/// * `to`, `cc`, `bcc` - smallvec::SmallVec<`ft_sys_shared::EmailAddress`>
+/// * `mkind` - mkind is any string, used for product analytics, etc. the value should be dotted,
+///   e.g., x.y.z to capture hierarchy. ideally you should use `marketing.` as the prefix for all
+///   marketing related emails, and anything else for transaction mails, so your mailer can
 ///   use appropriate channels
-/// * `cc`, `bcc` - Vec<(name, email)>
+/// * `content`: `ft_sys_shared::EmailContent`
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Email {
     pub from: EmailAddress,
-    pub to: Vec<EmailAddress>,
-    pub subject: String,
-    pub body_html: String,
-    pub body_text: String,
-    pub reply_to: Option<Vec<EmailAddress>>,
-    pub cc: Option<Vec<EmailAddress>>,
-    pub bcc: Option<Vec<EmailAddress>>,
+    pub to: smallvec::SmallVec<EmailAddress, 1>,
+    pub reply_to: Option<smallvec::SmallVec<EmailAddress, 1>>,
+    pub cc: smallvec::SmallVec<EmailAddress, 0>,
+    pub bcc: smallvec::SmallVec<EmailAddress, 0>,
     pub mkind: String,
+    pub content: EmailContent,
+}
+
+/// The content of the email to send. Most fastn apps *should prefer* `FromMKind` as that allows end
+/// users of the fastn app to configure the email easily. The `Rendered` variant is allowed if you
+/// want to generate emails though some other mechanism.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum EmailContent {
+    Rendered {
+        subject: String,
+        body_html: String,
+        body_text: String,
+    },
+    /// You can pass context data to `FromKind` to be used when rendering the email content. The
+    /// `context` is passed to `<app-url>/mail/<mkind>/` as request data, and can be used by the
+    /// templating layer to include in the subject/html/text content of the mail.
+    FromMKind { context: Option<serde_json::Value> },
+}
+
+impl Default for EmailContent {
+    fn default() -> Self {
+        EmailContent::FromMKind { context: None }
+    }
+}
+
+impl Email {
+    pub fn new(from: EmailAddress, to: EmailAddress, mkind: &str, content: EmailContent) -> Self {
+        Email {
+            from,
+            to: smallvec::smallvec![to],
+            reply_to: None,
+            cc: smallvec::smallvec![],
+            bcc: smallvec::smallvec![],
+            mkind: mkind.to_string(),
+            content,
+        }
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -35,13 +65,16 @@ pub struct EmailAddress {
 
 impl From<EmailAddress> for String {
     fn from(x: EmailAddress) -> Self {
-        let name = x.name.unwrap_or_default();
-        format!("{} <{}>", name, x.email)
+        match x.name {
+            Some(name) => format!("{name} <{}>", x.email),
+            None => x.email,
+        }
     }
 }
 
 impl From<(String, String)> for EmailAddress {
     fn from((name, email): (String, String)) -> Self {
+        // todo: validate email?
         EmailAddress {
             name: Some(name),
             email,
@@ -74,9 +107,12 @@ pub struct EmailHandle(String);
 
 #[cfg(feature = "host-only")]
 impl EmailHandle {
+    #[doc(hidden)]
     pub fn new(handle: String) -> Self {
         Self(handle)
     }
+
+    #[doc(hidden)]
     pub fn inner(&self) -> &str {
         &self.0
     }

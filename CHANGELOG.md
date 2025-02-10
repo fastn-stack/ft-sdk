@@ -1,6 +1,29 @@
 # ChangeLog
 
-## 5th Feb 2024
+## 10th Feb 2025
+
+### f-sys: 0.3.0
+
+- breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0 (`ft-sdk` re-exports
+  `ft_sys_common::Email`)
+
+### f-sys: 0.2.0
+
+- breaking: upgraded `ft_sys_common` to 0.2.0 (`ft-sys` re-exports
+  `ft_sys_common::Email`)
+
+### ft-sys-common: 0.2.0
+
+- breaking: `ft_sys_common::Email`
+    - changed from `Vec<>` to `smallvec::SmallVec<>` for the fields
+    - removed `subject`, `body_html` and `body_text` fields, content is managed
+      via `ft_sys_common::EmailContent` now
+    - added `ft_sys_common::EmailContent`
+- added `ft_sys_common::Email::new()`
+- hidden docs for `host-only` feature
+  `ft_sys_common::EmailHandle::{new, inner}()`
+
+## 5th Feb 2025
 
 ### ft-sdk: 0.2.1
 

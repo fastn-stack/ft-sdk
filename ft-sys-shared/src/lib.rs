@@ -6,7 +6,7 @@
 mod email;
 mod sqlite;
 
-pub use email::{Email, EmailAddress, EmailHandle};
+pub use email::{Email, EmailAddress, EmailContent, EmailHandle};
 pub use sqlite::{SqliteRawValue, SqliteType};
 
 pub const SESSION_KEY: &str = "fastn-sid";

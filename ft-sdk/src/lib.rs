@@ -1,4 +1,4 @@
-//! This crate can only be used when compiled to wasm, and wasm is run by
+//! This crate can only be used when compiling to wasm, and wasm is run by
 //! [www.fifthtry.com](https://www.fifthtry.com), or by [`fastn`](https://fastn.com), the command
 //! line tool to use help developers build FifthTry Apps or when self-hosting FifthTry Apps.
 #![forbid(unsafe_code)]
