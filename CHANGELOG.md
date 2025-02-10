@@ -6,6 +6,7 @@
 
 - breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0 (`ft-sdk` re-exports
   `ft_sys_common::Email`)
+- added `ft_sdk::{WasmPackage, MainPackage}` "extractors"
 
 ### ft-sys: 0.2.0
 

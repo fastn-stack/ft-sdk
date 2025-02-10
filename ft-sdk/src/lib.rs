@@ -28,7 +28,9 @@ pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{AppUrl, Cookie, Hidden, Optional, Query, Required};
-pub use from_request::{Config, Form, FromRequest, Host, Path, Scheme, WrappedFromRequest};
+pub use from_request::{
+    Config, Form, FromRequest, Host, MainPackage, Path, Scheme, WasmPackage, WrappedFromRequest,
+};
 pub use ft_derive::{data, form, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;

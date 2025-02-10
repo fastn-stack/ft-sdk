@@ -11,6 +11,7 @@ mod host;
 mod json;
 #[cfg(feature = "field-extractors")]
 mod optional;
+mod package;
 mod path;
 #[cfg(feature = "field-extractors")]
 mod query;
@@ -24,7 +25,14 @@ pub use {
     app_url::AppUrl, cookie::Cookie, hidden::Hidden, optional::Optional, query::Query,
     required::Required,
 };
-pub use {config::Config, form::Form, host::Host, path::Path, scheme::Scheme};
+pub use {
+    config::Config,
+    form::Form,
+    host::Host,
+    package::{MainPackage, WasmPackage},
+    path::Path,
+    scheme::Scheme,
+};
 
 pub trait FromRequest: Sized {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error>;
