@@ -2,11 +2,14 @@
 //! system-level functionality. This crate should not be used directly, and
 //! `ft-sdk` should be used.
 #![deny(unused_extern_crates)]
+#![forbid(unsafe_code)]
+
+extern crate self as ft_sys_shared;
 
 mod email;
 mod sqlite;
 
-pub use email::{Email, EmailAddress, EmailContent, EmailHandle};
+pub use email::{Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail};
 pub use sqlite::{SqliteRawValue, SqliteType};
 
 pub const SESSION_KEY: &str = "fastn-sid";

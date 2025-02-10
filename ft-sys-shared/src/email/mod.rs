@@ -1,3 +1,5 @@
+mod sqlite;
+
 /// add an email to the offline email queue, so that the email can be sent later. these emails
 /// get picked up by the email worker.
 ///
@@ -26,15 +28,20 @@ pub struct Email {
 /// want to generate emails though some other mechanism.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum EmailContent {
-    Rendered {
-        subject: String,
-        body_html: String,
-        body_text: String,
-    },
+    Rendered(RenderedEmail),
     /// You can pass context data to `FromKind` to be used when rendering the email content. The
     /// `context` is passed to `<app-url>/mail/<mkind>/` as request data, and can be used by the
     /// templating layer to include in the subject/html/text content of the mail.
-    FromMKind { context: Option<serde_json::Value> },
+    FromMKind {
+        context: Option<serde_json::Value>,
+    },
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct RenderedEmail {
+    subject: String,
+    body_html: String,
+    body_text: String,
 }
 
 impl Default for EmailContent {
@@ -63,12 +70,13 @@ pub struct EmailAddress {
     pub email: String,
 }
 
-impl From<EmailAddress> for String {
-    fn from(x: EmailAddress) -> Self {
-        match x.name {
-            Some(name) => format!("{name} <{}>", x.email),
-            None => x.email,
-        }
+impl std::fmt::Display for EmailAddress {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self.name {
+            Some(ref name) => format!("{name} <{}>", self.email),
+            None => self.email.to_string(),
+        };
+        write!(f, "{}", str)
     }
 }
 
@@ -117,35 +125,3 @@ impl EmailHandle {
         &self.0
     }
 }
-
-// fn to_comma_separated_str(x: Vec<(&str, &str)>) -> String {
-//     let len = x
-//         .iter()
-//         .fold(0, |acc, (name, email)| acc + name.len() + email.len() + 5);
-//     x.iter()
-//         .fold(String::with_capacity(len), |mut acc, (name, email)| {
-//             if !acc.is_empty() {
-//                 acc.push_str(", ");
-//             };
-//             acc.push_str(name);
-//             acc.push_str(" <");
-//             acc.push_str(email);
-//             acc.push('>');
-//             acc
-//         })
-// }
-//
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn to_comma_separated_str() {
-//         assert_eq!(
-//             super::to_comma_separated_str(vec![("Alice", "alice@a.com")]),
-//             "Alice <alice@a.com>"
-//         );
-//         assert_eq!(
-//             super::to_comma_separated_str(vec![("Alice", "alice@a.com"), ("Bob", "bob@a.com")]),
-//             "Alice <alice@a.com>, Bob <bob@a.com>"
-//         );
-//     }
-// }

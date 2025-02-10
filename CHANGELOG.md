@@ -19,7 +19,7 @@
     - changed from `Vec<>` to `smallvec::SmallVec<>` for the fields
     - removed `subject`, `body_html` and `body_text` fields, content is managed
       via `ft_sys_common::EmailContent` now
-    - added `ft_sys_common::EmailContent`
+    - added `ft_sys_common::{EmailContent, RenderedEmail}`
 - added `ft_sys_common::Email::new()`
 - hidden docs for `host-only` feature
   `ft_sys_common::EmailHandle::{new, inner}()`
