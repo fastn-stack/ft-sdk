@@ -2,12 +2,12 @@
 
 ## 10th Feb 2025
 
-### f-sys: 0.3.0
+### ft-sdk: 0.3.0
 
 - breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0 (`ft-sdk` re-exports
   `ft_sys_common::Email`)
 
-### f-sys: 0.2.0
+### ft-sys: 0.2.0
 
 - breaking: upgraded `ft_sys_common` to 0.2.0 (`ft-sys` re-exports
   `ft_sys_common::Email`)
