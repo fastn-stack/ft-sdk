@@ -12,7 +12,14 @@ pub struct EmailBind {
 }
 
 impl ft_sys_shared::Email {
-    pub fn to_bind(self, rendered: ft_sys_shared::RenderedEmail) -> EmailBind {
+    pub fn to_bind(self) -> EmailBind {
+        let rendered = match self.content {
+            ft_sys_shared::EmailContent::Rendered(rendered) => rendered,
+            ft_sys_shared::EmailContent::FromMKind { .. } => {
+                unreachable!("must be pre-rendered")
+            }
+        };
+
         EmailBind {
             from_name: ft_sys_shared::SqliteRawValue::Text(self.from.name.unwrap_or_default()),
             from_address: ft_sys_shared::SqliteRawValue::Text(self.from.email),
