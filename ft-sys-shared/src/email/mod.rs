@@ -3,6 +3,18 @@ mod sqlite;
 #[cfg(feature = "host-only")]
 pub use sqlite::EmailBind;
 
+#[derive(Debug, thiserror::Error)]
+pub enum SendEmailError {
+    #[error("email not allowed: {0}")]
+    EmailNotAllowed(String),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CancelEmailError {
+    #[error("unknown handle")]
+    UnknownHandle,
+}
+
 /// add an email to the offline email queue, so that the email can be sent later. these emails
 /// get picked up by the email worker.
 ///

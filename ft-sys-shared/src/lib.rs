@@ -12,7 +12,9 @@ mod sqlite;
 
 #[cfg(feature = "host-only")]
 pub use email::EmailBind;
-pub use email::{Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail};
+pub use email::{
+    CancelEmailError, Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail, SendEmailError,
+};
 pub use sqlite::{SqliteRawValue, SqliteType};
 
 pub const SESSION_KEY: &str = "fastn-sid";

@@ -5,7 +5,7 @@
 ### ft-sdk: 0.3.0
 
 - breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0 (`ft-sdk` re-exports
-  `ft_sys_common::Email`)
+  `ft_sys_common::Email` etc)
 - added `ft_sdk::{WasmPackage, MainPackage}` "extractors"
 
 ### ft-sys: 0.2.0
@@ -19,7 +19,8 @@
     - changed from `Vec<>` to `smallvec::SmallVec<>` for the fields
     - removed `subject`, `body_html` and `body_text` fields, content is managed
       via `ft_sys_common::EmailContent` now
-    - added `ft_sys_common::{EmailContent, RenderedEmail}`
+    - added `ft_sys_common::{EmailContent, RenderedEmail, SendEmailError}`
+    -
 - added `ft_sys_common::Email::new()`
 - hidden docs for `host-only` feature
   `ft_sys_common::EmailHandle::{new, inner}()`
