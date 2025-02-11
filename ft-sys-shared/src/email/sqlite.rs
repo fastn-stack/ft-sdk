@@ -1,13 +1,13 @@
 pub struct EmailBind {
     pub from_name: ft_sys_shared::SqliteRawValue,
     pub from_address: ft_sys_shared::SqliteRawValue,
-    pub to: ft_sys_shared::SqliteRawValue,
+    pub to_address: ft_sys_shared::SqliteRawValue,
     pub subject: ft_sys_shared::SqliteRawValue,
     pub body_html: ft_sys_shared::SqliteRawValue,
     pub body_text: ft_sys_shared::SqliteRawValue,
     pub reply_to: ft_sys_shared::SqliteRawValue,
-    pub cc: ft_sys_shared::SqliteRawValue,
-    pub bcc: ft_sys_shared::SqliteRawValue,
+    pub cc_address: ft_sys_shared::SqliteRawValue,
+    pub bcc_address: ft_sys_shared::SqliteRawValue,
     pub mkind: ft_sys_shared::SqliteRawValue,
 }
 
@@ -23,7 +23,7 @@ impl ft_sys_shared::Email {
         EmailBind {
             from_name: ft_sys_shared::SqliteRawValue::Text(self.from.name.unwrap_or_default()),
             from_address: ft_sys_shared::SqliteRawValue::Text(self.from.email),
-            to: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.to)),
+            to_address: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.to)),
             subject: ft_sys_shared::SqliteRawValue::Text(rendered.subject),
             body_html: ft_sys_shared::SqliteRawValue::Text(rendered.body_html),
             body_text: ft_sys_shared::SqliteRawValue::Text(rendered.body_text),
@@ -32,8 +32,8 @@ impl ft_sys_shared::Email {
                 .map(to_comma_separated_str)
                 .map(ft_sys_shared::SqliteRawValue::Text)
                 .unwrap_or(ft_sys_shared::SqliteRawValue::Null),
-            cc: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.cc)),
-            bcc: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.bcc)),
+            cc_address: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.cc)),
+            bcc_address: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.bcc)),
             mkind: ft_sys_shared::SqliteRawValue::Text(self.mkind),
         }
     }
