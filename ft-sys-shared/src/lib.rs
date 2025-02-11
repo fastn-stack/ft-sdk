@@ -4,11 +4,14 @@
 #![deny(unused_extern_crates)]
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "host-only")]
 extern crate self as ft_sys_shared;
 
 mod email;
 mod sqlite;
 
+#[cfg(feature = "host-only")]
+pub use email::EmailBind;
 pub use email::{Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail};
 pub use sqlite::{SqliteRawValue, SqliteType};
 

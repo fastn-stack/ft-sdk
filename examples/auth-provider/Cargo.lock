@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "ft-sdk"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -232,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "ft-sys"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "chrono",
@@ -430,6 +430,9 @@ name = "smallvec"
 version = "2.0.0-alpha.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51d44cfb396c3caf6fbfd0ab422af02631b69ddd96d2eff0b0f0724f9024051b"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "strsim"

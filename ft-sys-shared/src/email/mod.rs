@@ -1,17 +1,22 @@
+#[cfg(feature = "host-only")]
 mod sqlite;
+#[cfg(feature = "host-only")]
+pub use sqlite::EmailBind;
 
 /// add an email to the offline email queue, so that the email can be sent later. these emails
 /// get picked up by the email worker.
 ///
 /// # Arguments
 ///
-/// * `from` - `ft_sys_shared::EmailAddress`
-/// * `to`, `cc`, `bcc` - smallvec::SmallVec<`ft_sys_shared::EmailAddress`>
+/// * `from` - [EmailAddress]
+/// * `to` - [smallvec::SmallVec<EmailAddress, 1>]
+/// * `cc`, `bcc` - [smallvec::SmallVec<EmailAddress, 0>]
 /// * `mkind` - mkind is any string, used for product analytics, etc. the value should be dotted,
 ///   e.g., x.y.z to capture hierarchy. ideally you should use `marketing.` as the prefix for all
 ///   marketing related emails, and anything else for transaction mails, so your mailer can
-///   use appropriate channels
-/// * `content`: `ft_sys_shared::EmailContent`
+///   use appropriate channels. `/<app-url>/mail/<mkind>/` is the endpoint where the email content
+///   is fetched from.
+/// * `content`: [EmailContent]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Email {
     pub from: EmailAddress,
@@ -23,15 +28,16 @@ pub struct Email {
     pub content: EmailContent,
 }
 
-/// The content of the email to send. Most fastn apps *should prefer* `FromMKind` as that allows end
-/// users of the fastn app to configure the email easily. The `Rendered` variant is allowed if you
-/// want to generate emails though some other mechanism.
+/// The content of the email to send. Most fastn apps *should prefer* [EmailContent::FromMKind] as
+/// that allows end users of the fastn app to configure the email easily. The
+/// [EmailContent::Rendered] variant is allowed if you want to generate emails though some other
+/// mechanism.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum EmailContent {
     Rendered(RenderedEmail),
-    /// You can pass context data to `FromKind` to be used when rendering the email content. The
-    /// `context` is passed to `<app-url>/mail/<mkind>/` as request data, and can be used by the
-    /// templating layer to include in the subject/html/text content of the mail.
+    /// You can pass context data to [EmailContent::FromMKind] to be used when rendering the email
+    /// content. The `context` is passed to `/<app-url>/mail/<mkind>/` as request data, and can be
+    /// used by the templating layer to include in the subject/html/text content of the mail.
     FromMKind {
         context: Option<serde_json::Value>,
     },
@@ -108,7 +114,7 @@ impl From<String> for EmailAddress {
     }
 }
 
-/// `ft_sdk::send_mail()` returns an EmailHandle, which can be used to cancel the email during the
+/// [ft_sdk::send_mail()] returns an [EmailHandle], which can be used to cancel the email during the
 /// web request. this is useful in case you want to do a cleanup in case a transaction fails, etc.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EmailHandle(String);
