@@ -40,6 +40,24 @@ pub struct Email {
     pub content: EmailContent,
 }
 
+impl Email {
+    pub fn merge_context(
+        &self,
+        context: Option<serde_json::Map<String, serde_json::Value>>,
+    ) -> Result<serde_json::Map<String, serde_json::Value>, serde_json::Error> {
+        let mut context = context.unwrap_or_default();
+        context.insert("from".to_string(), serde_json::to_value(&self.from)?);
+        context.insert("to".to_string(), serde_json::to_value(&self.to)?);
+        if let Some(ref reply_to) = self.reply_to {
+            context.insert("reply_to".to_string(), serde_json::to_value(reply_to)?);
+        }
+        context.insert("cc".to_string(), serde_json::to_value(&self.cc)?);
+        context.insert("bcc".to_string(), serde_json::to_value(&self.bcc)?);
+        context.insert("mkind".to_string(), serde_json::to_value(&self.mkind)?);
+        Ok(context)
+    }
+}
+
 /// The content of the email to send. Most fastn apps *should prefer* [EmailContent::FromMKind] as
 /// that allows end users of the fastn app to configure the email easily. The
 /// [EmailContent::Rendered] variant is allowed if you want to generate emails though some other
@@ -51,7 +69,7 @@ pub enum EmailContent {
     /// content. The `context` is passed to `/<app-url>/mail/<mkind>/` as request data, and can be
     /// used by the templating layer to include in the subject/html/text content of the mail.
     FromMKind {
-        context: Option<serde_json::Value>,
+        context: Option<serde_json::Map<String, serde_json::Value>>,
     },
 }
 
