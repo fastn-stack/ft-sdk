@@ -39,6 +39,13 @@ impl Request {
             body: msg.into_bytes(),
         }
     }
+
+    pub fn host(&self) -> Option<&str> {
+        self.headers
+            .iter()
+            .find(|(k, _)| k.to_ascii_lowercase() == "host")
+            .map(|(_, v)| std::str::from_utf8(v).unwrap())
+    }
 }
 
 impl From<Request> for http::Request<bytes::Bytes> {
