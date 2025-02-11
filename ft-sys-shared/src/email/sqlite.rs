@@ -21,7 +21,9 @@ impl ft_sys_shared::Email {
         };
 
         EmailBind {
-            from_name: ft_sys_shared::SqliteRawValue::Text(self.from.name.unwrap_or_default()),
+            from_name: ft_sys_shared::SqliteRawValue::Text(
+                self.from.name.unwrap_or_else(|| self.from.email.clone()),
+            ),
             from_address: ft_sys_shared::SqliteRawValue::Text(self.from.email),
             to_address: ft_sys_shared::SqliteRawValue::Text(to_comma_separated_str(self.to)),
             subject: ft_sys_shared::SqliteRawValue::Text(rendered.subject),
