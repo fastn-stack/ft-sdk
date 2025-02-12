@@ -122,5 +122,10 @@ pub(crate) fn from_request(
         ft_sdk::println!("app-url not found for {key}");
     }
 
-    Ok(v.map(|v| format!("/{}/", v.trim_matches('/'))))
+    Ok(v.map(|v| {
+        if v == "/" {
+            return "/".to_string();
+        }
+        format!("/{}/", v.trim_matches('/'))
+    }))
 }
