@@ -16,6 +16,7 @@
 - re-exports `ft_sys_common::{CancelEmailError, EmailContent, RenderedEmail, 
   SendEmailError}`
 - added `ft_sdk::{WasmPackage, MainPackage}` "extractors"
+- fix: handle `/` url in `ft_sdk::AppUrl`
 
 ### ft-sys: 0.2.0
 
