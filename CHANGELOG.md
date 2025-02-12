@@ -7,6 +7,7 @@
 - breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0 (`ft-sdk` re-exports
   `ft_sys_common::Email` etc)
 - added `ft_sdk::{WasmPackage, MainPackage}` "extractors"
+- fix: handle `/` url in `ft_sdk::AppUrl`
 
 ### ft-sys: 0.2.0
 
