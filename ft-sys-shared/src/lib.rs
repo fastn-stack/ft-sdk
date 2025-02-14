@@ -43,7 +43,7 @@ impl Request {
     pub fn host(&self) -> Option<&str> {
         self.headers
             .iter()
-            .find(|(k, _)| k.to_ascii_lowercase() == "host")
+            .find(|(k, _)| k.eq_ignore_ascii_case("host"))
             .map(|(_, v)| std::str::from_utf8(v).unwrap())
     }
 }

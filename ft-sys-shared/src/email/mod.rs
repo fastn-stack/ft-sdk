@@ -76,7 +76,9 @@ pub enum EmailContent {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RenderedEmail {
     subject: String,
+    #[serde(rename = "html")]
     body_html: String,
+    #[serde(rename = "text")]
     body_text: String,
 }
 
