@@ -4,8 +4,9 @@
 
 ### ft-sdk: 0.3.0
 
-- breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0 (`ft-sdk` re-exports
-  `ft_sys_common::Email` etc)
+- breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0
+- re-exports `ft_sys_common::{CancelEmailError, EmailContent, RenderedEmail, 
+  SendEmailError}`
 - added `ft_sdk::{WasmPackage, MainPackage}` "extractors"
 
 ### ft-sys: 0.2.0

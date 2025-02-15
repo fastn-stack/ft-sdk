@@ -37,7 +37,9 @@ pub use ft_sys::PgConnection;
 #[cfg(feature = "sqlite")]
 pub use ft_sys::SqliteConnection;
 pub use ft_sys::{email, env, http, println, ConnectionError, UserData};
-pub use ft_sys_shared::{Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail};
+pub use ft_sys_shared::{
+    CancelEmailError, Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail, SendEmailError,
+};
 pub use rng::Rng;
 pub use session::{SessionData, SessionID};
 
