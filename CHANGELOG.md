@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Unreleased
+## 15th Feb 2025
 
 ### ft-sdk: 0.3.0
 
@@ -12,8 +12,7 @@
 
 - breaking: upgraded `ft_sys_common` to 0.2.0 (`ft-sys` re-exports
   `ft_sys_common::Email`)
-
-## 15th Feb 2025
+- removed `ft_sys::{SendError, CancelError}` (moved to `ft_sys_shared`)
 
 ### ft-sys-common: 0.2.0
 
