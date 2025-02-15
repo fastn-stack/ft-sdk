@@ -2,6 +2,14 @@
 
 ## 15th Feb 2025
 
+### ft-sdk: 0.3.1
+
+- bumped `ft-derive` to 0.1.2
+
+### ft-derive: 0.1.2
+
+- bumped `syn` from 1.0 to 2.0
+
 ### ft-sdk: 0.3.0
 
 - breaking: upgraded `ft_sys` and `ft_sys_common` to 0.2.0

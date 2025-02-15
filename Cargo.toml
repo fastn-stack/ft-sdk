@@ -42,7 +42,7 @@ serde_urlencoded = "0.7"
 rand_core = "0.6"
 uuid = { version = "1.8", default-features = false, features = ["v8"] }
 ft-sys-shared = { path = "ft-sys-shared", version = "0.2.0" }
-ft-derive = { path = "ft-derive", version = "0.1.1" }
+ft-derive = { path = "ft-derive", version = "0.1.2" }
 ft-sys = { path = "ft-sys", version = "0.2.0" }
 ft-sdk = { path = "ft-sdk", version = "0.3.0" }
 smallvec = { version = "2.0.0-alpha.10", features = ["serde"] }
