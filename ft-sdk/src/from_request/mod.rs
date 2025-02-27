@@ -29,6 +29,7 @@ pub use {
     config::Config,
     form::Form,
     host::Host,
+    json::Json,
     package::{MainPackage, WasmPackage},
     path::Path,
     scheme::Scheme,

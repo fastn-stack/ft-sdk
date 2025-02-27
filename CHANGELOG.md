@@ -2,6 +2,10 @@
 
 ## 27th Feb 2025
 
+### ft-sdk: 0.3.3
+
+- exporting `ft_sdk::Json` extractor
+
 ### ft-sdk: 0.3.2
 
 - fix: handle `/` url in `ft_sdk::AppUrl`
