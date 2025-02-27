@@ -10,13 +10,13 @@ pub fn send(r: http::Request<bytes::Bytes>) -> Result<http::Response<bytes::Byte
     Ok(r.into())
 }
 
-extern "C" {
+unsafe extern "C" {
     fn http_send_request(ptr: i32, len: i32) -> i32;
 }
 
 /// Get the current request.
 pub fn current_request() -> http::Request<bytes::Bytes> {
-    extern "C" {
+    unsafe extern "C" {
         fn http_get_request() -> i32;
     }
     let ptr = unsafe { http_get_request() };
@@ -28,7 +28,7 @@ pub fn current_request() -> http::Request<bytes::Bytes> {
 ///
 /// This function must not be called more than once.
 pub fn send_response(r: http::Response<bytes::Bytes>) {
-    extern "C" {
+    unsafe extern "C" {
         fn http_send_response(ptr: i32, len: i32);
     }
     let r: ft_sys_shared::Request = r.into();

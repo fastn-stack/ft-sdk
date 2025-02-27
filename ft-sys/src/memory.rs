@@ -4,7 +4,7 @@
 ///
 /// This function is unsafe because it dereferences the pointer. There is no way to
 /// make this function unsafe.
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(clippy::uninit_vec)]
 pub fn alloc(len: i32) -> i32 {
     // create a new mutable buffer with capacity len
@@ -36,11 +36,11 @@ pub fn alloc(len: i32) -> i32 {
 ///
 /// This function is unsafe because it dereferences the pointer. There is no way to
 /// make this function unsafe.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe fn dealloc(ptr: i32) {
-    let size = ptr_len(ptr);
+    let size = unsafe { ptr_len(ptr) };
 
-    let data = Vec::from_raw_parts(ptr as *mut u8, size as usize + 4, size as usize + 4);
+    let data = unsafe { Vec::from_raw_parts(ptr as *mut u8, size as usize + 4, size as usize + 4) };
     drop(data);
 }
 
@@ -49,9 +49,9 @@ pub unsafe fn dealloc(ptr: i32) {
 ///
 /// This function is unsafe because it dereferences the pointer. There is no way to
 /// make this function unsafe.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe fn dealloc_with_len(ptr: i32, len: i32) {
-    let data = Vec::from_raw_parts(ptr as *mut u8, len as usize, len as usize);
+    let data = unsafe { Vec::from_raw_parts(ptr as *mut u8, len as usize, len as usize) };
     drop(data);
 }
 
@@ -60,7 +60,7 @@ pub unsafe fn dealloc_with_len(ptr: i32, len: i32) {
 /// This function is unsafe because it dereferences the pointer. There is no way to
 /// make this function unsafe.
 pub unsafe fn ptr_len(ptr: i32) -> i32 {
-    let len_bytes = Vec::from_raw_parts(ptr as *mut u8, 4, 4);
+    let len_bytes = unsafe { Vec::from_raw_parts(ptr as *mut u8, 4, 4) };
     let len = i32::from_ne_bytes([len_bytes[0], len_bytes[1], len_bytes[2], len_bytes[3]]);
     std::mem::forget(len_bytes);
     len

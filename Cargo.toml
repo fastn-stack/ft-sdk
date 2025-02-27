@@ -21,7 +21,7 @@ authors = [
     "Rithik Seth <rithik@fifthtry.com>",
     "Siddhant Kumar <siddhantk232@gmail.com>",
 ]
-edition = "2021"
+edition = "2024"
 description = "ft-sdk: Rust SDK for fastn and FifthTry Platform"
 license = "BSD-3-Clause"
 repository = "https://github.com/FifthTry/ft-sdk"

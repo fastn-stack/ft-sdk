@@ -1,4 +1,4 @@
-extern "C" {
+unsafe extern "C" {
     fn crypto_encrypt(ptr: i32, len: i32) -> i32;
     fn crypto_decrypt(ptr: i32, len: i32) -> i32;
 }

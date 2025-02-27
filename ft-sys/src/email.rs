@@ -6,7 +6,7 @@ pub fn send(
     Ok(ft_sys::memory::json_from_ptr(ptr))
 }
 
-extern "C" {
+unsafe extern "C" {
     fn email_send(ptr: i32, len: i32) -> i32;
     fn email_cancel(ptr: i32, len: i32);
 }

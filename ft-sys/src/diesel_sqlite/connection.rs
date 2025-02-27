@@ -6,7 +6,7 @@ pub struct SqliteConnection {
 
 impl SqliteConnection {
     pub fn connect(url: &str) -> Result<Self, ft_sys::ConnectionError> {
-        extern "C" {
+        unsafe extern "C" {
             // TODO: handle error
             fn sqlite_connect(ptr: i32, len: i32) -> i32;
         }
@@ -36,7 +36,7 @@ impl diesel::connection::SimpleConnection for SqliteConnection {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     fn sqlite_batch_execute(ptr: i32, len: i32) -> i32;
 }
 
@@ -57,7 +57,7 @@ impl diesel::connection::LoadConnection for SqliteConnection {
             + 'query,
         Self::Backend: diesel::expression::QueryMetadata<T::SqlType>,
     {
-        extern "C" {
+        unsafe extern "C" {
             fn sqlite_query(conn: i32, ptr: i32, len: i32) -> i32;
         }
 
@@ -122,7 +122,7 @@ impl diesel::connection::Connection for SqliteConnection {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     fn sqlite_execute(ptr: i32, len: i32) -> i32;
 }
 

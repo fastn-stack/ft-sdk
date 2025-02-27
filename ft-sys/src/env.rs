@@ -1,6 +1,6 @@
 //! Functions to interact with the environment.
 
-extern "C" {
+unsafe extern "C" {
     #[cfg(target_family = "wasm")]
     fn env_print(ptr: i32, len: i32);
     fn env_now() -> i32;

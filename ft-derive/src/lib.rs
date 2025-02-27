@@ -68,7 +68,7 @@ fn handle(item: proc_macro::TokenStream, kind: &str, handler: &str) -> proc_macr
     };
 
     let expanded = quote::quote! {
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub extern "C" fn #fn_name_entrypoint() {
             #handler(#fn_name)
         }

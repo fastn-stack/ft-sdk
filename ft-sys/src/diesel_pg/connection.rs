@@ -6,7 +6,7 @@ pub struct PgConnection {
 
 impl PgConnection {
     pub fn connect(url: &str) -> Result<Self, ft_sys::ConnectionError> {
-        extern "C" {
+        unsafe extern "C" {
             // TODO: handle error
             fn pg_connect(ptr: i32, len: i32) -> i32;
         }
@@ -50,7 +50,7 @@ struct Query {
     binds: Vec<(u32, Option<Vec<u8>>)>,
 }
 
-extern "C" {
+unsafe extern "C" {
     fn pg_query(conn: i32, ptr: i32, len: i32) -> i32;
     fn pg_execute(conn: i32, ptr: i32, len: i32) -> i32;
     fn pg_batch_execute(conn: i32, ptr: i32, len: i32) -> i32;
