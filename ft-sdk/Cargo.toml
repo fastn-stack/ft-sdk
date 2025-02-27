@@ -1,6 +1,6 @@
 [package]
 name = "ft-sdk"
-version = "0.3.1"
+version = "0.3.2"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
@@ -20,18 +20,19 @@ field-extractors = []
 
 [dependencies]
 anyhow.workspace = true
-ft-sys.workspace = true
-ft-sys-shared.workspace = true
+bytes.workspace = true
+chrono.workspace = true
+diesel = { workspace = true, optional = true }
 ft-derive.workspace = true
+ft-sys-shared.workspace = true
+ft-sys.workspace = true
+http.workspace = true
+rand.workspace = true
+rand_core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-chrono.workspace = true
-thiserror.workspace = true
-http.workspace = true
-bytes.workspace = true
 serde_urlencoded.workspace = true
-diesel = { workspace = true, optional = true }
-rand_core.workspace = true
+thiserror.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]

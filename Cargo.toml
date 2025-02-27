@@ -30,22 +30,23 @@ homepage = "https://www.FifthTry.com"
 
 [workspace.dependencies]
 anyhow = "1"
-http = "1"
 bytes = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-thiserror = "2"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 cookie = "0.18"
 diesel = { version = "2.2.4", features = ["serde_json"] }
-serde_urlencoded = "0.7"
-rand_core = "0.6"
-uuid = { version = "1.8", default-features = false, features = ["v8"] }
-ft-sys-shared = { path = "ft-sys-shared", version = "0.2.0" }
 ft-derive = { path = "ft-derive", version = "0.1.2" }
-ft-sys = { path = "ft-sys", version = "0.2.0" }
 ft-sdk = { path = "ft-sdk", version = "0.3.0" }
+ft-sys = { path = "ft-sys", version = "0.2.0" }
+ft-sys-shared = { path = "ft-sys-shared", version = "0.2.0" }
+http = "1"
+rand = "0.5"
+rand_core = "0.6"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_urlencoded = "0.7"
 smallvec = { version = "2.0.0-alpha.10", features = ["serde"] }
+thiserror = "2"
+uuid = { version = "1.8", default-features = false, features = ["v8"] }
 
 [workspace.dependencies.rusqlite]
 version = "0.31"  # DO NOT UPDATE THIS

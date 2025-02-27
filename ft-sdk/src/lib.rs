@@ -21,6 +21,7 @@ mod rng;
 pub mod schema;
 pub mod session;
 pub mod utils;
+mod uuid;
 
 pub use anyhow::{anyhow, bail, ensure, Context, Error};
 pub use auth::UserId;
@@ -42,6 +43,7 @@ pub use ft_sys_shared::{
 };
 pub use rng::Rng;
 pub use session::{SessionData, SessionID};
+pub use uuid::{uuid, uuid_without_dashes};
 
 pub type FrontendData = std::collections::HashMap<String, serde_json::Value>;
 pub type FormError = std::collections::HashMap<String, String>;

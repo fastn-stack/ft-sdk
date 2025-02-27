@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 27th Feb 2025
+
+### ft-sdk: 0.3.2
+
+- fix: handle `/` url in `ft_sdk::AppUrl`
+- added `ft_sdk::{uuid, uuid_without_dashes}()` functions to generate uuids
+
 ## 15th Feb 2025
 
 ### ft-sdk: 0.3.1
@@ -16,7 +23,6 @@
 - re-exports `ft_sys_common::{CancelEmailError, EmailContent, RenderedEmail, 
   SendEmailError}`
 - added `ft_sdk::{WasmPackage, MainPackage}` "extractors"
-- fix: handle `/` url in `ft_sdk::AppUrl`
 
 ### ft-sys: 0.2.0
 
