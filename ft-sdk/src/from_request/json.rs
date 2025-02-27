@@ -1,4 +1,4 @@
-pub struct Json<T: serde::de::DeserializeOwned>(T);
+pub struct Json<T: serde::de::DeserializeOwned>(pub T);
 
 impl<T: serde::de::DeserializeOwned> ft_sdk::FromRequest for Json<T> {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {

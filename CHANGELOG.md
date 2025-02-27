@@ -2,6 +2,21 @@
 
 ## 27th Feb 2025
 
+### ft-sdk: 0.4.0
+
+- `ft_sdk::Json` marks its wrapped value public
+- BREAKING: Minimum Supported Rust Version is now 1.85 (because we are using
+  switching to 2024 edition), 2024 is also the minimum supported edition.
+- if you are using `#![forbid(unsafe_code)` in your crate, you will have to
+  remove it :-( because we extensively use `no_mangle` and in 2024 edition it
+  is now `unsafe`.
+- `ft-derive` version bump to 0.2.0
+
+### ft-derive: 0.2.0
+
+- BREAKING: Minimum Supported Rust Version is now 1.85 (because we are using
+  switching to 2024 edition), 2024 is also the minimum supported edition.
+
 ### ft-sdk: 0.3.3
 
 - exporting `ft_sdk::Json` extractor
