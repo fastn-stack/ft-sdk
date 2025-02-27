@@ -21,7 +21,7 @@ pub fn alloc(len: i32) -> i32 {
     buf[2] = b[2];
     buf[3] = b[3];
 
-    // take mutable pointer to the buffer
+    // take a mutable pointer to the buffer
     let ptr = buf.as_mut_ptr();
     // // take ownership of the memory block and
     // // ensure that its destructor is not
