@@ -26,7 +26,7 @@ description = "ft-sdk: Rust SDK for fastn and FifthTry Platform"
 license = "BSD-3-Clause"
 repository = "https://github.com/FifthTry/ft-sdk"
 homepage = "https://www.FifthTry.com"
-
+rust-version = "1.85"
 
 [workspace.dependencies]
 anyhow = "1"
@@ -34,10 +34,10 @@ bytes = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 cookie = "0.18"
 diesel = { version = "2.2.4", features = ["serde_json"] }
-ft-derive = { path = "ft-derive", version = "0.2.0" }
-ft-sdk = { path = "ft-sdk", version = "0.4.0" }
-ft-sys = { path = "ft-sys", version = "0.2.0" }
-ft-sys-shared = { path = "ft-sys-shared", version = "0.2.0" }
+ft-derive = { path = "ft-derive", version = "0.2.1" }
+ft-sdk = { path = "ft-sdk", version = "0.4.1" }
+ft-sys = { path = "ft-sys", version = "0.2.1" }
+ft-sys-shared = { path = "ft-sys-shared", version = "0.2.1" }
 http = "1"
 rand = "0.5"
 rand_core = "0.6"

@@ -2,6 +2,29 @@
 
 ## 27th Feb 2025
 
+### ft-sdk: 0.4.1
+
+- added `rust-version = "1.85"` to `Cargo.toml` to make it clear that we are
+  using 1.85 as the minimum supported version.
+- bumped ft-derive to 0.2.1
+- bumped ft-sys to 0.2.1
+- bumped ft-sys-shared to 0.2.1
+
+### ft-derive: 0.2.1
+
+- added `rust-version = "1.85"` to `Cargo.toml` to make it clear that we are
+  using 1.85 as the minimum supported version.
+
+### ft-sys: 0.2.1
+
+- added `rust-version = "1.85"` to `Cargo.toml` to make it clear that we are
+  using 1.85 as the minimum supported version.
+
+### ft-sys-shared: 0.2.1
+
+- added `rust-version = "1.85"` to `Cargo.toml` to make it clear that we are
+  using 1.85 as the minimum supported version.
+
 ### ft-sdk: 0.4.0
 
 - `ft_sdk::Json` marks its wrapped value public

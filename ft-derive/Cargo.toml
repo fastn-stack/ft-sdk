@@ -1,12 +1,13 @@
 [package]
 name = "ft-derive"
-version = "0.2.0"
+version = "0.2.1"
 authors.workspace = true
 edition.workspace = true
 description.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+rust-version.workspace = true
 
 [lib]
 proc-macro = true
