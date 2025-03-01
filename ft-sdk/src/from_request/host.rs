@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Host(pub String);
 
 impl ft_sdk::FromRequest for Host {
@@ -25,5 +25,11 @@ impl Host {
             Some((domain, _port)) => domain.to_string(),
             None => self.0.to_string(),
         }
+    }
+}
+
+impl AsRef<str> for Host {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }

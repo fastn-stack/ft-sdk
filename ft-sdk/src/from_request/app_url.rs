@@ -54,11 +54,11 @@ pub const CURRENT_APP_KEY: &str = "current-app";
 impl<const KEY: &'static str> AppUrl<KEY> {
     /// use this to combine app relative url with the app-url to construct full url
     /// TODO: this should actually return full URI, including the query params etc
-    pub fn join(
+    pub fn join<S: AsRef<str>, H: AsRef<str>, P: AsRef<str>>(
         &self,
-        scheme: &ft_sdk::Scheme,
-        host: &ft_sdk::Host,
-        path: &str,
+        scheme: S,
+        host: H,
+        path: P,
     ) -> ft_sdk::Result<String> {
         join(KEY, &self.0, scheme, host, path)
     }
@@ -75,19 +75,24 @@ impl<const KEY: &'static str> ft_sdk::FromRequest for AppUrl<KEY> {
     }
 }
 
-pub(crate) fn join(
+pub(crate) fn join<S: AsRef<str>, H: AsRef<str>, P: AsRef<str>>(
     key: &str,
     app_url: &Option<String>,
-    scheme: &ft_sdk::Scheme,
-    ft_sdk::Host(host): &ft_sdk::Host,
-    path: &str,
+    scheme: S,
+    host: H,
+    path: P,
 ) -> ft_sdk::Result<String> {
     let v = match app_url {
         Some(v) => v,
         None => return Err(anyhow::anyhow!("app-url not found for {key}")),
     };
 
-    Ok(format!("{scheme}://{host}{v}{}/", path.trim_matches('/')))
+    Ok(format!(
+        "{scheme}://{host}{v}{path}/",
+        scheme = scheme.as_ref(),
+        host = host.as_ref(),
+        path = path.as_ref().trim_matches('/')
+    ))
 }
 
 pub(crate) fn from_request(

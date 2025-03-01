@@ -12,3 +12,9 @@ impl std::fmt::Display for Path {
         f.write_str(&self.0)
     }
 }
+
+impl AsRef<str> for Path {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}

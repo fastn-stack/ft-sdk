@@ -1,10 +1,13 @@
 # ChangeLog
 
-## 1st Mar 2025
+## Unreleased
 
 ### ft-sdk: 0.4.2
 
 - re-exporting `ft_sdk::Sqlite` from `ft_sys`
+- `ft_sdk::AppUrl::join()` takes `AsRef<str>` instead of more precise types
+- `ft_sdk::Scheme` works around the `wasm+proxy://` scheme bug in fastn
+- implemented `AsRef<str>` on few of the extractors
 
 ## 27th Feb 2025
 

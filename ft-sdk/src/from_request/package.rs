@@ -39,3 +39,9 @@ impl std::fmt::Display for MainPackage {
         f.write_str(&self.0)
     }
 }
+
+impl AsRef<str> for WasmPackage {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}

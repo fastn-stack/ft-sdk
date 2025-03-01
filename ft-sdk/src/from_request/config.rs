@@ -28,3 +28,9 @@ impl<T: serde::de::DeserializeOwned> ft_sdk::FromRequest for Config<T> {
             .map(Config)
     }
 }
+
+impl<T: serde::de::DeserializeOwned> AsRef<T> for Config<T> {
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
