@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 1st Mar 2025
+
+### ft-sdk: 0.4.2
+
+- re-exporting `ft_sdk::Sqlite` from `ft_sys`
+
 ## 27th Feb 2025
 
 ### ft-sdk: 0.4.1

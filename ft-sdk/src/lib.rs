@@ -23,10 +23,10 @@ pub mod session;
 pub mod utils;
 mod uuid;
 
-pub use anyhow::{anyhow, bail, ensure, Context, Error};
+pub use anyhow::{Context, Error, anyhow, bail, ensure};
 pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
-pub use error::{not_found_, server_error_, single_error, unauthorised_, SpecialError};
+pub use error::{SpecialError, not_found_, server_error_, single_error, unauthorised_};
 #[cfg(feature = "field-extractors")]
 pub use from_request::{AppUrl, Cookie, Hidden, Optional, Query, Required};
 pub use from_request::{
@@ -36,9 +36,9 @@ pub use from_request::{
 pub use ft_derive::{data, form, processor, wrapped_processor};
 #[cfg(feature = "postgres")]
 pub use ft_sys::PgConnection;
+pub use ft_sys::{ConnectionError, UserData, email, env, http, println};
 #[cfg(feature = "sqlite")]
-pub use ft_sys::SqliteConnection;
-pub use ft_sys::{email, env, http, println, ConnectionError, UserData};
+pub use ft_sys::{Sqlite, SqliteConnection};
 pub use ft_sys_shared::{
     CancelEmailError, Email, EmailAddress, EmailContent, EmailHandle, RenderedEmail, SendEmailError,
 };
@@ -97,7 +97,7 @@ pub(crate) fn json<T: serde::Serialize>(
         Err(e) => {
             return Ok(::http::Response::builder()
                 .status(500)
-                .body(format!("json-error: {e:?}\n").into())?)
+                .body(format!("json-error: {e:?}\n").into())?);
         }
     };
 
