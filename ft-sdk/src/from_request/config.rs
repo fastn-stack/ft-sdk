@@ -2,8 +2,8 @@ pub struct Config<T: serde::de::DeserializeOwned>(pub T);
 
 impl<T: serde::de::DeserializeOwned> ft_sdk::FromRequest for Config<T> {
     fn from_request(req: &http::Request<serde_json::Value>) -> ft_sdk::Result<Config<T>> {
-        let scheme = ft_sdk::Scheme::from_request(req)?;
-        let host = ft_sdk::Host::from_request(req)?;
+        let scheme: ft_sdk::Scheme = ft_sdk::Scheme::from_request(req)?;
+        let host: ft_sdk::Host = ft_sdk::Host::from_request(req)?;
         let app_url = ft_sdk::from_request::app_url::from_request(
             ft_sdk::from_request::app_url::CURRENT_APP_KEY,
             req,

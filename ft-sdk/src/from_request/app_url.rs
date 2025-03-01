@@ -44,7 +44,11 @@
 /// security reasons.
 #[cfg(feature = "field-extractors")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct AppUrl<const KEY: &'static str = CURRENT_APP_KEY>(pub Option<String>);
+pub struct AppUrl<const KEY: &'static str = CURRENT_APP_KEY> {
+    pub url: Option<String>,
+    scheme: ft_sdk::Scheme,
+    host: ft_sdk::Host,
+}
 
 pub const APP_URL_HEADER: &str = "x-fastn-app-url";
 pub const APP_URLS_HEADER: &str = "x-fastn-app-urls";
@@ -54,32 +58,33 @@ pub const CURRENT_APP_KEY: &str = "current-app";
 impl<const KEY: &'static str> AppUrl<KEY> {
     /// use this to combine app relative url with the app-url to construct full url
     /// TODO: this should actually return full URI, including the query params etc
-    pub fn join<S: AsRef<str>, H: AsRef<str>, P: AsRef<str>>(
-        &self,
-        scheme: S,
-        host: H,
-        path: P,
-    ) -> ft_sdk::Result<String> {
-        join(KEY, &self.0, scheme, host, path)
+    pub fn join<P: AsRef<str>>(&self, path: P) -> ft_sdk::Result<String> {
+        join(KEY, &self.url, &self.scheme, &self.host, path)
     }
 
     pub fn is_set(&self) -> bool {
-        self.0.is_some()
+        self.url.is_some()
     }
 }
 
 #[cfg(feature = "field-extractors")]
 impl<const KEY: &'static str> ft_sdk::FromRequest for AppUrl<KEY> {
     fn from_request(req: &http::Request<serde_json::Value>) -> ft_sdk::Result<AppUrl<KEY>> {
-        from_request(KEY, req).map(AppUrl)
+        let scheme = ft_sdk::Scheme::from_request(req)?;
+        let host = ft_sdk::Host::from_request(req)?;
+        from_request(KEY, req).map(|u| AppUrl {
+            url: u,
+            scheme,
+            host,
+        })
     }
 }
 
-pub(crate) fn join<S: AsRef<str>, H: AsRef<str>, P: AsRef<str>>(
+pub(crate) fn join<P: AsRef<str>>(
     key: &str,
     app_url: &Option<String>,
-    scheme: S,
-    host: H,
+    scheme: &ft_sdk::Scheme,
+    host: &ft_sdk::Host,
     path: P,
 ) -> ft_sdk::Result<String> {
     let v = match app_url {
@@ -89,8 +94,6 @@ pub(crate) fn join<S: AsRef<str>, H: AsRef<str>, P: AsRef<str>>(
 
     Ok(format!(
         "{scheme}://{host}{v}{path}/",
-        scheme = scheme.as_ref(),
-        host = host.as_ref(),
         path = path.as_ref().trim_matches('/')
     ))
 }

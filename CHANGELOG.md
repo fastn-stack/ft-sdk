@@ -2,10 +2,15 @@
 
 ## Unreleased
 
-### ft-sdk: 0.4.2
+### ft-sdk: 0.5.0
 
+- BREAKING: `ft_sdk::AppUrl` now does not take path as single parameter, instead
+  is a struct with named values. To extract just the host you will have to do
+  `ft_sdk::AppUrl { path, .. } = ft_sdk::AppUrl` in your handler, instead of the
+  old `ft_sdk::AppUrl(path) = ft_sdk::AppUrl`.
+- BREAKING: `ft_sdk::AppUrl::join()` takes just a single `AsRef<str>`, the path,
+  host and scheme are no longer needed.
 - re-exporting `ft_sdk::Sqlite` from `ft_sys`
-- `ft_sdk::AppUrl::join()` takes `AsRef<str>` instead of more precise types
 - `ft_sdk::Scheme` works around the `wasm+proxy://` scheme bug in fastn
 - implemented `AsRef<str>` on few of the extractors
 
