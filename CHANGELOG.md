@@ -1,11 +1,17 @@
 # ChangeLog
 
+## 2nd Mar 2025
+
+### ft-sdk: 0.5.1
+
+- fix: no double slash on`ft_sdk::AppUrl::join("/")`
+
 ## 1st Mar 2025
 
 ### ft-sdk: 0.5.0
 
-- BREAKING: `ft_sdk::AppUrl` now does not has the path as single parameter,
-  instead is a struct with named values. To extract just the host, you will have
+- BREAKING: `ft_sdk::AppUrl` now doesn't store the path as single parameter,
+  instead is a struct with named values. To extract just the url, you will have
   to do `ft_sdk::AppUrl { url, .. } = ft_sdk::AppUrl` in your handler, instead
   of the old `ft_sdk::AppUrl(url) = ft_sdk::AppUrl`.
 - BREAKING: `ft_sdk::AppUrl::join()` takes just a single `AsRef<str>`, the path,

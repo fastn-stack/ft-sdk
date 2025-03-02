@@ -92,6 +92,10 @@ pub(crate) fn join<P: AsRef<str>>(
         None => return Err(anyhow::anyhow!("app-url not found for {key}")),
     };
 
+    if path.as_ref() == "/" {
+        return Ok(format!("{scheme}://{host}{v}"));
+    }
+
     Ok(format!(
         "{scheme}://{host}{v}{path}/",
         path = path.as_ref().trim_matches('/')
