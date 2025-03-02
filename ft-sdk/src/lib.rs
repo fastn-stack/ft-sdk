@@ -28,7 +28,7 @@ pub use auth::UserId;
 pub use crypto::{DecryptionError, EncryptedString, PlainText};
 pub use error::{SpecialError, not_found_, server_error_, single_error, unauthorised_};
 #[cfg(feature = "field-extractors")]
-pub use from_request::{AppUrl, Cookie, Hidden, Optional, Query, Required};
+pub use from_request::{AppUrl, Cookie, Default, Hidden, Optional, Query, Required};
 pub use from_request::{
     Config, Form, FromRequest, Host, Json, MainPackage, Path, Scheme, WasmPackage,
     WrappedFromRequest,

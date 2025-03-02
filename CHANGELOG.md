@@ -2,6 +2,10 @@
 
 ## 2nd Mar 2025
 
+### ft-sdk: 0.5.2
+
+- Added `ft_sdk::Default` extractor
+
 ### ft-sdk: 0.5.1
 
 - fix: no double slash on`ft_sdk::AppUrl::join("/")`

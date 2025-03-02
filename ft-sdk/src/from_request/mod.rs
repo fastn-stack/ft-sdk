@@ -2,6 +2,8 @@ mod app_url;
 mod config;
 #[cfg(feature = "field-extractors")]
 mod cookie;
+#[cfg(feature = "field-extractors")]
+mod default;
 mod form;
 pub mod handler;
 mod headers;
@@ -22,8 +24,8 @@ pub mod wrapped_processor;
 
 #[cfg(feature = "field-extractors")]
 pub use {
-    app_url::AppUrl, cookie::Cookie, hidden::Hidden, optional::Optional, query::Query,
-    required::Required,
+    app_url::AppUrl, cookie::Cookie, default::Default, hidden::Hidden, optional::Optional,
+    query::Query, required::Required,
 };
 pub use {
     config::Config,
