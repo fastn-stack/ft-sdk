@@ -2,6 +2,13 @@
 
 ## 2nd Mar 2025
 
+### ft-sdk: 0.5.3
+
+- added feature named `beta`, am going to add stuff behind beta feature flag
+  before moving them to stable. removing beta stuff or changing beta stuff will
+  not be considered breaking change.
+- beta: added `ft_sdk::Default::{check, get}()`
+
 ### ft-sdk: 0.5.2
 
 - Added `ft_sdk::Default` extractor

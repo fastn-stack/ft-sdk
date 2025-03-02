@@ -9,6 +9,20 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::default::Def
     pub fn error<S: AsRef<str>>(self, msg: S) -> ft_sdk::SpecialError {
         ft_sdk::single_error(KEY, msg)
     }
+
+    #[cfg(feature = "beta")]
+    pub fn check(self, f: impl FnOnce(&T) -> bool, message: &str) -> Result<Self, ft_sdk::Error> {
+        if !f(&self.0) {
+            return Err(ft_sdk::single_error(KEY, message).into());
+        }
+
+        Ok(self)
+    }
+
+    #[cfg(feature = "beta")]
+    pub fn get(self) -> T {
+        self.0
+    }
 }
 
 impl<const KEY: &'static str, T: serde::de::DeserializeOwned + std::default::Default>

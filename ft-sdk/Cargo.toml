@@ -18,6 +18,7 @@ sqlite = ["ft-sys/sqlite", "diesel"]
 auth-provider = []
 debug = []
 field-extractors = []
+beta = []
 
 [dependencies]
 anyhow.workspace = true
