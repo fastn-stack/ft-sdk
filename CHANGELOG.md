@@ -1,5 +1,11 @@
 # ChangeLog
 
+## Unreleased
+
+### ft-sdk
+
+- added `ft_sdk::AppUrl::root()`
+
 ## 2nd Mar 2025
 
 ### ft-sdk: 0.5.3

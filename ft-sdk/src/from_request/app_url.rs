@@ -65,6 +65,10 @@ impl<const KEY: &'static str> AppUrl<KEY> {
     pub fn is_set(&self) -> bool {
         self.url.is_some()
     }
+
+    pub fn root(&self) -> ft_sdk::Result<String> {
+        join(KEY, &self.url, &self.scheme, &self.host, "/")
+    }
 }
 
 #[cfg(feature = "field-extractors")]
