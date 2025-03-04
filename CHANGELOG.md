@@ -1,10 +1,17 @@
 # ChangeLog
 
-## Unreleased
+## 4th Mar 2025
 
-### ft-sdk
+### ft-sdk: 0.6.0
 
 - added `ft_sdk::AppUrl::root()`
+- BREAKING: bump `ft-sys` to 0.3.0
+
+### ft-sys: 0.3.0
+
+- BREAKING: `ft_sys::diesel_sqlite::Cursor` now returns results in the same
+  order as returned by DB. This is a breaking change as the order of results
+  returned by `Cursor` is now different.
 
 ## 2nd Mar 2025
 
@@ -21,7 +28,7 @@
 
 ### ft-sdk: 0.5.1
 
-- fix: no double slash on`ft_sdk::AppUrl::join("/")`
+- fix: no double slash in`ft_sdk::AppUrl::join("/")`
 
 ## 1st Mar 2025
 

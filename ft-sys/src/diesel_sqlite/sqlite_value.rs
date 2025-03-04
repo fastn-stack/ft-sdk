@@ -144,10 +144,31 @@ impl<'a> diesel::row::Field<'a, ft_sys::diesel_sqlite::Sqlite> for Field<'a> {
     }
 }
 
-#[derive(serde::Deserialize, Debug)]
+#[derive(Debug)]
 pub struct Cursor {
     columns: Vec<String>,
-    rows: Vec<HostRow>,
+    rows: std::vec::IntoIter<HostRow>,
+}
+
+// custom deserializer for Cursor because `std::vec::IntoIter` does not implement Deserialize
+impl<'de> serde::Deserialize<'de> for Cursor {
+    fn deserialize<D>(deserializer: D) -> Result<Cursor, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(serde::Deserialize)]
+        struct C {
+            columns: Vec<String>,
+            rows: Vec<HostRow>,
+        }
+
+        let c = C::deserialize(deserializer)?;
+
+        Ok(Cursor {
+            columns: c.columns,
+            rows: c.rows.into_iter(),
+        })
+    }
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -159,8 +180,7 @@ impl Iterator for Cursor {
     type Item = Result<Row, diesel::result::Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // TODO: instead of pop, return from front, use idx to keep track of current row
-        match self.rows.pop() {
+        match self.rows.next() {
             Some(v) => Some(Ok(Row {
                 columns: self.columns.clone(),
                 fields: v.fields,

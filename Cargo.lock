@@ -261,7 +261,7 @@ dependencies = [
 
 [[package]]
 name = "ft-sdk"
-version = "0.5.3"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -283,7 +283,7 @@ dependencies = [
 
 [[package]]
 name = "ft-sys"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "bytes",
  "chrono",
