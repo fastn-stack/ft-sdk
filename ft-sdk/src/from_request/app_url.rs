@@ -46,8 +46,8 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AppUrl<const KEY: &'static str = CURRENT_APP_KEY> {
     pub url: Option<String>,
-    scheme: ft_sdk::Scheme,
-    host: ft_sdk::Host,
+    pub scheme: ft_sdk::Scheme,
+    pub host: ft_sdk::Host,
 }
 
 pub const APP_URL_HEADER: &str = "x-fastn-app-url";

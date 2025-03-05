@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 5th Mar 2025
+
+### ft-sdk: 0.6.1
+
+- made `ft_sdk::AppUrl { scheme, host }` public.
+
 ## 4th Mar 2025
 
 ### ft-sdk: 0.6.0
