@@ -50,6 +50,13 @@ pub struct AppUrl<const KEY: &'static str = CURRENT_APP_KEY> {
     pub host: ft_sdk::Host,
 }
 
+#[cfg(feature = "field-extractors")]
+pub struct RequiredAppUrl<const KEY: &'static str = CURRENT_APP_KEY> {
+    pub url: String,
+    scheme: ft_sdk::Scheme,
+    host: ft_sdk::Host,
+}
+
 pub const APP_URL_HEADER: &str = "x-fastn-app-url";
 pub const APP_URLS_HEADER: &str = "x-fastn-app-urls";
 pub const CURRENT_APP_KEY: &str = "current-app";
@@ -68,6 +75,31 @@ impl<const KEY: &'static str> AppUrl<KEY> {
 
     pub fn root(&self) -> ft_sdk::Result<String> {
         join(KEY, &self.url, &self.scheme, &self.host, "/")
+    }
+}
+
+#[cfg(feature = "field-extractors")]
+impl<const KEY: &'static str> RequiredAppUrl<KEY> {
+    pub fn join<P: AsRef<str>>(&self, path: P) -> String {
+        join(KEY, &Some(self.url.clone()), &self.scheme, &self.host, path).expect("")
+    }
+    pub fn root(&self) -> String {
+        join(KEY, &Some(self.url.clone()), &self.scheme, &self.host, "/").unwrap()
+    }
+}
+
+#[cfg(feature = "field-extractors")]
+impl<const KEY: &'static str> ft_sdk::FromRequest for RequiredAppUrl<KEY> {
+    fn from_request(req: &http::Request<serde_json::Value>) -> ft_sdk::Result<RequiredAppUrl<KEY>> {
+        let a: AppUrl<KEY> = ft_sdk::FromRequest::from_request(req)?;
+        let url = a
+            .url
+            .ok_or_else(|| ft_sdk::server_error!("{KEY} not install?"))?;
+        Ok(RequiredAppUrl {
+            url,
+            scheme: a.scheme,
+            host: a.host,
+        })
     }
 }
 

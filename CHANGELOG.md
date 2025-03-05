@@ -2,6 +2,10 @@
 
 ## 5th Mar 2025
 
+### ft-sdk: 0.6.2
+
+- added `ft_sdk::RequiredAppUrl`
+
 ### ft-sdk: 0.6.1
 
 - made `ft_sdk::AppUrl { scheme, host }` public.

@@ -24,8 +24,13 @@ pub mod wrapped_processor;
 
 #[cfg(feature = "field-extractors")]
 pub use {
-    app_url::AppUrl, cookie::Cookie, default::Default, hidden::Hidden, optional::Optional,
-    query::Query, required::Required,
+    app_url::{AppUrl, RequiredAppUrl},
+    cookie::Cookie,
+    default::Default,
+    hidden::Hidden,
+    optional::Optional,
+    query::Query,
+    required::Required,
 };
 pub use {
     config::Config,
