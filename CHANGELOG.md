@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Unreleased
+
+### ft-sdk
+
+- `#[derive(Debug, Clone, PartialEq, Hash)` on `ft_sdk::RequiredAppUrl`
+- added `ft_sdk::Config::{from_request_for_key, into}()`
+
 ## 5th Mar 2025
 
 ### ft-sdk: 0.6.2

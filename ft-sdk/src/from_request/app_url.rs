@@ -51,6 +51,7 @@ pub struct AppUrl<const KEY: &'static str = CURRENT_APP_KEY> {
 }
 
 #[cfg(feature = "field-extractors")]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RequiredAppUrl<const KEY: &'static str = CURRENT_APP_KEY> {
     pub url: String,
     scheme: ft_sdk::Scheme,

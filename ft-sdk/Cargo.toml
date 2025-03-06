@@ -1,6 +1,6 @@
 [package]
 name = "ft-sdk"
-version = "0.6.2"
+version = "0.6.3"
 description = "ft-sdk: SDK for building FifthTry Applications"
 authors.workspace = true
 edition.workspace = true
