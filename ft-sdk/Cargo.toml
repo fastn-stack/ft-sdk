@@ -33,5 +33,6 @@ rand.workspace = true
 rand_core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+serde_urlencoded.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
