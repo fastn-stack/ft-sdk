@@ -1,8 +1,10 @@
 //! This crate can only be used when compiling to wasm, and wasm is run by
 //! [www.fifthtry.com](https://www.fifthtry.com), or by [`fastn`](https://fastn.com), the command
 //! line tool to use help developers build FifthTry Apps or when self-hosting FifthTry Apps.
+#![allow(clippy::derive_partial_eq_without_eq, clippy::get_first)]
+#![deny(unused_crate_dependencies)]
+#![warn(clippy::used_underscore_binding)]
 #![forbid(unsafe_code)]
-#![deny(unused_extern_crates)]
 #![cfg_attr(feature = "field-extractors", feature(adt_const_params))]
 #![cfg_attr(feature = "field-extractors", feature(unsized_const_params))]
 #![cfg_attr(feature = "field-extractors", allow(incomplete_features))]
