@@ -1,8 +1,8 @@
 # ChangeLog
 
-## Unreleased
+## 22nd Mar 2025
 
-### ft-sdk
+### ft-sdk: 0.6.3
 
 - Members of struct `ft_sdk::RenderedEmail` are now public.
 - `#[derive(Debug, Clone, PartialEq, Hash)` on `ft_sdk::RequiredAppUrl`
