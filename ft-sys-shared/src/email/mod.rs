@@ -75,11 +75,11 @@ pub enum EmailContent {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RenderedEmail {
-    subject: String,
+    pub subject: String,
     #[serde(rename = "html")]
-    body_html: String,
+    pub body_html: String,
     #[serde(rename = "text")]
-    body_text: String,
+    pub body_text: String,
 }
 
 impl Default for EmailContent {
