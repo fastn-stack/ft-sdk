@@ -17,7 +17,7 @@ sqlite-default = ["sqlite"]
 sqlite = ["ft-sys/sqlite", "diesel"]
 auth-provider = []
 debug = []
-field-extractors = []
+field-extractors = ["serde_urlencoded"]
 beta = []
 
 [dependencies]
@@ -33,6 +33,6 @@ rand.workspace = true
 rand_core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-serde_urlencoded.workspace = true
+serde_urlencoded = { workspace = true, optional = true }
 thiserror.workspace = true
 uuid.workspace = true
