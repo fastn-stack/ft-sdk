@@ -5,7 +5,8 @@
 ### ft-sdk: 0.6.3
 
 - Members of struct `ft_sdk::RenderedEmail` are now public.
-- `#[derive(Debug, Clone, PartialEq, Hash)` on `ft_sdk::RequiredAppUrl`
+- `impl Debug, Clone, PartialEq, Hash, serde::Deserialize` on
+  `ft_sdk::RequiredAppUrl`
 - added `ft_sdk::Config::{from_request_for_key, into}()`
 
 ## 5th Mar 2025
