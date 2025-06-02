@@ -38,6 +38,7 @@ pub struct Email {
     pub bcc: smallvec::SmallVec<EmailAddress, 0>,
     pub mkind: String,
     pub content: EmailContent,
+    pub attachments: Option<smallvec::SmallVec<EmailAddress, 1>>
 }
 
 impl Email {
@@ -150,6 +151,13 @@ impl From<String> for EmailAddress {
 /// web request. this is useful in case you want to do a cleanup in case a transaction fails, etc.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EmailHandle(String);
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct EmailAttachment{
+    pub filename: String,
+    pub mime_type: String,
+    pub content: String
+}
 
 #[cfg(feature = "host-only")]
 impl EmailHandle {
