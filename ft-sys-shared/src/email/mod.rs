@@ -99,6 +99,7 @@ impl Email {
             bcc: smallvec::smallvec![],
             mkind: mkind.to_string(),
             content,
+            attachments: None
         }
     }
 }
