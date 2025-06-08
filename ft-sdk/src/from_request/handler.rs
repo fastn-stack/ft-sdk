@@ -3,6 +3,7 @@
 pub fn handle<T, O: Into<Result<http::Response<bytes::Bytes>, ft_sdk::Error>>, H: Handler<T, O>>(
     h: H,
 ) {
+    ft_sdk::println!("Handling request with handler");
     let req = match current_request() {
         Ok(v) => v,
         Err(e) => {
@@ -12,7 +13,7 @@ pub fn handle<T, O: Into<Result<http::Response<bytes::Bytes>, ft_sdk::Error>>, H
         }
     };
     let resp = h.call(&req).and_then(Into::into).unwrap_or_else(|e| {
-        ft_sdk::println!("Error: {:?}", e);
+        ft_sdk::println!("Error1: {:?}", e);
         ft_sdk::error::handle_error(e)
     });
     ft_sdk::http::send_response(resp);
