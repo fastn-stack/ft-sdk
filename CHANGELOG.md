@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Unreleased
+
+### ft-sdk: 0.6.4
+
+- `ft_sdk::Required<T>`: if `T` is not `String` and incoming body is
+  `serde_json::Value::String`, we handle it still.
+
 ## 22nd Mar 2025
 
 ### ft-sdk: 0.6.3

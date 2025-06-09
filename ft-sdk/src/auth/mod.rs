@@ -5,7 +5,7 @@ mod utils;
 
 pub use ft_sys_shared::SESSION_KEY;
 pub use schema::fastn_user;
-pub use utils::{user_data_by_query, Counter};
+pub use utils::{Counter, user_data_by_query};
 
 #[derive(Clone, Debug)]
 pub struct UserId(pub i64);

@@ -56,16 +56,24 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
         match req.body() {
             serde_json::Value::Null => {
+                ft_sdk::println!("body is Null, expected Object");
                 Err(ft_sdk::single_error(KEY, "body is Null, expected Object").into())
             }
             serde_json::Value::Object(map) => {
+                ft_sdk::println!("body is Object, checking for key: {}", KEY);
                 if let Some(value) = map.get(KEY) {
+                    ft_sdk::println!("found key: {}", KEY);
                     if std::any::TypeId::of::<T>() == std::any::TypeId::of::<String>() {
+                        ft_sdk::println!("type is String, checking if empty");
                         if let serde_json::Value::String(s) = value {
                             if s.is_empty() {
                                 return Err(ft_sdk::single_error(KEY, "field is empty").into());
                             }
                         }
+                    } else if let serde_json::Value::String(s) = value {
+                        // if the Rust type `T` is not String, and yet we have been passed a string,
+                        // we can still deserialize it, just to be nice.
+                        return Ok(serde_json::from_str(s).map(Required)?);
                     }
                     Ok(serde_json::from_value(value.clone()).map(Required)?)
                 } else {

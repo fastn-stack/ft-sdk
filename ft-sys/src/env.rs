@@ -18,7 +18,7 @@ pub fn print_it(s: String) {
 #[doc(hidden)]
 #[cfg(not(target_family = "wasm"))]
 pub fn print_it(s: String) {
-    println!("{s}");
+    println!("wasm: {s}");
 }
 
 /// Print some data to the server log.

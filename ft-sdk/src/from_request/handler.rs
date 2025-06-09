@@ -3,6 +3,7 @@
 pub fn handle<T, O: Into<Result<http::Response<bytes::Bytes>, ft_sdk::Error>>, H: Handler<T, O>>(
     h: H,
 ) {
+    ft_sdk::println!("Handling request with handler");
     let req = match current_request() {
         Ok(v) => v,
         Err(e) => {

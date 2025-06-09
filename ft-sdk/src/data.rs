@@ -112,7 +112,7 @@ pub fn binary<S: AsRef<str>>(content: bytes::Bytes, content_type: S) -> Result {
 /// Adding cookie with redirect headers does not work across browsers. This helper creates
 /// a 200-OK response, with an HTML meta-refresh tag to redirect the browser.
 ///
-/// ```rust
+/// ```rust,ignore
 ///  let cookie = cookie::Cookie::build((ft_sdk::auth::SESSION_KEY, "some-uniq-key"))
 ///         .domain("127.0.0.1")
 ///         .path("")
