@@ -7,8 +7,8 @@ use diesel::query_builder::{AstPass, QueryId, ValuesClause};
 use diesel::query_builder::{BatchInsert, InsertStatement};
 use diesel::query_dsl::methods::ExecuteDsl;
 use diesel::{QueryResult, Table};
-use ft_sys::diesel_sqlite::Sqlite;
 use ft_sys::SqliteConnection;
+use ft_sys::diesel_sqlite::Sqlite;
 
 // Todo: Add debug and display traits.
 //      Checkout `diesel::query_builder::insert_statement::insert_with_default_for_sqlite` module
