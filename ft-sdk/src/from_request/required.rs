@@ -54,12 +54,7 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::
     for Required<KEY, T>
 {
     fn from_request(req: &http::Request<serde_json::Value>) -> Result<Self, ft_sdk::Error> {
-        ft_sdk::println!(
-            "Required<{}, {}>::from_request",
-            KEY,
-            std::any::type_name::<T>()
-        );
-        let r = match req.body() {
+        match req.body() {
             serde_json::Value::Null => {
                 ft_sdk::println!("body is Null, expected Object");
                 Err(ft_sdk::single_error(KEY, "body is Null, expected Object").into())
@@ -76,20 +71,16 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::
                             }
                         }
                     } else {
-                        ft_sdk::println!("type is not String");
                         if let serde_json::Value::String(s) = value {
                             return Ok(serde_json::from_str(s).map(Required)?);
                         }
                     }
-                    ft_sdk::println!("deserializing {KEY}={value:?}");
                     Ok(serde_json::from_value(value.clone()).map(Required)?)
                 } else {
                     Err(ft_sdk::single_error(KEY, "missing field").into())
                 }
             }
             _ => Err(ft_sdk::single_error(KEY, "body is not json object").into()),
-        };
-        ft_sdk::println!("r: {:?}", r.is_err());
-        r
+        }
     }
 }
