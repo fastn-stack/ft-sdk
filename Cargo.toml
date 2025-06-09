@@ -34,7 +34,7 @@ bytes = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 diesel = { version = "2.2.4", features = ["serde_json"] }
 ft-derive = { path = "ft-derive", version = "0.2.1" }
-ft-sdk = { path = "ft-sdk", version = "0.6.3" }
+ft-sdk = { path = "ft-sdk", version = "0.6.4" }
 ft-sys = { path = "ft-sys", version = "0.3.0" }
 ft-sys-shared = { path = "ft-sys-shared", version = "0.2.1" }
 http = "1"
