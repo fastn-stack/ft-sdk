@@ -71,6 +71,8 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::
                             }
                         }
                     } else if let serde_json::Value::String(s) = value {
+                        // if the Rust type `T` is not String, and yet we have been passed a string,
+                        // we can still deserialize it, just to be nice.
                         return Ok(serde_json::from_str(s).map(Required)?);
                     }
                     Ok(serde_json::from_value(value.clone()).map(Required)?)
