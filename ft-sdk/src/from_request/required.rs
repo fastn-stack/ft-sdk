@@ -70,10 +70,8 @@ impl<const KEY: &'static str, T: serde::de::DeserializeOwned + 'static> ft_sdk::
                                 return Err(ft_sdk::single_error(KEY, "field is empty").into());
                             }
                         }
-                    } else {
-                        if let serde_json::Value::String(s) = value {
-                            return Ok(serde_json::from_str(s).map(Required)?);
-                        }
+                    } else if let serde_json::Value::String(s) = value {
+                        return Ok(serde_json::from_str(s).map(Required)?);
                     }
                     Ok(serde_json::from_value(value.clone()).map(Required)?)
                 } else {
