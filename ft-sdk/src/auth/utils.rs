@@ -28,7 +28,7 @@ pub fn user_data_by_query(
         Ok(v) if v.len() > 1 => return Err(ft_sdk::auth::UserDataError::MultipleRowsFound),
         Ok(mut v) => v.pop().unwrap(),
         Err(diesel::result::Error::NotFound) => {
-            return Err(ft_sdk::auth::UserDataError::NoDataFound)
+            return Err(ft_sdk::auth::UserDataError::NoDataFound);
         }
         Err(e) => return Err(ft_sdk::auth::UserDataError::DatabaseError(e)),
     };
