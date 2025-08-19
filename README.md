@@ -1,11 +1,61 @@
 # ft-sdk
+Rust SDK for extending backend functionality of
+[fastn](https://github.com/fastn-stack/fastn/) using WASM modules.
 
 [docs.rs/ft-sdk](https://docs.rs/ft-sdk)
 
-This crate can only be used when compiled to wasm, and wasm is run by
-[www.fifthtry.com](https://www.fifthtry.com), or by `clift`, the command
-line tool to use help developers build FifthTry Apps or when self-hosting
-FifthTry Apps.
+> [!NOTE]
+> This crate should only be used when compiled to wasm.
+---
+
+## Example
+
+```rust
+// lib.rs
+
+// An http handler available at /<mountpoint>/hello-world/
+#[ft_sdk::processor]
+fn hello_world(path: ft_sdk::Path) -> ft_sdk::processor::Result {
+    ft_sdk::println!("params: {path}");
+    // Return a JSON string as response. Complex json with `serde_json::json!`
+    // or any Serializable struct is supported.
+    ft_sdk::processor::json("and this is coming from wasm!")
+}
+```
+
+Compile the rust project with target `wasm32-unknown-unknown` and copy the
+`.wasm` file into your fastn package.
+
+You can then mount this module by adding the following to your `FASTN.ftd`
+file:
+
+```ftd
+-- import: fastn
+
+-- fastn.package: hello-world
+
+-- fastn.url-mappings:
+
+/wasm/* -> wasm+proxy://hello_world.wasm/*
+```
+
+Now any `.ftd` file can make request to `/wasm/hello-world/` and it will be
+handled by the `hello_world` function in the wasm module:
+
+```ftd
+-- import: fastn/processors as pr
+
+-- ftd.text: this is in ftd file
+-- ftd.text: $message
+
+-- string message:
+$processor$: pr.http
+url: /wasm/hello-world/
+```
+
+See [./examples/](./examples/) for more examples including form handling and
+interacting with database using the
+[diesel](https://github.com/diesel-rs/diesel) crate.
 
 ## Maintenance Note
 

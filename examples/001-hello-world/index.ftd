@@ -6,4 +6,3 @@
 -- string message:
 $processor$: pr.http
 url: /wasm/hello-world/
-
