@@ -36,3 +36,6 @@ serde_json.workspace = true
 serde_urlencoded = { workspace = true, optional = true }
 thiserror.workspace = true
 uuid.workspace = true
+
+[dev-dependencies]
+cookie = "0.18"
