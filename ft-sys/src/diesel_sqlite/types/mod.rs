@@ -5,7 +5,7 @@ mod jsonb;
 use super::{Sqlite, SqliteValue};
 use diesel::deserialize::FromSql;
 use diesel::serialize::{IsNull, Output, ToSql};
-use diesel::{deserialize, serialize, sql_types, Queryable};
+use diesel::{Queryable, deserialize, serialize, sql_types};
 
 impl FromSql<sql_types::Integer, Sqlite> for i32 {
     fn from_sql(value: SqliteValue) -> deserialize::Result<Self> {
